@@ -14,5 +14,12 @@
   },
   "devDependencies": {
     "turbo": "^2.5.0"
+  },
+  "pnpm": {
+    "comment-types-react": "Single @types/react across the monorepo. Medusa's admin runtime stays on react@18 (runtime, not types); pinning the DefinitelyTyped stubs to 19 stops a stray 18 copy from merging into the storefront's type program and breaking JSX component types (TS2786).",
+    "overrides": {
+      "@types/react": "19.0.5",
+      "@types/react-dom": "19.0.5"
+    }
   }
 }

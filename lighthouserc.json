@@ -5,9 +5,9 @@
       "startServerCommand": "pnpm --filter storefront start -p 8000",
       "startServerReadyPattern": "ready|started server on",
       "url": [
-        "http://localhost:8000/us",
-        "http://localhost:8000/us/telemedicine",
-        "http://localhost:8000/us/about"
+        "http://localhost:8000/en",
+        "http://localhost:8000/en/telehealth",
+        "http://localhost:8000/en/about"
       ],
       "numberOfRuns": 3,
       "settings": {

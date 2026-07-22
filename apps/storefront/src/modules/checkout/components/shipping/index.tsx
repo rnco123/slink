@@ -21,7 +21,22 @@ type ShippingProps = {
   availableShippingMethods: HttpTypes.StoreCartShippingOption[] | null
 }
 
-function formatAddress(address: HttpTypes.StoreCartAddress) {
+/**
+ * Medusa populates the `service_zone` → `fulfillment_set` → `location` relation
+ * on shipping options at runtime (when the option query requests those fields),
+ * but the published `StoreCartShippingOption` type does not declare it. Narrow
+ * to this shape where we read the pickup/location metadata.
+ */
+type ShippingOptionWithZone = HttpTypes.StoreCartShippingOption & {
+  service_zone?: {
+    fulfillment_set?: {
+      type?: string | null
+      location?: { address?: HttpTypes.StoreCartAddress | null } | null
+    } | null
+  } | null
+}
+
+function formatAddress(address?: HttpTypes.StoreCartAddress | null) {
   if (!address) {
     return ""
   }
@@ -71,11 +86,15 @@ const Shipping: React.FC<ShippingProps> = ({
   const isOpen = searchParams.get("step") === "delivery"
 
   const _shippingMethods = availableShippingMethods?.filter(
-    (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
+    (sm) =>
+      (sm as ShippingOptionWithZone).service_zone?.fulfillment_set?.type !==
+      "pickup"
   )
 
   const _pickupMethods = availableShippingMethods?.filter(
-    (sm) => sm.service_zone?.fulfillment_set?.type === "pickup"
+    (sm) =>
+      (sm as ShippingOptionWithZone).service_zone?.fulfillment_set?.type ===
+      "pickup"
   )
 
   const hasPickupOptions = !!_pickupMethods?.length
@@ -342,7 +361,8 @@ const Shipping: React.FC<ShippingProps> = ({
                               </span>
                               <span className="text-base-regular text-ui-fg-muted">
                                 {formatAddress(
-                                  option.service_zone?.fulfillment_set?.location
+                                  (option as ShippingOptionWithZone)
+                                    .service_zone?.fulfillment_set?.location
                                     ?.address
                                 )}
                               </span>

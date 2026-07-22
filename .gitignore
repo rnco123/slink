@@ -45,3 +45,9 @@ playwright-report/
 .terraform/
 *.tfvars
 !*.auto.tfvars.example
+
+# local-only living tracker (contains credentials/notes) — NEVER commit.
+# NOTE: this file was tracked in early history (commit cd27a52); it has been
+# `git rm --cached`ed since. History must be scrubbed of it before the first
+# push to a public repo (roadmap task 16).
+completion.md

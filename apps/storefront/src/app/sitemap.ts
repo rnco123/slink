@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { getBaseURL } from "@lib/util/env"
+import { locales } from "@lib/i18n/config"
 
 /**
  * XML sitemap for saludlinkusa.com.
@@ -7,18 +8,19 @@ import { getBaseURL } from "@lib/util/env"
  * Design goals:
  *  - Never throw. If a backend (Medusa) or CMS is unreachable, we still emit a
  *    valid sitemap of the known static routes. Dynamic sections degrade to [].
- *  - Everything is generated for the primary market country code below. When
- *    additional locales/markets launch, expand `COUNTRY_CODES` and map over it.
+ *  - One entry per supported LANGUAGE. The URL's first path segment is the
+ *    language (`/en/…`, `/es/…`) — distinct indexable URLs per language, which is
+ *    the SEO-grade approach (see `lib/i18n/config`).
  *
  * NOTE ON URL SHAPE: routes live under `/[countryCode]/(main)/…`, so public
- * URLs are prefixed with the country code (e.g. `/us/store`). The `(main)`
+ * URLs are prefixed with the LANGUAGE code (e.g. `/en/store`). The `(main)`
  * segment is a route group and does NOT appear in the URL.
  */
 
 const origin = () => getBaseURL().replace(/\/$/, "")
 
-// Primary market. Add more codes here as markets go live.
-const DEFAULT_COUNTRY = "us"
+// Supported languages (the `[countryCode]` route segment is really the locale).
+const LOCALES = locales
 
 /**
  * Static routes, expressed WITHOUT the country prefix. Keep this list in sync
@@ -33,23 +35,16 @@ type StaticRoute = {
 }
 
 const STATIC_ROUTES: StaticRoute[] = [
-  // Marketing
+  // Marketing (must mirror app/[countryCode]/(main)/… routes that actually ship)
   { path: "", changeFrequency: "daily", priority: 1.0 },
   { path: "/store", changeFrequency: "daily", priority: 0.9 },
-  { path: "/weight-metabolic-health", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/how-it-works", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/telemedicine", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/conditions", changeFrequency: "weekly", priority: 0.8 },
   { path: "/about", changeFrequency: "monthly", priority: 0.6 },
-  { path: "/faq", changeFrequency: "monthly", priority: 0.6 },
+  { path: "/licensing", changeFrequency: "monthly", priority: 0.5 },
   { path: "/contact", changeFrequency: "yearly", priority: 0.4 },
-  // Telemedicine
-  { path: "/telehealth", changeFrequency: "weekly", priority: 0.8 },
-  { path: "/how-it-works/consultation", changeFrequency: "monthly", priority: 0.6 },
-  // Legal / compliance
-  { path: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/shipping-returns", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/telehealth-consent", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/hipaa-notice", changeFrequency: "yearly", priority: 0.3 },
+  // Legal / compliance pages are CMS-driven (`/legal/[slug]`) and emitted
+  // dynamically once the content DB is seeded — see getPostEntries / task 22.
 ]
 
 function url(country: string, path: string): string {
@@ -114,7 +109,7 @@ async function getPostEntries(country: string): Promise<MetadataRoute.Sitemap> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
-  const countries = [DEFAULT_COUNTRY]
+  const countries = [...LOCALES]
 
   const staticEntries: MetadataRoute.Sitemap = countries.flatMap((country) =>
     STATIC_ROUTES.map((route) => ({

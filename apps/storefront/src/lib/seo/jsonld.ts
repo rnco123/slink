@@ -250,7 +250,7 @@ export interface FaqItem {
 }
 
 /** FAQPage — answers should be plain text (HTML is allowed but keep it simple). */
-export function faqJsonLd(items: FaqItem[]): JsonLdObject {
+export function faqJsonLd(items: readonly FaqItem[]): JsonLdObject {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
