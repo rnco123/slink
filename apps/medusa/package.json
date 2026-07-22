@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "medusa build",
+    "typecheck": "tsc --noEmit",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "start": "medusa start",
     "dev": "medusa develop",

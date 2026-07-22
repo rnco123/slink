@@ -12,6 +12,9 @@
     "./tokens": "./src/tokens/index.ts",
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
