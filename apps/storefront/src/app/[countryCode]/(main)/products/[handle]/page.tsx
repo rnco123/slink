@@ -2,8 +2,12 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { listProductReviews } from "@lib/data/reviews"
 import ProductTemplate from "@modules/products/templates"
+import ProductReviews from "@modules/products/components/product-reviews"
 import TrackEvent from "@modules/analytics/track-event"
+import { JsonLd } from "@lib/seo/ld-script"
+import { productJsonLd, type ProductAvailability } from "@lib/seo/jsonld"
 import { HttpTypes } from "@medusajs/types"
 
 type Props = {
@@ -121,8 +125,20 @@ export default async function ProductPage(props: Props) {
     notFound()
   }
 
+  // Approved reviews (task 21b) — feed the aggregate rating + Review nodes into
+  // the product structured data. Fetch is cached (60s ISR); ProductReviews below
+  // hits the same cached entry.
+  const reviewData = await listProductReviews(pricedProduct.id, { limit: 5 })
+
+  const productLd = buildProductJsonLd(
+    pricedProduct,
+    params.countryCode,
+    reviewData
+  )
+
   return (
     <>
+      {productLd && <JsonLd data={productLd} />}
       {/* Funnel event (task 10) — product view, IDs + price only, PHI-safe. */}
       <TrackEvent
         event="product_viewed"
@@ -143,6 +159,59 @@ export default async function ProductPage(props: Props) {
         countryCode={params.countryCode}
         images={images}
       />
+      <ProductReviews productId={pricedProduct.id} />
     </>
   )
+}
+
+/** Build the Product JSON-LD (with AggregateRating + Review) or null if unpriced. */
+function buildProductJsonLd(
+  product: HttpTypes.StoreProduct,
+  countryCode: string,
+  reviewData: Awaited<ReturnType<typeof listProductReviews>>
+) {
+  const variant = product.variants?.[0]
+  const price = variant?.calculated_price?.calculated_amount
+  const currency = variant?.calculated_price?.currency_code
+  if (typeof price !== "number" || !currency) {
+    return null
+  }
+
+  const images =
+    (product.images?.map((i) => i.url).filter(Boolean) as
+      | string[]
+      | undefined) ?? (product.thumbnail ? [product.thumbnail] : [])
+
+  const rawStates = product.metadata?.shipping_states
+  const shippingStates = Array.isArray(rawStates)
+    ? (rawStates as string[])
+    : typeof rawStates === "string"
+    ? rawStates.split(",").map((s) => s.trim())
+    : undefined
+
+  const availability: ProductAvailability =
+    (variant?.inventory_quantity ?? 1) > 0 ? "InStock" : "OutOfStock"
+
+  return productJsonLd({
+    name: product.title,
+    description: product.description || product.title,
+    image: images,
+    price,
+    currency: currency.toUpperCase(),
+    sku: variant?.sku ?? undefined,
+    availability,
+    ratingValue: reviewData.summary.count
+      ? reviewData.summary.average
+      : undefined,
+    reviewCount: reviewData.summary.count || undefined,
+    reviews: reviewData.reviews.map((r) => ({
+      author: r.display_name,
+      rating: r.rating,
+      title: r.title,
+      body: r.content,
+      datePublished: r.created_at,
+    })),
+    url: `/${countryCode}/products/${product.handle}`,
+    shippingStates,
+  })
 }

@@ -259,5 +259,9 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/content",
     },
+    // Product reviews (T21b) — custom module with mandatory moderation gate.
+    {
+      resolve: "./src/modules/product-review",
+    },
   ],
 })

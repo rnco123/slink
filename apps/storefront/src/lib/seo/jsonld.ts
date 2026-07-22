@@ -100,6 +100,11 @@ export interface ProductJsonLdInput {
   availability?: ProductAvailability
   ratingValue?: number
   reviewCount?: number
+  /**
+   * Individual approved reviews to emit as schema.org `Review` nodes. Only
+   * moderation-approved reviews should ever be passed here (see task 21b).
+   */
+  reviews?: ProductReviewJsonLd[]
   /** Brand name for the product; defaults to the Saludlink brand. */
   brand?: string
   /** Absolute canonical URL of the product page (defaults to base). */
@@ -110,6 +115,15 @@ export interface ProductJsonLdInput {
    * so ineligible states are excluded from Shopping/rich results.
    */
   shippingStates?: string[]
+}
+
+export interface ProductReviewJsonLd {
+  author: string
+  rating: number
+  title?: string | null
+  body: string
+  /** ISO 8601 date string. */
+  datePublished?: string
 }
 
 function toAbsolute(url: string): string {
@@ -132,6 +146,7 @@ export function productJsonLd(input: ProductJsonLdInput): JsonLdObject {
     availability = "InStock",
     ratingValue,
     reviewCount,
+    reviews,
     brand: productBrand = brand.name,
     url,
     shippingStates,
@@ -220,6 +235,25 @@ export function productJsonLd(input: ProductJsonLdInput): JsonLdObject {
       bestRating: "5",
       worstRating: "1",
     }
+  }
+
+  if (reviews && reviews.length > 0) {
+    data.review = reviews.map((r) => {
+      const node: JsonLdObject = {
+        "@type": "Review",
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: String(r.rating),
+          bestRating: "5",
+          worstRating: "1",
+        },
+        author: { "@type": "Person", name: r.author },
+        reviewBody: r.body,
+      }
+      if (r.title) node.name = r.title
+      if (r.datePublished) node.datePublished = r.datePublished
+      return node
+    })
   }
 
   return data
