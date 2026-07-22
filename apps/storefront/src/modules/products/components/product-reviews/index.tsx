@@ -1,4 +1,5 @@
 import { listProductReviews } from "@lib/data/reviews"
+import { formatDate } from "@lib/util/dates"
 import ReviewStars from "./review-stars"
 import ReviewForm from "./review-form"
 
@@ -10,17 +11,6 @@ import ReviewForm from "./review-form"
  * reviews are ever returned by the API, so nothing unmoderated renders here.
  */
 type Props = { productId: string }
-
-function formatDate(iso?: string): string {
-  if (!iso) return ""
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return ""
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
 
 const ProductReviews = async ({ productId }: Props) => {
   const { reviews, count, summary } = await listProductReviews(productId, {
