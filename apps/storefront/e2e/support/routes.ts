@@ -40,8 +40,12 @@ export const LEGAL_SLUGS = [
 ] as const
 
 /**
- * Every marketing / informational / legal route that renders WITHOUT a Medusa
- * backend (anonymous session). Expressed without the locale prefix.
+ * Every marketing / informational route that renders WITHOUT a Medusa backend
+ * (anonymous session). Expressed without the locale prefix.
+ *
+ * NOTE: /legal/<slug> is intentionally NOT here — those pages now pull their
+ * content from the Medusa content module and 404 without a seeded backend, so
+ * they're covered under the @commerce-gated legal.spec.ts instead.
  */
 export const CONTENT_ROUTES: string[] = [
   "/",
@@ -51,7 +55,6 @@ export const CONTENT_ROUTES: string[] = [
   "/telemedicine",
   "/conditions",
   ...CONDITION_SLUGS.map((s) => `/conditions/${s}`),
-  ...LEGAL_SLUGS.map((s) => `/legal/${s}`),
 ]
 
 /** Header primary navigation (matches nav/index.tsx). */
