@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-label="Saludlink product illustration">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e4d9c7" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#8fb29a" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="#fbf8f3"/>
+  <rect width="600" height="600" fill="url(#bg)"/>
+  <circle cx="300" cy="300" r="210" fill="#fff" opacity="0.35"/>
+  <g transform="translate(300 300)"><rect x="-140" y="-80" width="130" height="160" rx="18" fill="#fff"/><rect x="14" y="-80" width="130" height="160" rx="18" fill="#e4d9c7"/><rect x="-140" y="-100" width="130" height="26" rx="12" fill="#8fb29a"/><rect x="14" y="-100" width="130" height="26" rx="12" fill="#c56b4e" opacity="0.8"/></g>
+  <g transform="translate(540 540)"><rect x="-30" y="-30" width="44" height="44" rx="12" fill="#2e5540"/><path d="M-14 -18 a6 6 0 0 0 0 12 h3" stroke="#fbf8f3" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M0 6 a6 6 0 0 0 0 -12 h-3" stroke="#c56b4e" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+</svg>

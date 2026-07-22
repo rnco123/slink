@@ -1,0 +1,50 @@
+# Alertmanager configuration — Saludlink.
+# Receivers are wired from env so no secrets live in the repo. In dev both the
+# Slack webhook and email are blank, so alerts surface in the Alertmanager UI
+# (and Grafana) only. Set ALERT_* env vars to enable real delivery.
+#
+# NOTE: Alertmanager does not expand ${ENV} in this file by default; the values
+# below are populated at render time by scripts/render-alertmanager.sh OR you can
+# rely on the UI-only default. Keep secrets OUT of git — supply via env/CI.
+
+global:
+  resolve_timeout: 5m
+  smtp_from: "alertmanager@saludlinkusa.com"
+
+# Routing tree: everything goes to the default receiver; criticals also notify
+# fast. Grouping keeps alert storms readable.
+route:
+  receiver: default
+  group_by: ["alertname", "job", "severity"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers:
+        - severity = "critical"
+      receiver: critical
+      repeat_interval: 1h
+
+receivers:
+  - name: default
+    # UI-only by default. To enable Slack, uncomment and set ALERT_SLACK_WEBHOOK_URL.
+    # slack_configs:
+    #   - api_url: "$ALERT_SLACK_WEBHOOK_URL"
+    #     channel: "#saludlink-alerts"
+    #     send_resolved: true
+
+  - name: critical
+    # slack_configs:
+    #   - api_url: "$ALERT_SLACK_WEBHOOK_URL"
+    #     channel: "#saludlink-oncall"
+    #     send_resolved: true
+    # email_configs:
+    #   - to: "$ALERT_EMAIL_TO"
+    #     smarthost: "$ALERT_SMTP_SMARTHOST"
+    #     from: "$ALERT_SMTP_FROM"
+
+# Suppress lower-severity alerts for an instance already firing a critical.
+inhibit_rules:
+  - source_matchers: [severity = "critical"]
+    target_matchers: [severity = "warning"]
+    equal: ["alertname", "instance"]

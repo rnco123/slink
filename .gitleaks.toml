@@ -1,0 +1,23 @@
+# Gitleaks configuration — Saludlink.
+# Extends the built-in ruleset and adds allowlisting for the SAFE LOCAL DEFAULTS
+# that intentionally ship in .env.template files (never real secrets).
+title = "Saludlink gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local dev placeholders and template files that carry no real secrets"
+regexes = [
+  '''supersecret''',
+  '''saludlink_local''',
+  '''change_me_[a-z]+''',
+  '''pk_test''',
+  '''sk_test_[A-Za-z0-9]*''',
+]
+paths = [
+  '''.*\.env\.template$''',
+  '''.*\.env\.monitoring\.template$''',
+  '''pnpm-lock\.yaml$''',
+  '''docs/.*\.md$''',
+]

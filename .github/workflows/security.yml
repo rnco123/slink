@@ -1,0 +1,122 @@
+# Security scanning — Saludlink.
+# Runs the SAST / secret / dependency / container scanners on every PR + push to
+# main, plus a weekly scheduled deep scan. Results upload to the GitHub Security
+# tab (code scanning) via SARIF so the future Monitoring API can read findings
+# through the GitHub code-scanning API.
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 7 * * 1" # Mondays 07:00 UTC — weekly deep scan
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write # required to upload SARIF to the Security tab
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Gitleaks — secret scanning across the repo + full git history.
+  # ---------------------------------------------------------------------------
+  gitleaks:
+    name: gitleaks (secrets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so historical leaks are caught
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+        # Fails the job on any finding. Enterprise licence optional; OSS action
+        # runs without a licence for public repos.
+
+  # ---------------------------------------------------------------------------
+  # Semgrep Community Edition — SAST with curated rulesets.
+  # ---------------------------------------------------------------------------
+  semgrep:
+    name: semgrep (SAST)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Semgrep (CE rulesets)
+        run: |
+          semgrep scan \
+            --config p/default \
+            --config p/security-audit \
+            --config p/secrets \
+            --config p/typescript \
+            --config p/nextjs \
+            --config p/owasp-top-ten \
+            --sarif --output semgrep.sarif \
+            --error --verbose
+        env:
+          SEMGREP_SEND_METRICS: "off" # privacy: no telemetry
+      - name: Upload Semgrep SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  # ---------------------------------------------------------------------------
+  # npm audit — dependency vulnerability report over the pnpm workspace.
+  # ---------------------------------------------------------------------------
+  npm-audit:
+    name: npm audit (deps)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Audit (high+ fails the build)
+        run: pnpm audit --audit-level=high
+      - name: Full JSON report (artifact for the Monitoring API)
+        if: always()
+        run: pnpm audit --json > npm-audit.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-report
+          path: npm-audit.json
+
+  # ---------------------------------------------------------------------------
+  # Trivy — filesystem + config (IaC/Dockerfile) vulnerability + misconfig scan.
+  # ---------------------------------------------------------------------------
+  trivy:
+    name: trivy (vulns + IaC)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          format: sarif
+          output: trivy.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy.sarif
+          category: trivy

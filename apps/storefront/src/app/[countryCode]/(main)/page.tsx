@@ -1,41 +1,46 @@
 import { Metadata } from "next"
 
-import FeaturedProducts from "@modules/home/components/featured-products"
-import Hero from "@modules/home/components/hero"
-import { listCollections } from "@lib/data/collections"
-import { getRegion } from "@lib/data/regions"
+import { Hero } from "@components/marketing/hero"
+import {
+  TrustBand,
+  ConditionGrid,
+  HowItWorks,
+  CareBand,
+} from "@components/marketing/sections"
+import { JsonLd, organizationJsonLd, websiteJsonLd } from "@lib/seo/jsonld"
+import { getDictionary } from "@lib/i18n"
+import { resolveLocale } from "@lib/i18n/config"
+import { alternatesFor } from "@lib/i18n/routing"
 
-export const metadata: Metadata = {
-  title: "Medusa Next.js Starter Template",
-  description:
-    "A performant frontend ecommerce starter template with Next.js 15 and Medusa.",
+type Params = { countryCode: string }
+
+export async function generateMetadata(props: {
+  params: Promise<Params>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+  const locale = resolveLocale(countryCode)
+  const dict = await getDictionary(locale)
+  return {
+    title: dict.home.metaTitle,
+    description: dict.home.metaDescription,
+    alternates: alternatesFor("/", locale),
+  }
 }
 
-export default async function Home(props: {
-  params: Promise<{ countryCode: string }>
-}) {
-  const params = await props.params
-
-  const { countryCode } = params
-
-  const region = await getRegion(countryCode)
-
-  const { collections } = await listCollections({
-    fields: "id, handle, title",
-  })
-
-  if (!collections || !region) {
-    return null
-  }
+export default async function Home(props: { params: Promise<Params> }) {
+  const { countryCode } = await props.params
+  const locale = resolveLocale(countryCode)
+  const dict = await getDictionary(locale)
 
   return (
     <>
-      <Hero />
-      <div className="py-12">
-        <ul className="flex flex-col gap-x-6">
-          <FeaturedProducts collections={collections} region={region} />
-        </ul>
-      </div>
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
+      <Hero dict={dict} />
+      <TrustBand dict={dict} />
+      <ConditionGrid dict={dict} />
+      <HowItWorks dict={dict} />
+      <CareBand dict={dict} />
     </>
   )
 }

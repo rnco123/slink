@@ -4,6 +4,8 @@
   "private": true,
   "description": "Saludlink design system — tokens, Tailwind preset, shared React components",
   "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     "./tokens.css": "./src/styles/tokens.css",
     "./tailwind-preset": "./tailwind-preset.cjs",

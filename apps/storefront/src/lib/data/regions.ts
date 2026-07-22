@@ -37,15 +37,18 @@ export const retrieveRegion = async (id: string) => {
 
 const regionMap = new Map<string, HttpTypes.StoreRegion>()
 
-export const getRegion = async (countryCode: string) => {
+// Saludlink is US-only; the URL's first segment is a LANGUAGE (en/es), not a country.
+// Region resolution therefore ignores the segment and always returns the US region
+// (falling back to the first configured region).
+export const getRegion = async (_localeOrCountry?: string) => {
   try {
-    if (regionMap.has(countryCode)) {
-      return regionMap.get(countryCode)
+    if (regionMap.has("us")) {
+      return regionMap.get("us")
     }
 
     const regions = await listRegions()
 
-    if (!regions) {
+    if (!regions?.length) {
       return null
     }
 
@@ -55,11 +58,7 @@ export const getRegion = async (countryCode: string) => {
       })
     })
 
-    const region = countryCode
-      ? regionMap.get(countryCode)
-      : regionMap.get("us")
-
-    return region
+    return regionMap.get("us") ?? regions[0]
   } catch (e: any) {
     return null
   }

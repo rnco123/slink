@@ -1,0 +1,31 @@
+{
+  "//": "Lighthouse CI budgets — Saludlink. Mirrors the plan.md Phase 1/2 gates: Perf >=95, SEO 100, LCP <2.0s, CLS <0.05. Tighten to error as pages stabilise.",
+  "ci": {
+    "collect": {
+      "startServerCommand": "pnpm --filter storefront start -p 8000",
+      "startServerReadyPattern": "ready|started server on",
+      "url": [
+        "http://localhost:8000/us",
+        "http://localhost:8000/us/telemedicine",
+        "http://localhost:8000/us/about"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.95 }],
+        "categories:seo": ["error", { "minScore": 1.0 }],
+        "categories:accessibility": ["warn", { "minScore": 0.95 }],
+        "categories:best-practices": ["warn", { "minScore": 0.95 }],
+        "largest-contentful-paint": ["error", { "maxNumericValue": 2000 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

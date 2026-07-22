@@ -1,155 +1,186 @@
-import { listCategories } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
-import { Text, clx } from "@medusajs/ui"
-
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
+import { Logo } from "@components/ui/logo"
+import { LanguageSwitcher } from "@components/ui/language-switcher"
+import {
+  siteConfig,
+  legalLinks,
+  companyLinks,
+  conditionVerticals,
+} from "@lib/config/site"
+import type { Dictionary } from "@lib/i18n"
+import type { Locale } from "@lib/i18n/config"
 
-export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
-  const productCategories = await listCategories()
+/**
+ * Trust mega-footer (T10) — implements the LegitScript "footer trust stack" that every
+ * certified competitor carries. Bilingual (dict-driven chrome + condition labels).
+ * See docs/legitweb-rules.md.
+ */
+export default function Footer({
+  locale,
+  dict,
+}: {
+  locale: Locale
+  dict: Dictionary
+}) {
+  const year = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-ui-border-base w-full">
-      <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
-            <LocalizedClientLink
-              href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
-            >
-              Medusa Store
-            </LocalizedClientLink>
-          </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
-            {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Categories
-                </span>
-                <ul
-                  className="grid grid-cols-1 gap-2"
-                  data-testid="footer-categories"
-                >
-                  {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
-                      return
-                    }
-
-                    const children =
-                      c.category_children?.map((child) => ({
-                        name: child.name,
-                        handle: child.handle,
-                        id: child.id,
-                      })) || null
-
-                    return (
-                      <li
-                        className="flex flex-col gap-2 text-ui-fg-subtle txt-small"
-                        key={c.id}
-                      >
-                        <LocalizedClientLink
-                          className={clx(
-                            "hover:text-ui-fg-base",
-                            children && "txt-small-plus"
-                          )}
-                          href={`/categories/${c.handle}`}
-                          data-testid="category-link"
-                        >
-                          {c.name}
-                        </LocalizedClientLink>
-                        {children && (
-                          <ul className="grid grid-cols-1 ml-3 gap-2">
-                            {children &&
-                              children.map((child) => (
-                                <li key={child.id}>
-                                  <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
-                                    href={`/categories/${child.handle}`}
-                                    data-testid="category-link"
-                                  >
-                                    {child.name}
-                                  </LocalizedClientLink>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-            {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Collections
-                </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
-                >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
-              <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
-                <li>
-                  <a
-                    href="https://github.com/medusajs"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://docs.medusajs.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Source code
-                  </a>
-                </li>
-              </ul>
+    <footer className="border-t border-line bg-sand-50 text-ink">
+      <div className="mx-auto max-w-container px-6 py-16 md:px-8">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
+          {/* Brand + trust seals */}
+          <div className="col-span-2 md:col-span-1">
+            <Logo />
+            <p className="mt-4 max-w-xs text-sm text-ink-muted">
+              {siteConfig.tagline}
+            </p>
+            <div className="mt-5 flex items-center gap-3">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded border border-line bg-surface text-[9px] text-ink-subtle">
+                LEGIT
+                <br />
+                SCRIPT
+              </span>
+              <span className="text-xs text-ink-subtle">
+                {dict.footer.certificationPending}
+              </span>
+            </div>
+            <div className="mt-5">
+              <LanguageSwitcher />
             </div>
           </div>
+
+          {/* Shop / conditions */}
+          <nav aria-label={dict.footer.shop}>
+            <h2 className="font-display text-base text-evergreen-800">
+              {dict.footer.shop}
+            </h2>
+            <ul className="mt-4 space-y-2 text-sm text-ink-muted">
+              {conditionVerticals.map((c) => (
+                <li key={c.slug}>
+                  <LocalizedClientLink
+                    href={`/conditions/${c.slug}`}
+                    className="hover:text-evergreen-700"
+                  >
+                    {dict.conditions.verticals[c.slug].label}
+                  </LocalizedClientLink>
+                </li>
+              ))}
+              <li>
+                <LocalizedClientLink
+                  href="/store"
+                  className="hover:text-evergreen-700"
+                >
+                  {dict.common.allProducts}
+                </LocalizedClientLink>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Company */}
+          <nav aria-label={dict.footer.company}>
+            <h2 className="font-display text-base text-evergreen-800">
+              {dict.footer.company}
+            </h2>
+            <ul className="mt-4 space-y-2 text-sm text-ink-muted">
+              {companyLinks.map((l) => (
+                <li key={l.href}>
+                  <LocalizedClientLink
+                    href={l.href}
+                    className="hover:text-evergreen-700"
+                  >
+                    {l.label}
+                  </LocalizedClientLink>
+                </li>
+              ))}
+              <li>
+                <LocalizedClientLink
+                  href="/telemedicine"
+                  className="hover:text-evergreen-700"
+                >
+                  {dict.nav.telehealth}
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/learn"
+                  className="hover:text-evergreen-700"
+                >
+                  {dict.nav.learn}
+                </LocalizedClientLink>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Legal / trust stack */}
+          <nav aria-label={dict.footer.legal}>
+            <h2 className="font-display text-base text-evergreen-800">
+              {dict.footer.legal}
+            </h2>
+            <ul className="mt-4 space-y-2 text-sm text-ink-muted">
+              {legalLinks.map((l) => (
+                <li key={l.slug}>
+                  <LocalizedClientLink
+                    href={`/legal/${l.slug}`}
+                    className="hover:text-evergreen-700"
+                  >
+                    {l.label}
+                  </LocalizedClientLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Contact — real entity/address/phone (LegitScript transparency) */}
+          <div>
+            <h2 className="font-display text-base text-evergreen-800">
+              {dict.footer.contact}
+            </h2>
+            <address className="mt-4 space-y-1 text-sm not-italic text-ink-muted">
+              <p>{siteConfig.legalEntity}</p>
+              <p>{siteConfig.contact.addressLine}</p>
+              <p>
+                {siteConfig.contact.city}, {siteConfig.contact.state}{" "}
+                {siteConfig.contact.zip}
+              </p>
+              <p>
+                <a
+                  href={`tel:${siteConfig.contact.phone.replace(/[^0-9+]/g, "")}`}
+                  className="hover:text-evergreen-700"
+                >
+                  {siteConfig.contact.phone}
+                </a>
+              </p>
+              <p>
+                <a
+                  href={`mailto:${siteConfig.contact.email}`}
+                  className="hover:text-evergreen-700"
+                >
+                  {siteConfig.contact.email}
+                </a>
+              </p>
+              <p className="text-ink-subtle">{siteConfig.contact.hours}</p>
+            </address>
+          </div>
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Medusa Store. All rights reserved.
-          </Text>
-          <MedusaCTA />
+
+        {/* Required disclaimers */}
+        <div className="mt-12 border-t border-line pt-6 text-xs leading-relaxed text-ink-subtle">
+          <p>{dict.footer.disclaimer}</p>
+          <div className="mt-4 flex flex-col justify-between gap-2 sm:flex-row">
+            <p>
+              © {year} {siteConfig.legalEntity}. {dict.footer.rights}
+            </p>
+            <p>
+              {dict.footer.statesNote}{" "}
+              <LocalizedClientLink
+                href="/licensing"
+                className="underline hover:text-evergreen-700"
+              >
+                {dict.footer.seeAvailability}
+              </LocalizedClientLink>
+              .
+            </p>
+          </div>
         </div>
       </div>
     </footer>

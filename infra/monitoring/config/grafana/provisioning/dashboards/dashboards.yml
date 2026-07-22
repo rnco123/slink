@@ -1,0 +1,15 @@
+# Grafana dashboard provider — loads any dashboard JSON dropped into
+# /var/lib/grafana/dashboards (mounted from ./config/grafana/dashboards).
+apiVersion: 1
+
+providers:
+  - name: saludlink
+    orgId: 1
+    folder: Saludlink
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true

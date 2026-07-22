@@ -1,0 +1,7 @@
+# Real env (placeholders locally, secrets in staging/prod) — never commit.
+.env
+# Volume backup tarballs (see README → Backup).
+/backups/
+
+# ...but DO commit the template (parent .gitignore's `.env.*` would hide it).
+!.env.monitoring.template

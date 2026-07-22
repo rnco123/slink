@@ -1,0 +1,54 @@
+# Promtail — discovers running Docker containers via the Docker socket and ships
+# their stdout/stderr to Loki. A scrub pipeline provides a defence-in-depth
+# safety net so that even if an app accidentally logs a secret/PHI-looking token,
+# it is redacted before it reaches Loki. (The primary guarantee is that the app
+# never logs PHI, secrets, or request bodies — see packages/privacy.)
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+    relabel_configs:
+      # Human-readable container name as the `container` label.
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: container
+      # Compose service + project for grouping in Grafana.
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+        target_label: compose_service
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
+        target_label: compose_project
+      - target_label: job
+        replacement: docker
+    pipeline_stages:
+      # --- PHI / secret redaction (defence in depth) ---------------------------
+      # Bearer / API tokens.
+      - replace:
+          expression: '(?i)(authorization:\s*bearer\s+)([A-Za-z0-9._\-]+)'
+          replace: '${1}[REDACTED]'
+      # Generic key=secret / password=... / token=... assignments.
+      - replace:
+          expression: '(?i)(password|passwd|secret|token|api[_-]?key|cookie|set-cookie|jwt)("?\s*[:=]\s*"?)([^\s",}]+)'
+          replace: '${1}${2}[REDACTED]'
+      # Stripe live/test secret keys.
+      - replace:
+          expression: '(sk_(live|test)_)[A-Za-z0-9]+'
+          replace: '${1}[REDACTED]'
+      # Email addresses (potential PII / patient identifiers).
+      - replace:
+          expression: '([A-Za-z0-9._%+\-]+)@([A-Za-z0-9.\-]+\.[A-Za-z]{2,})'
+          replace: '[REDACTED_EMAIL]'
+      # US SSN pattern — must never appear; drop the whole line if seen.
+      - drop:
+          expression: '\b\d{3}-\d{2}-\d{4}\b'

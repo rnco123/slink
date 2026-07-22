@@ -1,0 +1,75 @@
+# Prometheus scrape configuration — Saludlink monitoring stack.
+# Targets are reached by docker service name over the internal `monitoring`
+# network. Nothing here is publicly exposed.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: saludlink
+    env: ${MONITORING_ENV}
+
+# Alertmanager routing.
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+# Alert + recording rules.
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+
+scrape_configs:
+  # Prometheus self-monitoring.
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Host metrics.
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # Container metrics.
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  # App Postgres.
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # App Redis.
+  - job_name: redis
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  # Grafana self-metrics.
+  - job_name: grafana
+    static_configs:
+      - targets: ["grafana:3000"]
+
+  # Loki self-metrics.
+  - job_name: loki
+    static_configs:
+      - targets: ["loki:3100"]
+
+  # Blackbox — synthetic HTTP probes of the public surfaces. The relabel dance
+  # is the standard blackbox pattern: the target URL is passed as a param and the
+  # instance label is set to the probed URL, not the exporter.
+  - job_name: blackbox-http
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://host.docker.internal:8000        # storefront
+          - http://host.docker.internal:9000/health # medusa backend health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
