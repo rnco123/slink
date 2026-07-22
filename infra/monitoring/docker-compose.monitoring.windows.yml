@@ -1,0 +1,29 @@
+# =============================================================================
+# Saludlink — Monitoring stack: Windows / Docker Desktop (WSL2) dev override
+# -----------------------------------------------------------------------------
+# The base compose mounts the host root filesystem into node-exporter with
+# `rslave` mount propagation. That is correct for the Linux staging/prod hosts,
+# but on Docker Desktop for Windows (WSL2 backend) the root mount is neither a
+# shared nor slave mount, so node-exporter fails to start with:
+#
+#   Error response from daemon: path / is mounted on / but it is not a shared
+#   or slave mount
+#
+# This override drops the propagation flag for local dev only. Host metrics are
+# already reduced on WSL2 (a documented caveat in TASK.md), so this loses nothing
+# beyond what the platform already limits. It leaves the base compose untouched
+# for the Linux hosts, where `rslave` works and full host metrics are available.
+#
+# Usage (from infra/monitoring/):
+#   docker compose \
+#     -f docker-compose.monitoring.yml \
+#     -f docker-compose.monitoring.windows.yml \
+#     --env-file .env up -d
+# =============================================================================
+
+services:
+  node-exporter:
+    # Volume list REPLACES the base list (compose does not merge sequences).
+    # Same bind, without the `rslave` propagation WSL2 rejects.
+    volumes:
+      - /:/host:ro
