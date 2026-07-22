@@ -3,8 +3,10 @@ import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import { listProductReviews } from "@lib/data/reviews"
+import { isAgeVerified, readAgeRequirement } from "@lib/util/age"
 import ProductTemplate from "@modules/products/templates"
 import ProductReviews from "@modules/products/components/product-reviews"
+import AgeGate from "@modules/products/components/age-gate"
 import TrackEvent from "@modules/analytics/track-event"
 import { JsonLd } from "@lib/seo/ld-script"
 import { productJsonLd, type ProductAvailability } from "@lib/seo/jsonld"
@@ -136,8 +138,14 @@ export default async function ProductPage(props: Props) {
     reviewData
   )
 
+  // Age gate (task 21c) — for SKUs flagged `requires_age_verification`, block
+  // the PDP behind a self-attestation confirm until the age_verified cookie set.
+  const ageReq = readAgeRequirement(pricedProduct.metadata)
+  const showAgeGate = ageReq.required && !(await isAgeVerified())
+
   return (
     <>
+      {showAgeGate && <AgeGate minAge={ageReq.minAge} />}
       {productLd && <JsonLd data={productLd} />}
       {/* Funnel event (task 10) — product view, IDs + price only, PHI-safe. */}
       <TrackEvent
