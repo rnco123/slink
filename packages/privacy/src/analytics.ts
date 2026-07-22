@@ -132,7 +132,11 @@ export function registerAnalyticsTransport(
  */
 export type CaptureResult =
   | { readonly ok: true }
-  | { readonly ok: false; readonly reason: "unknown-event" | "invalid-payload" | "phi-detected"; readonly issues?: readonly string[] }
+  | {
+      readonly ok: false
+      readonly reason: "unknown-event" | "invalid-payload" | "phi-detected"
+      readonly issues?: readonly string[]
+    }
 
 /**
  * Capture an approved analytics event after validating its payload.
@@ -165,7 +169,9 @@ export function captureSafeEvent<K extends AnalyticsEventName>(
     return {
       ok: false,
       reason: "invalid-payload",
-      issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
+      issues: parsed.error.issues.map(
+        (i) => `${i.path.join(".")}: ${i.message}`
+      ),
     }
   }
 

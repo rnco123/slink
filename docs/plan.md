@@ -9,6 +9,7 @@ Healthcare ecommerce + telemedicine company website. SEO-first, HIPAA-ready, Leg
 ## 1. What We're Building
 
 The public face and commerce platform for a company that:
+
 - Sells **health-management products** (physical goods — OTC, devices, wellness; no Rx in v1)
 - Offers **telemedicine** through an **existing in-house microservice** (Daily.co-style video)
 - Has a **custom in-house EMR** (system of record for all clinical data / PHI)
@@ -21,18 +22,18 @@ The website integrates with **neither** existing system in v1 — it links out t
 
 ## 2. Decided Architecture
 
-| Layer | Decision | Why |
-|---|---|---|
-| Frontend | **Next.js 15 (App Router)** | Best-in-class SSR/SSG for SEO + performance |
-| Ecommerce | **Medusa.js v2, self-hosted** | Full control; Shopify can't sign a BAA — dead end for HIPAA |
-| CMS | **Payload CMS 3**, embedded in Next.js | Self-hosted in our VPC — no third-party content vendor; E-E-A-T editorial workflow |
-| Identity | **AWS Cognito** user pool | Covered by AWS BAA; standard OIDC/JWKS so telemedicine + EMR validate our JWTs later |
-| Payments | **Stripe** (via Medusa plugin) | |
-| Email | **AWS SES** | BAA-eligible (order emails name health products) |
-| Analytics | **Self-hosted Plausible** — no GA4 | No PHI-adjacent data to third parties; consent-gated |
-| Hosting | **AWS only, BAA-eligible services** | ECS Fargate, RDS Postgres 16, ElastiCache Redis, CloudFront, WAF, S3, Secrets Manager |
-| IaC / CI | **Terraform** + **GitHub Actions** (OIDC) | Auditable for compliance reviews |
-| Repo | **Turborepo + pnpm** monorepo | `apps/storefront`, `apps/medusa`, `packages/*`, `infra/terraform` |
+| Layer     | Decision                                  | Why                                                                                   |
+| --------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| Frontend  | **Next.js 15 (App Router)**               | Best-in-class SSR/SSG for SEO + performance                                           |
+| Ecommerce | **Medusa.js v2, self-hosted**             | Full control; Shopify can't sign a BAA — dead end for HIPAA                           |
+| CMS       | **Payload CMS 3**, embedded in Next.js    | Self-hosted in our VPC — no third-party content vendor; E-E-A-T editorial workflow    |
+| Identity  | **AWS Cognito** user pool                 | Covered by AWS BAA; standard OIDC/JWKS so telemedicine + EMR validate our JWTs later  |
+| Payments  | **Stripe** (via Medusa plugin)            |                                                                                       |
+| Email     | **AWS SES**                               | BAA-eligible (order emails name health products)                                      |
+| Analytics | **Self-hosted Plausible** — no GA4        | No PHI-adjacent data to third parties; consent-gated                                  |
+| Hosting   | **AWS only, BAA-eligible services**       | ECS Fargate, RDS Postgres 16, ElastiCache Redis, CloudFront, WAF, S3, Secrets Manager |
+| IaC / CI  | **Terraform** + **GitHub Actions** (OIDC) | Auditable for compliance reviews                                                      |
+| Repo      | **Turborepo + pnpm** monorepo             | `apps/storefront`, `apps/medusa`, `packages/*`, `infra/terraform`                     |
 
 **PHI boundary (the HIPAA strategy):** the website stores identity + orders only. Clinical data never leaves the EMR/telemedicine boundary. This keeps the website's HIPAA audit scope minimal. Sign the AWS BAA (via AWS Artifact) before any real customer data.
 
@@ -57,6 +58,7 @@ Full pass completed over all 20 sites (lifemd, everlywell, noom, mavenclinic, th
 Practicals: ~$975 application + $2,150/yr per domain; each domain certified separately; wireframe/demo sites acceptable to start review; seal display optional but standard practice (4 of 6 telehealth competitors show it in footer).
 
 **Design consequences for us:**
+
 - Build a **state-availability disclosure** into the telemedicine pages (and later, state-gated product shipping)
 - Keep v1 catalog **OTC/devices/wellness only** — avoids pharmacy-tier requirements
 - Footer carries LegitScript seal slot + legal entity name + physical address sitewide
@@ -110,6 +112,7 @@ Separate **Notice of Privacy Practices (HIPAA NPP)** distinct from the website P
 ```
 
 **Admin (staff-only): `manage.saludlinkusa.com`** — single management subdomain, noindex + WAF/IP-restricted:
+
 - Medusa Admin → inventory, orders, deals/promotions, catalog
 - Payload admin (routed at `/content` via CloudFront) → main content, blog, legal pages
 

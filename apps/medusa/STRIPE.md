@@ -15,6 +15,7 @@ POST {MEDUSA_BACKEND_URL}/hooks/payment/stripe
 Some Medusa v2 builds namespace the provider id in the path
 (`/hooks/payment/stripe_stripe`). Confirm the exact path for 2.16 in the admin
 or the `@medusajs/payment-stripe` docs before going live.
+
 <!-- verify against Medusa v2 docs — exact webhook path (stripe vs stripe_stripe). -->
 
 Local development (Stripe CLI):
@@ -39,7 +40,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...      # from `stripe listen` or the dashboard
 1. Create a Stripe account and stay in **Test mode** (toggle, top-right).
 2. Copy the **Secret key** (`sk_test_...`) → `STRIPE_API_KEY`.
 3. Start the backend, then run `stripe listen --forward-to
-   localhost:9000/hooks/payment/stripe` and copy the `whsec_...` →
+localhost:9000/hooks/payment/stripe` and copy the `whsec_...` →
    `STRIPE_WEBHOOK_SECRET`. Restart the backend.
 4. Ensure the US region's `payment_providers` includes the Stripe provider
    (`pp_stripe_stripe`). The seed uses `pp_system_default` so it runs before

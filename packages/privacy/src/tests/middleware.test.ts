@@ -85,7 +85,10 @@ describe("phiFirewallMiddleware (Medusa / Express)", () => {
     const mw = phiFirewallMiddleware()
     const { res, status, json } = makeRes()
     const next = vi.fn()
-    const req: ExpressLikeRequest = { method: "POST", body: { patient_id: "p1" } }
+    const req: ExpressLikeRequest = {
+      method: "POST",
+      body: { patient_id: "p1" },
+    }
     mw(req, res, next)
     expect(status).toHaveBeenCalledWith(400)
     expect(json).toHaveBeenCalledTimes(1)

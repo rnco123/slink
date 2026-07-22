@@ -64,7 +64,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          - http://host.docker.internal:8000        # storefront
+          - http://host.docker.internal:8000 # storefront
           - http://host.docker.internal:9000/health # medusa backend health
     relabel_configs:
       - source_labels: [__address__]

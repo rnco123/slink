@@ -37,8 +37,7 @@ export default function LegalLayout({
             {title}
           </h1>
           <p className="mt-4 text-ink-muted text-sm">
-            Last updated:{" "}
-            <time dateTime={lastUpdated}>{formattedDate}</time>
+            Last updated: <time dateTime={lastUpdated}>{formattedDate}</time>
           </p>
           {intro ? (
             <p className="mt-6 text-ink-muted text-lg leading-relaxed">
@@ -52,10 +51,10 @@ export default function LegalLayout({
           role="note"
           className="mb-12 rounded-rounded border border-line bg-sand-50 px-5 py-4 text-sm text-ink-muted"
         >
-          <strong className="text-evergreen-800">Draft for review.</strong>{" "}
-          This document is draft content prepared for the Saludlink launch and
-          is pending review by qualified legal counsel. It does not yet
-          constitute final legal terms and may change before it takes effect.
+          <strong className="text-evergreen-800">Draft for review.</strong> This
+          document is draft content prepared for the Saludlink launch and is
+          pending review by qualified legal counsel. It does not yet constitute
+          final legal terms and may change before it takes effect.
         </div>
 
         <div className="sl-prose">{children}</div>

@@ -20,7 +20,9 @@ describe("inspectUrl", () => {
   })
 
   it("rejects clinical narrative smuggled into a query value", () => {
-    expect(isUrlSafe("/contact?note=I%20was%20diagnosed%20with%20flu")).toBe(false)
+    expect(isUrlSafe("/contact?note=I%20was%20diagnosed%20with%20flu")).toBe(
+      false
+    )
   })
 
   it("does not flag a benign query value", () => {
@@ -30,7 +32,9 @@ describe("inspectUrl", () => {
 
 describe("assertUrlSafe", () => {
   it("throws for PHI-bearing URLs and mentions SSO tokens", () => {
-    expect(() => assertUrlSafe("/sso?patientId=1&diagnosis=x")).toThrow(/SSO token/i)
+    expect(() => assertUrlSafe("/sso?patientId=1&diagnosis=x")).toThrow(
+      /SSO token/i
+    )
   })
   it("does not throw for safe URLs", () => {
     expect(() => assertUrlSafe("/en/products/vitamin-d")).not.toThrow()

@@ -6,16 +6,16 @@ restructured without updating both places, a test fails.
 
 ## What's covered
 
-| Spec | Surface |
-| --- | --- |
-| `home.spec.ts` | Hero, CTAs, marketing sections, condition grid, JSON-LD |
-| `navigation.spec.ts` | Header nav, footer link stack, logo, account/cart links, mobile menu |
-| `conditions.spec.ts` | Conditions hub + all 4 vertical hubs + unknown-slug 404 |
-| `content-pages.spec.ts` | About, Contact, Licensing, Telemedicine (FAQ, availability, CTAs) |
-| `legal.spec.ts` | `@commerce` — all 10 LegitScript trust documents (CMS-sourced; needs Medusa) |
-| `i18n.spec.ts` | Locale redirect middleware, `<html lang>`, Spanish chrome, language switcher + cookie |
-| `seo.spec.ts` | `robots.txt`, `sitemap.xml`, OpenGraph image, canonical + hreflang alternates |
-| `commerce.spec.ts` | `@commerce` — store, cart, account/login/register (needs Medusa) |
+| Spec                    | Surface                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| `home.spec.ts`          | Hero, CTAs, marketing sections, condition grid, JSON-LD                               |
+| `navigation.spec.ts`    | Header nav, footer link stack, logo, account/cart links, mobile menu                  |
+| `conditions.spec.ts`    | Conditions hub + all 4 vertical hubs + unknown-slug 404                               |
+| `content-pages.spec.ts` | About, Contact, Licensing, Telemedicine (FAQ, availability, CTAs)                     |
+| `legal.spec.ts`         | `@commerce` — all 10 LegitScript trust documents (CMS-sourced; needs Medusa)          |
+| `i18n.spec.ts`          | Locale redirect middleware, `<html lang>`, Spanish chrome, language switcher + cookie |
+| `seo.spec.ts`           | `robots.txt`, `sitemap.xml`, OpenGraph image, canonical + hreflang alternates         |
+| `commerce.spec.ts`      | `@commerce` — store, cart, account/login/register (needs Medusa)                      |
 
 > **Backend-gated specs.** The 10 legal pages are now rendered by `/legal/[slug]`,
 > which pulls body content from the Medusa **content module**

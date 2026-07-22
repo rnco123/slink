@@ -61,9 +61,9 @@ describe("captureSafeEvent", () => {
   it("search event carries no raw query string", () => {
     const schema = ANALYTICS_EVENTS.search_performed
     // Raw query text is not an accepted field.
-    expect(schema.safeParse({ query: "my diagnosis", results_count: 0 }).success).toBe(
-      false
-    )
+    expect(
+      schema.safeParse({ query: "my diagnosis", results_count: 0 }).success
+    ).toBe(false)
     expect(
       schema.safeParse({ query_length: 12, results_count: 3 }).success
     ).toBe(true)

@@ -6,14 +6,15 @@ API reads analytics aggregates. Self-hosting is covered as an option at the end.
 
 ## How it's wired today
 
-| Piece | File | Notes |
-|---|---|---|
-| Client init + provider | [posthog.tsx](../../../apps/storefront/src/lib/analytics/posthog.tsx) | The **only** module allowed to import `posthog-js` (enforced by ESLint). |
-| Same-origin proxy | [next.config.js](../../../apps/storefront/next.config.js) rewrites | `/ingest/*` → PostHog Cloud ingest; `/ingest/static/*` → assets host. |
-| PHI-safe event wrapper | `@saludlink/privacy` (`captureSafeEvent`) | Feature code never calls `posthog.capture` directly; the wrapper validates + strips PHI before events reach the transport. |
-| Env | [.env.template](../../../apps/storefront/.env.template) | `NEXT_PUBLIC_POSTHOG_KEY` (empty = analytics fully disabled), `NEXT_PUBLIC_POSTHOG_HOST`, `POSTHOG_INGEST_HOST`, `POSTHOG_ASSETS_HOST`. |
+| Piece                  | File                                                                  | Notes                                                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Client init + provider | [posthog.tsx](../../../apps/storefront/src/lib/analytics/posthog.tsx) | The **only** module allowed to import `posthog-js` (enforced by ESLint).                                                                |
+| Same-origin proxy      | [next.config.js](../../../apps/storefront/next.config.js) rewrites    | `/ingest/*` → PostHog Cloud ingest; `/ingest/static/*` → assets host.                                                                   |
+| PHI-safe event wrapper | `@saludlink/privacy` (`captureSafeEvent`)                             | Feature code never calls `posthog.capture` directly; the wrapper validates + strips PHI before events reach the transport.              |
+| Env                    | [.env.template](../../../apps/storefront/.env.template)               | `NEXT_PUBLIC_POSTHOG_KEY` (empty = analytics fully disabled), `NEXT_PUBLIC_POSTHOG_HOST`, `POSTHOG_INGEST_HOST`, `POSTHOG_ASSETS_HOST`. |
 
 ### Privacy posture (do not weaken without a BAA + audit)
+
 - **Reverse-proxied through `/ingest`** — same-origin, so the strict CSP needs no
   PostHog host in `connect-src` and tracker blockers can't drop events.
 - `person_profiles: "identified_only"` — anonymous marketing traffic stays
@@ -36,25 +37,28 @@ API reads analytics aggregates. Self-hosting is covered as an option at the end.
 The admin panel should show **aggregate, PHI-free** analytics (pageviews, funnel,
 top pages) — never per-person data. The Monitoring API reads these server-side.
 
-| | |
-|---|---|
-| **Base URL** | Cloud: `https://us.posthog.com` (US) / `https://eu.posthog.com` (EU). Self-hosted: your instance. |
-| **Auth** | **Personal API key** (server-side only) → `Authorization: Bearer phx_...`. Never expose in the browser; the client uses only the public project key. |
-| **Permissions** | A **read-only** personal API key scoped to `query:read` / `insight:read` for the project. |
-| **Rate limits** | Query endpoints ~**240/min** burst, **1200/hour** sustained per key (analytics endpoints). Cache aggregates for the panel. |
+|                 |                                                                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Base URL**    | Cloud: `https://us.posthog.com` (US) / `https://eu.posthog.com` (EU). Self-hosted: your instance.                                                    |
+| **Auth**        | **Personal API key** (server-side only) → `Authorization: Bearer phx_...`. Never expose in the browser; the client uses only the public project key. |
+| **Permissions** | A **read-only** personal API key scoped to `query:read` / `insight:read` for the project.                                                            |
+| **Rate limits** | Query endpoints ~**240/min** burst, **1200/hour** sustained per key (analytics endpoints). Cache aggregates for the panel.                           |
 
 ### Key endpoints
+
 - `POST /api/projects/:project_id/query/` — HogQL query (the modern, flexible path).
 - `GET /api/projects/:project_id/insights/` — saved insights (dashboards).
 - `GET /api/projects/:project_id/session_recordings/` — **do not use**; recording is off.
 
 ### Example — pageviews over 7 days via HogQL
+
 ```bash
 curl -s -X POST "https://us.posthog.com/api/projects/$PH_PROJECT_ID/query/" \
   -H "Authorization: Bearer $PH_PERSONAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"query":{"kind":"HogQLQuery","query":"select toDate(timestamp) as day, count() as views from events where event = '\''$pageview'\'' and timestamp > now() - interval 7 day group by day order by day"}}'
 ```
+
 ```json
 {
   "results": [

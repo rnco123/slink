@@ -38,7 +38,7 @@ export const colors = {
   cream: "#fbf8f3",
   ink: "#1b211d",
   inkMuted: "#5a625b",
-} as const;
+} as const
 
 export const brand = {
   name: "Saludlink",
@@ -46,10 +46,10 @@ export const brand = {
   domain: "saludlinkusa.com",
   themeColor: colors.evergreen[600],
   tagline: "Metabolic health, thoughtfully delivered.",
-} as const;
+} as const
 
 export const fonts = {
   display: "Fraunces",
   body: "Inter",
   mono: "IBM Plex Mono",
-} as const;
+} as const

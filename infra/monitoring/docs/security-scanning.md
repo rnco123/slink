@@ -8,20 +8,20 @@ gate on the release path (see plan tasks **T36 CI/CD** and **T37 Hardening**). A
 run on every pull request and every push to `main`; the DAST scanner runs on a schedule against
 **staging** (never production, never with PHI present).
 
-| Tool | Class | Where it runs | Fails build? | Results land in |
-|------|-------|---------------|--------------|-----------------|
-| OWASP ZAP | DAST (dynamic) | [`.github/workflows/dast-zap.yml`](../../../.github/workflows/dast-zap.yml) | Advisory | Workflow artifact + tracking issue |
-| Trivy | SCA + IaC/secret (filesystem) | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | Advisory (SARIF) | Security tab (code scanning) |
-| Semgrep CE | SAST | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | **Yes** (`--error`) | Security tab (code scanning) |
-| Gitleaks | Secret scanning | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | **Yes** | Job log / action output |
-| npm audit | Dependency vulns | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | **Yes** (`high+`) | Workflow artifact (JSON) |
-| Dependabot | Dependency vulns + updates | [`.github/dependabot.yml`](../../../.github/dependabot.yml) | n/a (opens PRs/alerts) | Dependabot alerts + PRs |
+| Tool       | Class                         | Where it runs                                                               | Fails build?           | Results land in                    |
+| ---------- | ----------------------------- | --------------------------------------------------------------------------- | ---------------------- | ---------------------------------- |
+| OWASP ZAP  | DAST (dynamic)                | [`.github/workflows/dast-zap.yml`](../../../.github/workflows/dast-zap.yml) | Advisory               | Workflow artifact + tracking issue |
+| Trivy      | SCA + IaC/secret (filesystem) | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | Advisory (SARIF)       | Security tab (code scanning)       |
+| Semgrep CE | SAST                          | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | **Yes** (`--error`)    | Security tab (code scanning)       |
+| Gitleaks   | Secret scanning               | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | **Yes**                | Job log / action output            |
+| npm audit  | Dependency vulns              | [`.github/workflows/security.yml`](../../../.github/workflows/security.yml) | **Yes** (`high+`)      | Workflow artifact (JSON)           |
+| Dependabot | Dependency vulns + updates    | [`.github/dependabot.yml`](../../../.github/dependabot.yml)                 | n/a (opens PRs/alerts) | Dependabot alerts + PRs            |
 
 ---
 
 ## OWASP ZAP
 
-**What it scans / purpose.** Dynamic Application Security Testing (DAST). ZAP crawls a *running*
+**What it scans / purpose.** Dynamic Application Security Testing (DAST). ZAP crawls a _running_
 deployment and probes it as an unauthenticated client for runtime issues that static analysis
 cannot see: missing security headers, cookie flags, information disclosure, mixed content, outdated
 JS libraries. We run the **baseline** profile — passive only, no active attack payloads — so it is
@@ -35,8 +35,8 @@ UTC). Default target is `https://staging.saludlinkusa.com`. Rule overrides live 
 
 **Installation.**
 
-- *CI path:* the `zaproxy/action-baseline` action pulls the `ghcr.io/zaproxy/zaproxy` image itself; no setup step needed.
-- *Local run* (dockerized, points at your own staging URL):
+- _CI path:_ the `zaproxy/action-baseline` action pulls the `ghcr.io/zaproxy/zaproxy` image itself; no setup step needed.
+- _Local run_ (dockerized, points at your own staging URL):
 
   ```bash
   docker run --rm -v "$(pwd):/zap/wrk:rw" \
@@ -84,8 +84,8 @@ Dockerfile and compose settings (relevant to `infra/monitoring`), and hard-coded
 
 **Installation.**
 
-- *CI path:* the `trivy-action` provisions the binary.
-- *Local run* (dockerized):
+- _CI path:_ the `trivy-action` provisions the binary.
+- _Local run_ (dockerized):
 
   ```bash
   docker run --rm -v "$(pwd):/src" aquasec/trivy:latest \
@@ -127,8 +127,8 @@ and secrets. Community Edition rulesets only; **no telemetry** (`SEMGREP_SEND_ME
 
 **Installation.**
 
-- *CI path:* the job runs in the official `semgrep/semgrep` container — no install step.
-- *Local run* (dockerized):
+- _CI path:_ the job runs in the official `semgrep/semgrep` container — no install step.
+- _Local run_ (dockerized):
 
   ```bash
   docker run --rm -e SEMGREP_SEND_METRICS=off -v "$(pwd):/src" semgrep/semgrep:latest \
@@ -168,8 +168,8 @@ paths (`*.env.template`, `docs/*.md`, `pnpm-lock.yaml`) so intentional dev defau
 
 **Installation.**
 
-- *CI path:* provided by `gitleaks/gitleaks-action@v2`.
-- *Local run* (dockerized, full history):
+- _CI path:_ provided by `gitleaks/gitleaks-action@v2`.
+- _Local run_ (dockerized, full history):
 
   ```bash
   docker run --rm -v "$(pwd):/repo" zricethezav/gitleaks:latest \
@@ -206,7 +206,7 @@ not** ingest or persist any matched secret values — only the pass/fail conclus
 
 **Installation.** No install — `pnpm audit` is built into pnpm.
 
-- *Local run:*
+- _Local run:_
 
   ```bash
   pnpm audit --audit-level=high        # same gate CI enforces
@@ -242,10 +242,10 @@ ecosystems: `npm` at `/` (weekly Monday 06:00 America/New_York, minor/patch grou
 **Installation.** Native GitHub feature — no runner install. Requires Dependabot **alerts** and
 **security updates** enabled in repo Settings → Code security.
 
-- *Local equivalent* for a quick check: `pnpm audit` (above) queries the same advisory data.
+- _Local equivalent_ for a quick check: `pnpm audit` (above) queries the same advisory data.
 
 **Configuration + key env/secrets.** Config is `dependabot.yml`. No secret for public advisories;
-private registries would need `registries:` + repo secrets. Alerts require the *Dependabot alerts*
+private registries would need `registries:` + repo secrets. Alerts require the _Dependabot alerts_
 setting toggled on.
 
 **Verification.** Open **Security → Dependabot alerts**, and watch for auto-opened PRs labelled

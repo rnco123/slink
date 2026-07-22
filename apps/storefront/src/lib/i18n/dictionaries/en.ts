@@ -32,7 +32,8 @@ const en = {
     heroTitleAccent: "thoughtfully delivered.",
     heroBody:
       "Evidence-informed products and connected telehealth care — chosen with clinicians, priced transparently, and shipped to your door.",
-    heroReassurance: "HSA/FSA eligible · Free shipping over $49 · 30-day returns",
+    heroReassurance:
+      "HSA/FSA eligible · Free shipping over $49 · 30-day returns",
     trust: {
       a: "Clinician-informed",
       aLabel: "product selection",
@@ -105,12 +106,18 @@ const en = {
     checkAvailability: "Check state availability",
     howTitle: "How it works",
     steps: [
-      { t: "Check availability", d: "Confirm telehealth is offered in your state." },
+      {
+        t: "Check availability",
+        d: "Confirm telehealth is offered in your state.",
+      },
       {
         t: "Start your visit",
         d: "Create an account and complete a short intake in the telehealth app.",
       },
-      { t: "Meet your provider", d: "Connect by secure video with a licensed clinician." },
+      {
+        t: "Meet your provider",
+        d: "Connect by secure video with a licensed clinician.",
+      },
       {
         t: "Follow your plan",
         d: "Get guidance and, where appropriate, order supporting products.",

@@ -144,7 +144,10 @@ export default function Footer({
               </p>
               <p>
                 <a
-                  href={`tel:${siteConfig.contact.phone.replace(/[^0-9+]/g, "")}`}
+                  href={`tel:${siteConfig.contact.phone.replace(
+                    /[^0-9+]/g,
+                    ""
+                  )}`}
                   className="hover:text-evergreen-700"
                 >
                   {siteConfig.contact.phone}

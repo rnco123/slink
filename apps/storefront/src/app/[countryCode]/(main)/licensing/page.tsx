@@ -53,8 +53,8 @@ export default async function LicensingPage(props: {
           <div className="sl-prose mt-10">
             <h2>{t.oversightTitle}</h2>
             <p>
-              {t.oversightBody} <strong>[Dr. Name, credentials, license #]</strong>
-              .
+              {t.oversightBody}{" "}
+              <strong>[Dr. Name, credentials, license #]</strong>.
             </p>
             <h2>{t.businessTitle}</h2>
             <p>

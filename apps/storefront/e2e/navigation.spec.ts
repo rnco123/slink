@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test"
-import { path, PRIMARY_NAV, COMPANY_LINKS, CONDITION_SLUGS, LEGAL_SLUGS } from "./support/routes"
+import {
+  path,
+  PRIMARY_NAV,
+  COMPANY_LINKS,
+  CONDITION_SLUGS,
+  LEGAL_SLUGS,
+} from "./support/routes"
 import { gotoOk } from "./support/helpers"
 
 /** On mobile the primary nav lives behind the hamburger; open it if present. */
@@ -34,7 +40,10 @@ test.describe("Global navigation", () => {
     // Account link is desktop-only in the header.
     const account = page.getByTestId("nav-account-link")
     if (await account.count()) {
-      await expect(account.first()).toHaveAttribute("href", /\/(en|es)\/account$/)
+      await expect(account.first()).toHaveAttribute(
+        "href",
+        /\/(en|es)\/account$/
+      )
     }
   })
 
@@ -85,10 +94,15 @@ test.describe("Mobile menu", () => {
 
   test("hamburger opens and Escape closes the panel", async ({ page }) => {
     const burger = page.getByRole("button", { name: /open menu/i })
-    test.skip(!(await burger.isVisible().catch(() => false)), "desktop viewport — no hamburger")
+    test.skip(
+      !(await burger.isVisible().catch(() => false)),
+      "desktop viewport — no hamburger"
+    )
 
     await burger.click()
-    await expect(page.getByRole("button", { name: /close menu/i })).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: /close menu/i })
+    ).toBeVisible()
     // Nav items become reachable in the open panel.
     await expect(page.locator('a[href$="/conditions"]').first()).toBeVisible()
 

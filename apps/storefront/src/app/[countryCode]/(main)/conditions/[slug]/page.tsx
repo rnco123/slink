@@ -35,9 +35,7 @@ export async function generateMetadata(props: {
   }
 }
 
-export default async function ConditionHub(props: {
-  params: Promise<Params>
-}) {
+export default async function ConditionHub(props: { params: Promise<Params> }) {
   const { countryCode, slug } = await props.params
   const locale = resolveLocale(countryCode)
   const dict = await getDictionary(locale)
@@ -59,7 +57,11 @@ export default async function ConditionHub(props: {
           <h1 className="mt-3 text-4xl md:text-5xl">{v.label}</h1>
           <p className="mt-6 max-w-xl text-lg text-ink-muted">{v.blurb}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button href={`/store?category=${slug}`} variant="primary" size="lg">
+            <Button
+              href={`/store?category=${slug}`}
+              variant="primary"
+              size="lg"
+            >
               {dict.common.shopProducts}
             </Button>
             <Button href="/learn" variant="outline" size="lg">

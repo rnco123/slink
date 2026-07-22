@@ -49,14 +49,14 @@ Medusa v2, and Node scripts.
 
 ## Allowed data (commerce)
 
-| Category | Examples |
-|---|---|
-| Identity | customer id, first/last name, email, phone, company |
-| Addresses | shipping + billing (street, city, province, postal code, country) |
-| Commerce | cart, order, line items, product/variant ids, SKU, quantity |
-| Payments | payment **status**, provider **reference** (e.g. Stripe PaymentIntent id) |
-| Merchandising | coupon / discount code, gift order flag + message |
-| Preferences | locale, currency, marketing opt-in / source |
+| Category      | Examples                                                                  |
+| ------------- | ------------------------------------------------------------------------- |
+| Identity      | customer id, first/last name, email, phone, company                       |
+| Addresses     | shipping + billing (street, city, province, postal code, country)         |
+| Commerce      | cart, order, line items, product/variant ids, SKU, quantity               |
+| Payments      | payment **status**, provider **reference** (e.g. Stripe PaymentIntent id) |
+| Merchandising | coupon / discount code, gift order flag + message                         |
+| Preferences   | locale, currency, marketing opt-in / source                               |
 
 Anything not on an allowlist must be **explicitly approved** before it is stored.
 
@@ -103,11 +103,14 @@ import { withPhiFirewall } from "@saludlink/privacy/middleware"
 import { ContactFormSchema } from "@saludlink/privacy/schemas"
 
 // scanAllText: free-text message is scanned for clinical narratives.
-export const POST = withPhiFirewall(async (req) => {
-  const data = ContactFormSchema.parse(await req.json()) // throws → 400 on PHI
-  await createSupportTicket(data)
-  return Response.json({ ok: true })
-}, { scanAllText: true })
+export const POST = withPhiFirewall(
+  async (req) => {
+    const data = ContactFormSchema.parse(await req.json()) // throws → 400 on PHI
+    await createSupportTicket(data)
+    return Response.json({ ok: true })
+  },
+  { scanAllText: true }
+)
 ```
 
 ### Safe Medusa metadata
@@ -128,7 +131,10 @@ cart.metadata = buildSafeMetadata(request.body.metadata) // { locale, marketing_
 import { captureSafeEvent } from "@saludlink/privacy"
 
 captureSafeEvent("order_completed", {
-  order_id: order.id, value: 34, currency_code: "usd", item_count: 1,
+  order_id: order.id,
+  value: 34,
+  currency_code: "usd",
+  item_count: 1,
 })
 // Unknown event, extra fields, or any PHI → dropped (never throws, never sends).
 ```
@@ -169,29 +175,29 @@ not saved, logged, emailed, or sent to analytics:
 
 ## Common mistakes
 
-| Mistake | Fix |
-|---|---|
-| `metadata = req.body.metadata` | `buildSafeMetadata(req.body.metadata)` |
-| `z.object({...})` for a public API | `strictObject({...})` (rejects unknown props) |
-| `import posthog from "posthog-js"` in a component | `captureSafeEvent(...)` |
-| `console.log(req.body)` | `createSafeLogger().info("event", ctx)` |
-| Sending the raw search query to analytics | send `query_length` + `results_count` |
-| `redirect('/sso?patientId=' + id)` | opaque one-time token; `assertUrlSafe(url)` |
-| Adding `custom:diagnosis` to Cognito | identity attributes only |
-| Blocking "Blood Pressure Monitor" search | search is commerce — never scanned |
+| Mistake                                           | Fix                                           |
+| ------------------------------------------------- | --------------------------------------------- |
+| `metadata = req.body.metadata`                    | `buildSafeMetadata(req.body.metadata)`        |
+| `z.object({...})` for a public API                | `strictObject({...})` (rejects unknown props) |
+| `import posthog from "posthog-js"` in a component | `captureSafeEvent(...)`                       |
+| `console.log(req.body)`                           | `createSafeLogger().info("event", ctx)`       |
+| Sending the raw search query to analytics         | send `query_length` + `results_count`         |
+| `redirect('/sso?patientId=' + id)`                | opaque one-time token; `assertUrlSafe(url)`   |
+| Adding `custom:diagnosis` to Cognito              | identity attributes only                      |
+| Blocking "Blood Pressure Monitor" search          | search is commerce — never scanned            |
 
 ---
 
 ## Package surface (`@saludlink/privacy`)
 
-| Export | Purpose |
-|---|---|
-| `validateNoPhi` / `assertNoPhi` / `isPhiFree` | Recursive PHI detection |
-| `strictObject` / `withNoPhi` / `phiSafeText` + field builders | Strict Zod schemas |
-| `RegistrationSchema`, `CheckoutSchema`, `ContactFormSchema`, … | Canonical request schemas |
-| `sanitizeObject` / `buildSafeMetadata` / `buildSafeCognitoAttributes` | Allowlist builders |
-| `captureSafeEvent` / `registerAnalyticsTransport` | Safe analytics |
-| `createSafeLogger` / `redact` | Redacting structured logging |
-| `withPhiFirewall` / `phiFirewallMiddleware` | Request firewall (Next + Medusa) |
-| `inspectUrl` / `isUrlSafe` / `assertUrlSafe` | Keep PHI out of URLs |
-| `DataClass` | Data-classification taxonomy |
+| Export                                                                | Purpose                          |
+| --------------------------------------------------------------------- | -------------------------------- |
+| `validateNoPhi` / `assertNoPhi` / `isPhiFree`                         | Recursive PHI detection          |
+| `strictObject` / `withNoPhi` / `phiSafeText` + field builders         | Strict Zod schemas               |
+| `RegistrationSchema`, `CheckoutSchema`, `ContactFormSchema`, …        | Canonical request schemas        |
+| `sanitizeObject` / `buildSafeMetadata` / `buildSafeCognitoAttributes` | Allowlist builders               |
+| `captureSafeEvent` / `registerAnalyticsTransport`                     | Safe analytics                   |
+| `createSafeLogger` / `redact`                                         | Redacting structured logging     |
+| `withPhiFirewall` / `phiFirewallMiddleware`                           | Request firewall (Next + Medusa) |
+| `inspectUrl` / `isUrlSafe` / `assertUrlSafe`                          | Keep PHI out of URLs             |
+| `DataClass`                                                           | Data-classification taxonomy     |

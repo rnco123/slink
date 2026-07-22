@@ -1,6 +1,6 @@
-import { loadEnv, defineConfig, Modules } from '@medusajs/framework/utils'
+import { loadEnv, defineConfig, Modules } from "@medusajs/framework/utils"
 
-loadEnv(process.env.NODE_ENV || 'development', process.cwd())
+loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
 /**
  * Saludlink — Medusa v2 backend configuration
@@ -46,7 +46,8 @@ const s3Enabled = Boolean(S3_BUCKET && S3_REGION && S3_FILE_URL)
 // products, so SES (BAA-eligible) is the production choice.
 const SES_FROM = process.env.SES_FROM
 const SES_REGION = process.env.SES_REGION || process.env.AWS_REGION
-const SES_ACCESS_KEY_ID = process.env.SES_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID
+const SES_ACCESS_KEY_ID =
+  process.env.SES_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID
 const SES_SECRET_ACCESS_KEY =
   process.env.SES_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY
 const sesEnabled = Boolean(SES_FROM && SES_REGION)
@@ -61,7 +62,7 @@ const redisModules = REDIS_URL
       {
         // Cross-process pub/sub event bus.
         key: Modules.EVENT_BUS,
-        resolve: '@medusajs/event-bus-redis',
+        resolve: "@medusajs/event-bus-redis",
         options: {
           redisUrl: REDIS_URL,
         },
@@ -69,7 +70,7 @@ const redisModules = REDIS_URL
       {
         // Durable workflow engine (retries, long-running steps, async flows).
         key: Modules.WORKFLOW_ENGINE,
-        resolve: '@medusajs/workflow-engine-redis',
+        resolve: "@medusajs/workflow-engine-redis",
         options: {
           redis: {
             url: REDIS_URL,
@@ -79,7 +80,7 @@ const redisModules = REDIS_URL
       {
         // Shared cache (falls back to in-memory when this is absent).
         key: Modules.CACHE,
-        resolve: '@medusajs/cache-redis',
+        resolve: "@medusajs/cache-redis",
         options: {
           redisUrl: REDIS_URL,
         },
@@ -94,13 +95,13 @@ const redisModules = REDIS_URL
 // ---------------------------------------------------------------------------
 const paymentModule = {
   key: Modules.PAYMENT,
-  resolve: '@medusajs/medusa/payment',
+  resolve: "@medusajs/medusa/payment",
   options: {
     providers: STRIPE_API_KEY
       ? [
           {
-            resolve: '@medusajs/payment-stripe',
-            id: 'stripe',
+            resolve: "@medusajs/payment-stripe",
+            id: "stripe",
             options: {
               apiKey: STRIPE_API_KEY,
               // Used to verify inbound Stripe webhook signatures.
@@ -121,13 +122,13 @@ const paymentModule = {
 // ---------------------------------------------------------------------------
 const fileModule = {
   key: Modules.FILE,
-  resolve: '@medusajs/medusa/file',
+  resolve: "@medusajs/medusa/file",
   options: {
     providers: s3Enabled
       ? [
           {
-            resolve: '@medusajs/file-s3',
-            id: 's3',
+            resolve: "@medusajs/file-s3",
+            id: "s3",
             options: {
               file_url: S3_FILE_URL,
               access_key_id: S3_ACCESS_KEY_ID,
@@ -142,11 +143,13 @@ const fileModule = {
         ]
       : [
           {
-            resolve: '@medusajs/file-local',
-            id: 'local',
+            resolve: "@medusajs/file-local",
+            id: "local",
             options: {
-              upload_dir: 'static',
-              backend_url: `${process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'}/static`,
+              upload_dir: "static",
+              backend_url: `${
+                process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
+              }/static`,
             },
           },
         ],
@@ -161,15 +164,15 @@ const fileModule = {
 // ---------------------------------------------------------------------------
 const notificationModule = {
   key: Modules.NOTIFICATION,
-  resolve: '@medusajs/medusa/notification',
+  resolve: "@medusajs/medusa/notification",
   options: {
     providers: sesEnabled
       ? [
           {
-            resolve: '@medusajs/notification-ses',
-            id: 'ses',
+            resolve: "@medusajs/notification-ses",
+            id: "ses",
             options: {
-              channels: ['email'],
+              channels: ["email"],
               from: SES_FROM,
               region: SES_REGION,
               access_key_id: SES_ACCESS_KEY_ID,
@@ -180,11 +183,11 @@ const notificationModule = {
         ]
       : [
           {
-            resolve: '@medusajs/notification-local',
-            id: 'local',
+            resolve: "@medusajs/notification-local",
+            id: "local",
             options: {
-              channels: ['email'],
-              from: SES_FROM || 'no-reply@saludlinkusa.com',
+              channels: ["email"],
+              from: SES_FROM || "no-reply@saludlinkusa.com",
             },
           },
         ],
@@ -199,7 +202,7 @@ module.exports = defineConfig({
     // Postgres connection. Local default matches docs & docker-compose creds.
     databaseUrl:
       process.env.DATABASE_URL ||
-      'postgres://saludlink:saludlink_local@localhost:5432/medusa',
+      "postgres://saludlink:saludlink_local@localhost:5432/medusa",
 
     // Redis connection for framework-level features (sessions, rate limiting).
     // Left undefined → Medusa uses in-memory equivalents for a first boot.
@@ -207,15 +210,16 @@ module.exports = defineConfig({
 
     http: {
       // CORS: storefront on :8000, admin/vite on :9000/:5173 by local default.
-      storeCors: process.env.STORE_CORS || 'http://localhost:8000',
-      adminCors: process.env.ADMIN_CORS || 'http://localhost:9000,http://localhost:5173',
+      storeCors: process.env.STORE_CORS || "http://localhost:8000",
+      adminCors:
+        process.env.ADMIN_CORS || "http://localhost:9000,http://localhost:5173",
       authCors:
         process.env.AUTH_CORS ||
-        'http://localhost:8000,http://localhost:9000,http://localhost:5173',
+        "http://localhost:8000,http://localhost:9000,http://localhost:5173",
 
       // Secrets — MUST be overridden in production via env / Secrets Manager.
-      jwtSecret: process.env.JWT_SECRET || 'supersecret',
-      cookieSecret: process.env.COOKIE_SECRET || 'supersecret',
+      jwtSecret: process.env.JWT_SECRET || "supersecret",
+      cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
   },
 
@@ -223,8 +227,8 @@ module.exports = defineConfig({
   // admin is served separately (manage.saludlinkusa.com).
   admin: {
     // Set MEDUSA_ADMIN_DISABLE=true on worker/API-only deployments.
-    disable: process.env.MEDUSA_ADMIN_DISABLE === 'true',
-    backendUrl: process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
+    disable: process.env.MEDUSA_ADMIN_DISABLE === "true",
+    backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
   },
 
   // Array form of module registration. Each infra/provider module carries an
@@ -243,12 +247,12 @@ module.exports = defineConfig({
 
     // Custom HIPAA audit-log module (T33) — append-only audit trail.
     {
-      resolve: './src/modules/audit-log',
+      resolve: "./src/modules/audit-log",
     },
     // Content module — Saludlink mini-CMS (policies, blog, site settings) powering
     // the custom admin sections and read by the storefront.
     {
-      resolve: './src/modules/content',
+      resolve: "./src/modules/content",
     },
   ],
 })

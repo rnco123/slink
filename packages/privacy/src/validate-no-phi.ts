@@ -26,9 +26,7 @@ export interface PhiViolation {
   /** Dotted path to the offending field (array indices included), e.g. `items.0.diagnosis`. */
   readonly path: string
   /** Why it was flagged. */
-  readonly reason:
-    | "prohibited-key"
-    | "clinical-free-text"
+  readonly reason: "prohibited-key" | "clinical-free-text"
   /** The normalized keyword or pattern that triggered the match. Never a value. */
   readonly keyword: string
 }
@@ -140,7 +138,9 @@ export function validateNoPhi(
       return
     }
 
-    for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
+    for (const [key, child] of Object.entries(
+      node as Record<string, unknown>
+    )) {
       const childPath = joinPath(path, key)
       const keyMatch = matchProhibitedKey(key)
       if (keyMatch) {

@@ -17,11 +17,23 @@
  * @packageDocumentation
  */
 
-import { validateNoPhi, type ValidateNoPhiOptions, type PhiViolation } from "./validate-no-phi"
-import { normalizeKey, matchProhibitedKey, matchClinicalText } from "./prohibited-fields"
+import {
+  validateNoPhi,
+  type ValidateNoPhiOptions,
+  type PhiViolation,
+} from "./validate-no-phi"
+import {
+  normalizeKey,
+  matchProhibitedKey,
+  matchClinicalText,
+} from "./prohibited-fields"
 
 /** Methods whose bodies must pass the firewall. */
-export const GUARDED_METHODS: ReadonlySet<string> = new Set(["POST", "PUT", "PATCH"])
+export const GUARDED_METHODS: ReadonlySet<string> = new Set([
+  "POST",
+  "PUT",
+  "PATCH",
+])
 
 /**
  * The friendly, user-facing message returned when a request is rejected for

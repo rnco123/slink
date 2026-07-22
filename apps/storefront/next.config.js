@@ -73,7 +73,10 @@ const nextConfig = {
     const assetsHost =
       process.env.POSTHOG_ASSETS_HOST || "https://us-assets.i.posthog.com"
     return [
-      { source: "/ingest/static/:path*", destination: `${assetsHost}/static/:path*` },
+      {
+        source: "/ingest/static/:path*",
+        destination: `${assetsHost}/static/:path*`,
+      },
       { source: "/ingest/:path*", destination: `${host}/:path*` },
       { source: "/ingest/decide", destination: `${host}/decide` },
     ]

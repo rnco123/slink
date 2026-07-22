@@ -33,7 +33,9 @@ function collectIngest(requests: Request[]) {
 }
 
 test.describe("PHI boundary — analytics egress", () => {
-  test("no analytics request body contains clinical free text", async ({ page }) => {
+  test("no analytics request body contains clinical free text", async ({
+    page,
+  }) => {
     const ingest: Request[] = []
     page.on("request", collectIngest(ingest))
 
@@ -56,7 +58,9 @@ test.describe("PHI boundary — analytics egress", () => {
     const ingest: Request[] = []
     page.on("request", collectIngest(ingest))
 
-    const res = await page.goto("/en/contact", { waitUntil: "domcontentloaded" })
+    const res = await page.goto("/en/contact", {
+      waitUntil: "domcontentloaded",
+    })
     // Contact page may not exist in every build; only assert when present.
     test.skip(!res || res.status() >= 400, "no contact page in this build")
 
@@ -80,20 +84,23 @@ test.describe("PHI boundary — analytics egress", () => {
 })
 
 test.describe("PHI boundary — URLs", () => {
-  test("no PHI tokens appear in the landing URL or its links", async ({ page }) => {
+  test("no PHI tokens appear in the landing URL or its links", async ({
+    page,
+  }) => {
     await gotoOk(page, "/en")
     expect(page.url().toLowerCase()).not.toMatch(
       /patientid|diagnosis|symptom|treatment|prescription|medicalhistory/
     )
 
-    const hrefs = await page.locator("a[href]").evaluateAll((els) =>
-      els.map((e) => (e as HTMLAnchorElement).getAttribute("href") ?? "")
-    )
+    const hrefs = await page
+      .locator("a[href]")
+      .evaluateAll((els) =>
+        els.map((e) => (e as HTMLAnchorElement).getAttribute("href") ?? "")
+      )
     for (const href of hrefs) {
-      expect(
-        href.toLowerCase(),
-        `link exposes PHI token: ${href}`
-      ).not.toMatch(/patientid|diagnosis|symptom|treatment|prescription/)
+      expect(href.toLowerCase(), `link exposes PHI token: ${href}`).not.toMatch(
+        /patientid|diagnosis|symptom|treatment|prescription/
+      )
     }
   })
 })
@@ -103,8 +110,11 @@ test.describe("PHI boundary — session replay", () => {
     await gotoOk(page, "/en")
     // Either PostHog is absent (no key) or, if present, recording is disabled.
     const recordingActive = await page.evaluate(() => {
-      const ph = (window as unknown as { posthog?: { sessionRecordingStarted?: () => boolean } })
-        .posthog
+      const ph = (
+        window as unknown as {
+          posthog?: { sessionRecordingStarted?: () => boolean }
+        }
+      ).posthog
       if (!ph || typeof ph.sessionRecordingStarted !== "function") return false
       try {
         return ph.sessionRecordingStarted()

@@ -45,7 +45,10 @@ export function Button({
   external,
   ...props
 }: CommonProps &
-  ({ href?: string; external?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement> &
+  ({
+    href?: string
+    external?: boolean
+  } & React.ButtonHTMLAttributes<HTMLButtonElement> &
     React.AnchorHTMLAttributes<HTMLAnchorElement>)) {
   const classes = cn(base, variants[variant], sizes[size], className)
 

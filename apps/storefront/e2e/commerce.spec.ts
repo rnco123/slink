@@ -40,7 +40,10 @@ test.describe("Commerce @commerce", () => {
   test("login form validates required fields", async ({ page }) => {
     await gotoOk(page, path("/account"))
     // Native required attributes gate submission without a backend round-trip.
-    await expect(page.getByTestId("email-input")).toHaveAttribute("required", "")
+    await expect(page.getByTestId("email-input")).toHaveAttribute(
+      "required",
+      ""
+    )
     await expect(page.getByTestId("password-input")).toHaveAttribute(
       "required",
       ""
@@ -71,7 +74,8 @@ test.describe("Commerce @commerce", () => {
     } else {
       test.info().annotations.push({
         type: "note",
-        description: "Add-to-cart disabled (no variant/inventory in seed) — skipped interaction.",
+        description:
+          "Add-to-cart disabled (no variant/inventory in seed) — skipped interaction.",
       })
     }
   })

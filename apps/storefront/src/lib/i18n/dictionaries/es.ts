@@ -16,7 +16,8 @@ const es = {
     emergency: "En caso de emergencia, llame al 911.",
   },
   nav: {
-    ticker: "Envío gratis en pedidos de más de $49 · Con respaldo clínico · Elegible para HSA/FSA",
+    ticker:
+      "Envío gratis en pedidos de más de $49 · Con respaldo clínico · Elegible para HSA/FSA",
     shop: "Tienda",
     conditions: "Condiciones",
     telehealth: "Telesalud",
@@ -32,7 +33,8 @@ const es = {
     heroTitleAccent: "cuidada con dedicación.",
     heroBody:
       "Productos con base en evidencia y atención de telesalud conectada: seleccionados junto a profesionales clínicos, con precios transparentes y entrega a domicilio.",
-    heroReassurance: "Elegible para HSA/FSA · Envío gratis en pedidos de más de $49 · Devoluciones en 30 días",
+    heroReassurance:
+      "Elegible para HSA/FSA · Envío gratis en pedidos de más de $49 · Devoluciones en 30 días",
     trust: {
       a: "Con respaldo clínico",
       aLabel: "en la selección de productos",
@@ -91,7 +93,8 @@ const es = {
       },
       monitoring: {
         label: "Monitoreo y dispositivos",
-        blurb: "Básculas, monitores y herramientas de seguimiento para usar en casa.",
+        blurb:
+          "Básculas, monitores y herramientas de seguimiento para usar en casa.",
       },
     },
   },
@@ -99,18 +102,25 @@ const es = {
     metaTitle: "Telesalud para el control de peso y la salud metabólica",
     metaDescription:
       "Conéctate con proveedores con licencia para la atención del peso y la salud metabólica a través del servicio de telemedicina de Saludlink. Descubre cómo funciona y verifica la disponibilidad por estado.",
-    heroTitle: "Telesalud con licencia para el control de peso y la salud metabólica",
+    heroTitle:
+      "Telesalud con licencia para el control de peso y la salud metabólica",
     heroBody:
       "Reúnete desde casa con profesionales clínicos enfocados en la salud metabólica. La atención se brinda a través de nuestro servicio seguro de telesalud y está disponible en estados selectos.",
     checkAvailability: "Verificar disponibilidad por estado",
     howTitle: "Cómo funciona",
     steps: [
-      { t: "Verifica la disponibilidad", d: "Confirma que la telesalud se ofrece en tu estado." },
+      {
+        t: "Verifica la disponibilidad",
+        d: "Confirma que la telesalud se ofrece en tu estado.",
+      },
       {
         t: "Inicia tu consulta",
         d: "Crea una cuenta y completa un breve cuestionario de admisión en la aplicación de telesalud.",
       },
-      { t: "Conoce a tu proveedor", d: "Conéctate por video seguro con un profesional clínico con licencia." },
+      {
+        t: "Conoce a tu proveedor",
+        d: "Conéctate por video seguro con un profesional clínico con licencia.",
+      },
       {
         t: "Sigue tu plan",
         d: "Recibe orientación y, cuando corresponda, pide productos de apoyo.",

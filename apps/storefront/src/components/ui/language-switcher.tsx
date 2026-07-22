@@ -33,7 +33,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       parts.splice(1, 0, code)
     }
     const next = parts.join("/") || `/${code}`
-    document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+    document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=${
+      60 * 60 * 24 * 365
+    }; samesite=lax`
     startTransition(() => router.push(next))
   }
 
