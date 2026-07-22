@@ -57,6 +57,11 @@ jobs:
       - name: Prettier format check
         run: pnpm format:check
 
+      # Fail if a zod-validated env var is undocumented in its .env.template
+      # (roadmap task 60). Keeps the env contract and the code in lockstep.
+      - name: Env template drift check
+        run: pnpm check:env
+
       - name: Lint
         run: pnpm turbo run lint
 

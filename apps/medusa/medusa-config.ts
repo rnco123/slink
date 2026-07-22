@@ -1,6 +1,11 @@
 import { loadEnv, defineConfig, Modules } from "@medusajs/framework/utils"
+import { validateMedusaEnv } from "./src/lib/env"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
+
+// Fail fast at boot on a misconfigured environment (roadmap task 74). Runs on
+// every entrypoint that loads this config: server, worker, build, db:migrate.
+validateMedusaEnv()
 
 /**
  * Saludlink — Medusa v2 backend configuration
