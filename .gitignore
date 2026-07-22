@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+.next/
+.medusa/
+dist/
+build/
+out/
+
+# turbo
+.turbo/
+
+# env — never commit secrets
+.env
+.env.*
+!.env.template
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+coverage/
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.auto.tfvars.example

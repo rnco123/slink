@@ -1,0 +1,20 @@
+{
+  "name": "@saludlink/ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Saludlink design system — tokens, Tailwind preset, shared React components",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./src/styles/tokens.css",
+    "./tailwind-preset": "./tailwind-preset.cjs",
+    "./tokens": "./src/tokens/index.ts",
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  }
+}
