@@ -1,0 +1,23 @@
+# Saludlink edge — Caddy auto-TLS + host routing (roadmap task 33).
+#
+# Storefront domain(s) -> Next standalone (:8000). Admin -> Medusa (:9000).
+# Auto-HTTPS via Let's Encrypt activates once the domains resolve to this box's
+# Elastic IP (DNS is managed by the operator, not provisioned here). Until DNS
+# points here, these blocks simply won't obtain certs — the stack still runs and
+# is reachable over the container network.
+#
+# {$ACME_EMAIL} comes from the box .env (fetch-env.sh writes it).
+
+{
+	email {$ACME_EMAIL:ops@saludlinkusa.com}
+}
+
+saludlinkusa.com, www.saludlinkusa.com {
+	encode zstd gzip
+	reverse_proxy storefront:8000
+}
+
+manage.saludlinkusa.com {
+	encode zstd gzip
+	reverse_proxy medusa:9000
+}

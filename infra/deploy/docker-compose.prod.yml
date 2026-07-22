@@ -1,0 +1,91 @@
+# Saludlink production stack (roadmap tasks 33/35) — runs on the single slink
+# app box (EC2 t3.small). Images are built + pushed to GHCR by
+# .github/workflows/deploy.yml; the box does `docker compose pull && up -d`.
+#
+# One Medusa image, three roles: a migration one-shot (runs then exits), the
+# HTTP server, and the background worker (split via MEDUSA_WORKER_MODE).
+# Caddy terminates TLS and routes by host. Redis is the event bus / cache.
+#
+# Env comes from ./.env on the box, populated from SSM by fetch-env.sh.
+
+name: slink
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - storefront
+      - medusa
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # One-shot: apply DB migrations, then exit 0. `up` waits for it to complete
+  # before starting the server/worker (service_completed_successfully).
+  medusa-migrate:
+    image: ${MEDUSA_IMAGE:-ghcr.io/rnco123/slink-medusa:latest}
+    command: ["npx", "medusa", "db:migrate"]
+    env_file: [./.env]
+    restart: "no"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  medusa:
+    image: ${MEDUSA_IMAGE:-ghcr.io/rnco123/slink-medusa:latest}
+    restart: unless-stopped
+    environment:
+      MEDUSA_WORKER_MODE: server
+    env_file: [./.env]
+    depends_on:
+      medusa-migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    expose:
+      - "9000"
+
+  worker:
+    image: ${MEDUSA_IMAGE:-ghcr.io/rnco123/slink-medusa:latest}
+    restart: unless-stopped
+    command: ["npm", "run", "start"]
+    environment:
+      MEDUSA_WORKER_MODE: worker
+      MEDUSA_ADMIN_DISABLE: "true"
+    env_file: [./.env]
+    depends_on:
+      medusa-migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  storefront:
+    image: ${STOREFRONT_IMAGE:-ghcr.io/rnco123/slink-storefront:latest}
+    restart: unless-stopped
+    env_file: [./.env]
+    depends_on:
+      - medusa
+    expose:
+      - "8000"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:

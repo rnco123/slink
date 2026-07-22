@@ -1,0 +1,101 @@
+# Deploy — build the storefront + medusa images and push to GHCR (roadmap task 35).
+#
+# Triggered manually (workflow_dispatch) or on push to main after CI is green.
+# The box then pulls these images (`docker compose pull && up -d`) — see
+# infra/deploy/README.md. GHCR auth uses the built-in GITHUB_TOKEN (no extra
+# secret). SSH-based auto pull/up on the box is a follow-up once the box SSH key
+# is stored as an Actions secret; until then the operator runs the compose step.
+name: deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "infra/deploy/**"
+      - ".github/workflows/deploy.yml"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: rnco123
+
+jobs:
+  images:
+    name: build + push images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- Medusa image (no build args) -------------------------------------
+      - name: Build + push medusa
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/medusa/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:${{ github.sha }}
+          cache-from: type=gha,scope=medusa
+          cache-to: type=gha,mode=max,scope=medusa
+
+      # --- Storefront image (NEXT_PUBLIC_* are build args, baked into bundle) -
+      - name: Build + push storefront
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/storefront/Dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${{ vars.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 'pk_replace_after_seed' }}
+            NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://manage.saludlinkusa.com
+            NEXT_PUBLIC_BASE_URL=https://saludlinkusa.com
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:${{ github.sha }}
+          cache-from: type=gha,scope=storefront
+          cache-to: type=gha,mode=max,scope=storefront
+
+  # ---------------------------------------------------------------------------
+  # Auto-deploy: SSH to the box and roll the new images. Runs after images push.
+  # The box already has /opt/slink/{docker-compose.yml,Caddyfile,.env} and a
+  # persistent `docker login ghcr.io` (one-time operator setup). The
+  # medusa-migrate one-shot applies migrations before server/worker start.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: deploy to box
+    needs: images
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH — pull + up
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ vars.DEPLOY_HOST || '23.21.167.196' }}
+          username: ubuntu
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            cd /opt/slink
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f
