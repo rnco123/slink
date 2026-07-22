@@ -1,6 +1,13 @@
 import type { MetadataRoute } from "next"
 import { getBaseURL } from "@lib/util/env"
 import { locales } from "@lib/i18n/config"
+import { listProducts } from "@lib/data/products"
+import { listPages } from "@lib/data/content"
+
+// The commerce region is fixed to the US regardless of display language, so
+// product data is fetched once against this region country code (see
+// lib/data/regions), then emitted under each language prefix.
+const REGION_COUNTRY = "us"
 
 /**
  * XML sitemap for saludlinkusa.com.
@@ -52,31 +59,27 @@ function url(country: string, path: string): string {
 }
 
 /**
- * TODO(products): fetch published product handles from Medusa and append them.
- * Replace this stub with a real `listProducts` call (see
- * `@lib/data/products`). Must catch its own errors and return [] on failure so
- * the sitemap never throws.
- *
- * Expected shape once implemented:
- *   `${origin}/${country}/products/${handle}`
+ * Published product PDPs (`/[lang]/products/[handle]`). Products are region-based
+ * (US), so handles are language-independent; we fetch once and emit under the
+ * given language prefix. Fails safe to [] so the sitemap never throws.
  */
-async function getProductEntries(
-  country: string
-): Promise<MetadataRoute.Sitemap> {
+async function getProductEntries(lang: string): Promise<MetadataRoute.Sitemap> {
   try {
-    // const { response } = await listProducts({
-    //   countryCode: country,
-    //   queryParams: { limit: 1000, fields: "handle,updated_at" },
-    // })
-    // return response.products
-    //   .filter((p) => p.handle)
-    //   .map((p) => ({
-    //     url: url(country, `/products/${p.handle}`),
-    //     lastModified: p.updated_at ? new Date(p.updated_at) : undefined,
-    //     changeFrequency: "weekly",
-    //     priority: 0.8,
-    //   }))
-    return []
+    const { response } = await listProducts({
+      countryCode: REGION_COUNTRY,
+      queryParams: {
+        limit: 1000,
+        fields: "handle,updated_at",
+      } as never,
+    })
+    return response.products
+      .filter((p) => p.handle)
+      .map((p) => ({
+        url: url(lang, `/products/${p.handle}`),
+        lastModified: p.updated_at ? new Date(p.updated_at) : undefined,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      }))
   } catch (error) {
     console.error("sitemap: failed to load product entries", error)
     return []
@@ -84,25 +87,23 @@ async function getProductEntries(
 }
 
 /**
- * TODO(cms): fetch published blog/education post slugs from the CMS and append
- * them. Replace this stub with the real CMS client call. Health articles should
- * carry `lastModified` so freshness is signalled to crawlers.
- *
- * Expected shape once implemented:
- *   `${origin}/${country}/learn/${slug}`
+ * Published CMS legal/policy pages (`/[lang]/legal/[slug]`). Articles are NOT
+ * emitted yet — they have no public storefront route, and a sitemap URL that
+ * 404s hurts crawl trust (add when a `/learn` route ships). Fails safe to [].
  */
-async function getPostEntries(country: string): Promise<MetadataRoute.Sitemap> {
+async function getPostEntries(lang: string): Promise<MetadataRoute.Sitemap> {
   try {
-    // const posts = await getPublishedPosts()
-    // return posts.map((post) => ({
-    //   url: url(country, `/learn/${post.slug}`),
-    //   lastModified: post.updatedAt ? new Date(post.updatedAt) : undefined,
-    //   changeFrequency: "monthly",
-    //   priority: 0.7,
-    // }))
-    return []
+    const pages = await listPages(lang, "legal")
+    return pages
+      .filter((p) => p.slug)
+      .map((p) => ({
+        url: url(lang, `/legal/${p.slug}`),
+        lastModified: p.last_updated ? new Date(p.last_updated) : undefined,
+        changeFrequency: "yearly" as const,
+        priority: 0.3,
+      }))
   } catch (error) {
-    console.error("sitemap: failed to load CMS post entries", error)
+    console.error("sitemap: failed to load CMS page entries", error)
     return []
   }
 }
