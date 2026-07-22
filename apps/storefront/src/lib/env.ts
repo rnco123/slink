@@ -122,7 +122,7 @@ const StorefrontEnvSchema = RawEnv.superRefine(refine)
  * variable. Returns the parsed env on success.
  */
 export function validateStorefrontEnv(
-  source: NodeJS.ProcessEnv = process.env
+  source: Record<string, string | undefined> = process.env
 ): StorefrontEnv {
   const result = StorefrontEnvSchema.safeParse(source)
   if (!result.success) {
