@@ -4,21 +4,23 @@ Living status for the "integrate all monitoring/observability/logging/analytics/
 SEO/security tools" task. Updated continuously. Legend: ☑ done · ◐ in progress ·
 ☐ not started.
 
-**Overall completion: ~85%** — all tools integrated, configured and documented;
-the full compose stack **statically validated** (`docker compose config` +
-per-service parse). **Live boot is currently BLOCKED** by a local Docker Desktop
-fault: the daemon's network-creation subsystem is wedged (a bare
-`docker network create` also hangs), so no containers could be started on this
-machine yet. Fix = restart Docker Desktop / `wsl --shutdown` (bounces the app's
-Postgres/Redis too), then `docker compose ... up -d`. The remaining work beyond
-that is live bring-up of CI/SaaS-dependent tools (ZAP/PSI/Search Console) which
-need a deployed URL + credentials that don't exist at this pre-launch stage.
+**Overall completion: LIVE (self-hosted stack) — 2026-07-23.** All tools
+integrated, configured, documented, and **now booted & verified locally**. The
+prior Docker Desktop network fault is resolved (daemon 29.6.2 healthy). Remaining
+open items are SaaS/DAST tools (ZAP/PSI/Search Console) that need a deployed,
+domain-verified URL + credentials — Phase 4/5, post-launch.
 
-_Last updated: 2026-07-22._
+_Last updated: 2026-07-23._
 
-> ⚠️ **Boot status:** all 12 images pulled successfully; compose config valid;
-> container start blocked ONLY by the wedged Docker network subsystem on this
-> host (reproducible with `docker network create testnet`). Not a config defect.
+> ✅ **Boot status (2026-07-23):** stack UP — 12 containers. Prometheus **9/9
+> targets up**; Grafana(11.3.1)/Loki/Alertmanager healthy; Loki ingesting all 14
+> containers via Promtail; `pg_up=1`, `redis_up=1`. Boot with the Windows dev
+> override on Docker Desktop/WSL2 (node-exporter `rslave` mount fix):
+> `docker compose -f docker-compose.monitoring.yml -f docker-compose.monitoring.windows.yml --env-file .env up -d`
+> (base compose is unchanged and correct for the Linux staging/prod hosts).
+>
+> ✅ **Task 27 (Monitoring API) + Task 28 (exporter read-only role) DONE** — see
+> below and `completion.md` UPDATE 12.
 
 ---
 
@@ -58,7 +60,7 @@ _Last updated: 2026-07-22._
 
 | Tool                   | Status | Configured                                | Verified | Docs                                           | Files    |
 | ---------------------- | ------ | ----------------------------------------- | -------- | ---------------------------------------------- | -------- |
-| PostHog (privacy-safe) | ☑      | ✅ existing config documented (unchanged) | existing | [analytics-posthog](docs/analytics-posthog.md) | doc only |
+| PostHog (privacy-safe) | ☑      | ✅ existing config documented (unchanged) | existing | [analytics-posthog](docs/analytics-posthog.md) · [dashboards+UTM (t65)](docs/analytics-dashboards.md) | doc only |
 
 ## Security
 
@@ -90,27 +92,45 @@ network fix below._
 
 ## Blockers / notes
 
-- **Local Docker Desktop network subsystem wedged (active blocker for live boot).**
-  On this dev host, `docker network create` hangs indefinitely (libnetwork/IPAM
-  stuck), so `docker compose up` cannot create the `monitoring` network. The
-  daemon otherwise responds (`docker ps`, `docker pull` work — all 12 images
-  pulled). **Fix:** restart Docker Desktop (or `wsl --shutdown` then reopen
-  Docker Desktop), then from `infra/monitoring/`:
-  `docker compose -f docker-compose.monitoring.yml --env-file .env up -d`,
-  and verify per [README → Health checks](README.md#health-checks). This is an
-  environment fault, not a defect in the stack config.
+- ~~**Local Docker Desktop network subsystem wedged.**~~ **RESOLVED 2026-07-23**
+  — daemon 29.6.2 healthy, `monitoring` network + all 12 containers created
+  cleanly. One WSL2-only issue remained (node-exporter `rslave` bind on `/`),
+  fixed via `docker-compose.monitoring.windows.yml` (dev override; base compose
+  unchanged for Linux prod). Boot + verify per
+  [README → Health checks](README.md#health-checks).
 - **SaaS/DAST tools can't be end-to-end verified pre-launch.** ZAP, PageSpeed
   Insights, Search Console, Merchant Center and Bing all require a **deployed,
   domain-verified** environment and real credentials. Their configs/workflows/docs
   are complete and ready; they light up when staging exists (plan Phase 4/5).
 - **cAdvisor on Windows/Docker Desktop** may expose a reduced metric set (WSL2
   cgroup access) — non-fatal; full metrics on the Linux staging/prod hosts.
-- **Read-only DB role** for the Postgres exporter should be created before
-  staging/prod (currently uses the app user for local dev only).
+- ~~**Read-only DB role** for the Postgres exporter.~~ **DONE 2026-07-23 (task 28)**
+  — `slink_exporter` (pg_monitor only, denied on app tables) via
+  [config/postgres/exporter-role.sql](config/postgres/exporter-role.sql); the
+  exporter DSN in `.env`/template no longer uses the app superuser. Inject the
+  password from SSM/Secrets Manager in staging/prod.
 - **PostHog self-hosting** deliberately excluded from the compose stack (heavy);
   existing privacy-safe Cloud config documented and kept.
 
-## Next step (not started — gated on this task)
+## Next step — DONE (2026-07-23)
 
-Build the **Monitoring API (NestJS)** aggregating the sources per
-[docs/monitoring-api.md](docs/monitoring-api.md), then the admin Monitoring UI.
+The **Monitoring API (NestJS)** + admin Monitoring UI are built and verified at
+[`services/monitoring/`](../../services/monitoring/) (self-contained; own
+install/build, does not touch the pnpm workspace). Read-only facade per
+[docs/monitoring-api.md](docs/monitoring-api.md): `/monitoring/{health,uptime,
+metrics/:kind,alerts,logs,queues}` live, `{security,seo,analytics}` gated until
+their SaaS creds/URL exist, plus a self-contained admin dashboard at `/`. 26/26
+unit tests; all self-hosted endpoints verified against this live stack. The
+exporter now runs as the least-privilege `slink_exporter` role
+([config/postgres/exporter-role.sql](config/postgres/exporter-role.sql), task 28).
+
+**Remaining follow-ups (post-launch / other sessions):**
+
+- Bull Board's `/api/queues` reports 0 despite `bull:*` keys in Redis (container
+  discovery quirk). The Monitoring API's `/monitoring/queues` degrades
+  gracefully; switch it to the spec's direct-Redis/bullmq read for real counts.
+- WSL2 dev host: reduced node-exporter disk + cAdvisor container metrics
+  (no `name` label) — full on the Linux prod host.
+- Uptime Kuma monitors + blackbox prod probes + ZAP/PSI/Search Console need the
+  deployed URL (coordinate with the deploy session).
+- Embed the dashboard as a Medusa admin route (owned by the Medusa session).
