@@ -29,6 +29,11 @@ Thumbs.db
 *.pem
 coverage/
 
+# e2e / Playwright test output (regenerated each run)
+apps/storefront/e2e/.artifacts/
+test-results/
+playwright-report/
+
 # IDE
 .vscode/*
 !.vscode/extensions.json
