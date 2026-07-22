@@ -6,22 +6,27 @@ import { gotoOk } from "./support/helpers"
 const HREFLANGS = ["en-US", "es-US", "x-default"] as const
 
 test.describe("robots.txt", () => {
-  test("is served and blocks transactional surfaces", async ({ request }) => {
+  // The coming-soon wall is enabled in all environments (task 82), so robots.txt
+  // disallows the whole site until launch. The transactional-surface Disallow
+  // rules live in robots.ts for when the wall drops (task 64 re-enables Search
+  // Console then).
+  test("is served and disallows the whole site while the wall is up", async ({
+    request,
+  }) => {
     const res = await request.get("/robots.txt")
     expect(res.status()).toBe(200)
     expect(res.headers()["content-type"]).toContain("text/plain")
 
     const body = await res.text()
     expect(body).toMatch(/User-Agent:\s*\*/i)
-    expect(body).toContain("Sitemap:")
-    for (const blocked of ["/cart", "/checkout", "/account"]) {
-      expect(body).toContain(`Disallow: ${blocked}`)
-    }
+    expect(body).toMatch(/Disallow:\s*\/\s*$/im)
   })
 })
 
 test.describe("sitemap.xml", () => {
-  test("is valid XML listing the primary static routes", async ({ request }) => {
+  test("is valid XML listing the primary static routes", async ({
+    request,
+  }) => {
     const res = await request.get("/sitemap.xml")
     expect(res.status()).toBe(200)
     expect(res.headers()["content-type"]).toContain("xml")
@@ -29,9 +34,9 @@ test.describe("sitemap.xml", () => {
     const body = await res.text()
     expect(body).toContain("<urlset")
     expect(body).toMatch(/<loc>https?:\/\/[^<]+<\/loc>/)
-    // Home + store are always present.
-    expect(body).toMatch(/<loc>[^<]*\/us<\/loc>/)
-    expect(body).toMatch(/<loc>[^<]*\/us\/store<\/loc>/)
+    // URLs are language-prefixed (en/es), NOT a country code — see i18n config.
+    expect(body).toMatch(/<loc>[^<]*\/en<\/loc>/)
+    expect(body).toMatch(/<loc>[^<]*\/en\/store<\/loc>/)
   })
 })
 

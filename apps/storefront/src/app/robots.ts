@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { getBaseURL } from "@lib/util/env"
+import { isComingSoonEnabled } from "@lib/preview"
 
 /**
  * robots.txt for saludlinkusa.com.
@@ -12,6 +13,15 @@ import { getBaseURL } from "@lib/util/env"
  */
 export default function robots(): MetadataRoute.Robots {
   const origin = getBaseURL().replace(/\/$/, "")
+
+  // While the coming-soon wall is up, keep the whole site out of the index
+  // (task 82). Search Console submission (task 64) resumes once the wall drops.
+  if (isComingSoonEnabled()) {
+    return {
+      rules: [{ userAgent: "*", disallow: "/" }],
+      host: origin,
+    }
+  }
 
   const disallow = [
     "/cart",
