@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { formatCalendarDate } from "@lib/util/dates"
 
 interface LegalLayoutProps {
   /** Document title, rendered as the page H1. */
@@ -24,7 +25,9 @@ export default function LegalLayout({
   intro,
   children,
 }: LegalLayoutProps) {
-  const formattedDate = formatLastUpdated(lastUpdated)
+  // Legal "last updated" is a bare wall-date (task 83) — format without a CT
+  // shift so "2026-07-22" never rolls back a day.
+  const formattedDate = formatCalendarDate(lastUpdated)
 
   return (
     <div className="bg-cream">
@@ -71,21 +74,4 @@ export default function LegalLayout({
       </div>
     </div>
   )
-}
-
-/**
- * Format an ISO date (YYYY-MM-DD) as e.g. "July 22, 2026" without pulling in a
- * date library or being affected by server timezone (parses as UTC noon).
- */
-function formatLastUpdated(iso: string): string {
-  const parsed = new Date(`${iso}T12:00:00Z`)
-  if (Number.isNaN(parsed.getTime())) {
-    return iso
-  }
-  return parsed.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  })
 }
