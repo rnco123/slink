@@ -48,6 +48,38 @@ export async function getContentPage(
   }
 }
 
+export type CmsPageSummary = {
+  id: string
+  slug: string
+  locale: string
+  type?: string | null
+  title?: string | null
+  last_updated?: string | null
+}
+
+/**
+ * List published content pages for a locale (optionally filtered by type, e.g.
+ * "legal"). Used by the sitemap to emit `/legal/[slug]` URLs (task 22). Fails
+ * safe to [] so the sitemap never throws on a CMS outage.
+ */
+export async function listPages(
+  locale: string,
+  type?: string
+): Promise<CmsPageSummary[]> {
+  try {
+    const { pages } = await sdk.client.fetch<{ pages: CmsPageSummary[] }>(
+      `/store/content/pages`,
+      {
+        query: { locale, ...(type ? { type } : {}) },
+        cache: "no-store",
+      }
+    )
+    return pages ?? []
+  } catch {
+    return []
+  }
+}
+
 export async function listArticles(locale: string): Promise<CmsArticle[]> {
   try {
     const { articles } = await sdk.client.fetch<{ articles: CmsArticle[] }>(
