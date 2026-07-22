@@ -60,11 +60,14 @@ jobs:
       - name: Lint
         run: pnpm turbo run lint
 
-      - name: Typecheck
-        run: pnpm turbo run typecheck
-
+      # Build BEFORE typecheck: `medusa build` generates .medusa/types/* which
+      # the Medusa tsconfig references (e.g. query-entry-points in seed.ts). A
+      # fresh CI checkout has no generated types, so typecheck must run after.
       - name: Build
         run: pnpm turbo run build
+
+      - name: Typecheck
+        run: pnpm turbo run typecheck
 
       - name: Unit tests
         run: pnpm turbo run test
