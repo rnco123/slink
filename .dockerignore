@@ -1,0 +1,34 @@
+# Keep build context small & reproducible. Source is copied explicitly in the
+# Dockerfiles; everything below is either regenerated, secret, or host-specific.
+**/node_modules
+**/.next
+**/.medusa
+**/dist
+**/build
+**/out
+**/.turbo
+**/coverage
+**/*.log
+
+# env & secrets — NEVER bake into an image layer
+**/.env
+**/.env.*
+!**/.env.template
+!**/.env.example
+
+# vcs / ci / local tooling
+.git
+.github
+.husky
+**/.vscode
+**/.idea
+
+# tests / reports / infra not needed at image build
+apps/storefront/e2e
+**/test-results
+**/playwright-report
+infra
+docs
+.zap
+*.md
+completion.md
