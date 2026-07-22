@@ -1,0 +1,14 @@
+node_modules
+.next
+.medusa
+dist
+build
+out
+.turbo
+coverage
+pnpm-lock.yaml
+*.log
+apps/storefront/e2e/.artifacts
+test-results
+playwright-report
+.terraform
