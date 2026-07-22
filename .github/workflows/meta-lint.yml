@@ -1,0 +1,49 @@
+# Meta-lint — lints the project's own CI + container definitions (roadmap task 30).
+# actionlint: catches workflow YAML / shell mistakes. hadolint: Dockerfile best
+# practices. Both pre-verified locally against this repo. CodeQL, Zizmor and
+# OSV-Scanner are deferred: CodeQL needs GitHub Advanced Security (public repo /
+# paid on private) and is redundant with Semgrep here.
+name: meta-lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - ".github/**"
+      - "**/Dockerfile"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meta-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: actionlint (workflows)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run actionlint
+        run: |
+          docker run --rm -v "$PWD:/repo" --workdir /repo \
+            rhysd/actionlint:latest -color
+
+  hadolint:
+    name: hadolint (Dockerfiles)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile:
+          - apps/storefront/Dockerfile
+          - apps/medusa/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run hadolint on ${{ matrix.dockerfile }}
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ${{ matrix.dockerfile }}
+          failure-threshold: error
