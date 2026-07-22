@@ -42,6 +42,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.1",
     "@babel/core": "^7.17.5",
     "@playwright/test": "^1.49.1",
     "@medusajs/types": "latest",

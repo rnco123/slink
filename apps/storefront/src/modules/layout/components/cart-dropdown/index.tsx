@@ -80,13 +80,16 @@ const CartDropdown = ({
       onMouseLeave={close}
     >
       <Popover className="relative h-full">
-        <PopoverButton className="h-full">
-          <LocalizedClientLink
-            className="hover:text-ui-fg-base"
-            href="/cart"
-            data-testid="nav-cart-link"
-          >{`Cart (${totalItems})`}</LocalizedClientLink>
-        </PopoverButton>
+        {/*
+         * Render the popover trigger AS the cart link so we emit a single <a>
+         * rather than a <button> wrapping an <a> (WCAG 4.1.2 nested-interactive).
+         */}
+        <PopoverButton
+          as={LocalizedClientLink}
+          href="/cart"
+          className="h-full hover:text-ui-fg-base"
+          data-testid="nav-cart-link"
+        >{`Cart (${totalItems})`}</PopoverButton>
         <Transition
           show={cartDropdownOpen}
           as={Fragment}
