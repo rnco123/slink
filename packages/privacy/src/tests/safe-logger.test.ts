@@ -89,7 +89,10 @@ describe("createSafeLogger", () => {
 
   it("child loggers inherit and extend base context", () => {
     const records: LogRecord[] = []
-    const log = createSafeLogger({ sink: (r) => records.push(r), base: { a: 1 } })
+    const log = createSafeLogger({
+      sink: (r) => records.push(r),
+      base: { a: 1 },
+    })
     log.child({ b: 2 }).info("m", { c: 3 })
     expect(records[0]?.context).toMatchObject({ a: 1, b: 2, c: 3 })
   })

@@ -6,7 +6,7 @@ Source: LegitScript Healthcare Merchant Certification Standards (official PDF, d
 
 ## Why this matters
 
-LegitScript certification is what lets a health/telehealth site run paid ads and keep card processing. All 20 of our inspiration sites are certified. Certification is **per domain** (~$975 application + $2,150/yr), each domain reviewed separately. A wireframe/demo site is acceptable to *start* review, but every rule below must be satisfied before certification issues.
+LegitScript certification is what lets a health/telehealth site run paid ads and keep card processing. All 20 of our inspiration sites are certified. Certification is **per domain** (~$975 application + $2,150/yr), each domain reviewed separately. A wireframe/demo site is acceptable to _start_ review, but every rule below must be satisfied before certification issues.
 
 ---
 
@@ -14,26 +14,26 @@ LegitScript certification is what lets a health/telehealth site run paid ads and
 
 These rules were derived from a live analysis of **20 LegitScript-certified websites** (all of them fetched, their footers/structured data inspected, cross-checked against LegitScript's own certification PDF and FAQ). The 20 span four segments:
 
-| Segment | Count | Sites |
-|---|---|---|
-| Telehealth / health-management (closest competitors) | 6 | lifemd, everlywell, noom, mavenclinic, thriveworks, jumpstartmd |
-| Pharmacy / PBM / the certifier itself | 4 | legitscript, express-scripts, optumrx, lloydspharmacy |
-| Health systems & services | 6 | geisinger, multicare, cedars-sinai (csconnect), healthsmart, justanswer, hazeldenbettyford |
-| Retail / ecommerce references | 4 | petsmart, petsuppliesplus, covetrus, brookshirebrothers |
+| Segment                                              | Count | Sites                                                                                      |
+| ---------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------ |
+| Telehealth / health-management (closest competitors) | 6     | lifemd, everlywell, noom, mavenclinic, thriveworks, jumpstartmd                            |
+| Pharmacy / PBM / the certifier itself                | 4     | legitscript, express-scripts, optumrx, lloydspharmacy                                      |
+| Health systems & services                            | 6     | geisinger, multicare, cedars-sinai (csconnect), healthsmart, justanswer, hazeldenbettyford |
+| Retail / ecommerce references                        | 4     | petsmart, petsuppliesplus, covetrus, brookshirebrothers                                    |
 
 **How often each pattern appeared** (observed in rendered footers/pages; some fetches were bot-blocked, so counts are a floor, not a ceiling):
 
-| Pattern | Seen on | Confidence |
-|---|---|---|
-| Certified (the whole reason they're in this list) | **20 / 20** | Certain |
-| Separate **HIPAA Notice of Privacy Practices** (distinct from Privacy Policy) | ~8+ confirmed (lifemd, noom, mavenclinic, jumpstartmd, express-scripts, multicare, hazeldenbettyford, brookshire pharmacy) | Strong — treat as table stakes |
-| **LegitScript seal / verification link in footer** | 7+ (noom, mavenclinic, thriveworks, jumpstartmd, optumrx, petsmart, brookshire) | Standard practice (seal itself is optional per LegitScript) |
-| **Accessibility statement** in footer | Widespread (lifemd, noom, express-scripts, optumrx, multicare, hazeldenbettyford, petsmart, petsuppliesplus…) | Strong |
-| **Consumer Health Data Privacy Notice** (WA/CA state laws) | noom, mavenclinic, express-scripts (WA) | Emerging, required by state law |
-| Standalone **Telehealth Consent** document | lifemd (explicit); expected wherever care is offered | Required for our telemedicine flow |
-| **Nondiscrimination notice** | Provider orgs (express-scripts, multicare, hazeldenbettyford…) | Provider table stakes |
-| **State/jurisdiction availability disclosed** (Standard 5) | express-scripts, thriveworks, jumpstartmd, hazeldenbettyford (per-state) | Required — an explicit LegitScript rule |
-| Real **legal entity + physical address** in footer | lifemd, jumpstartmd, lloydspharmacy (operator disclosure), petsmart… | Required (ownership transparency) |
+| Pattern                                                                       | Seen on                                                                                                                    | Confidence                                                  |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Certified (the whole reason they're in this list)                             | **20 / 20**                                                                                                                | Certain                                                     |
+| Separate **HIPAA Notice of Privacy Practices** (distinct from Privacy Policy) | ~8+ confirmed (lifemd, noom, mavenclinic, jumpstartmd, express-scripts, multicare, hazeldenbettyford, brookshire pharmacy) | Strong — treat as table stakes                              |
+| **LegitScript seal / verification link in footer**                            | 7+ (noom, mavenclinic, thriveworks, jumpstartmd, optumrx, petsmart, brookshire)                                            | Standard practice (seal itself is optional per LegitScript) |
+| **Accessibility statement** in footer                                         | Widespread (lifemd, noom, express-scripts, optumrx, multicare, hazeldenbettyford, petsmart, petsuppliesplus…)              | Strong                                                      |
+| **Consumer Health Data Privacy Notice** (WA/CA state laws)                    | noom, mavenclinic, express-scripts (WA)                                                                                    | Emerging, required by state law                             |
+| Standalone **Telehealth Consent** document                                    | lifemd (explicit); expected wherever care is offered                                                                       | Required for our telemedicine flow                          |
+| **Nondiscrimination notice**                                                  | Provider orgs (express-scripts, multicare, hazeldenbettyford…)                                                             | Provider table stakes                                       |
+| **State/jurisdiction availability disclosed** (Standard 5)                    | express-scripts, thriveworks, jumpstartmd, hazeldenbettyford (per-state)                                                   | Required — an explicit LegitScript rule                     |
+| Real **legal entity + physical address** in footer                            | lifemd, jumpstartmd, lloydspharmacy (operator disclosure), petsmart…                                                       | Required (ownership transparency)                           |
 
 Takeaway: every rule in this document is backed by the LegitScript standards PDF **and** corroborated by how the certified sites actually implement it. Where a pattern shows up on the majority of the 20, we treat it as table stakes for Saludlink.
 
@@ -53,7 +53,7 @@ Takeaway: every rule in this document is backed by the LegitScript standards PDF
 
 6. **Privacy — WEBSITE DISPLAY REQUIREMENT.** Comply with privacy laws (HIPAA for US applicants handling PHI). **Post a privacy policy on the website** where required by law. All transaction/customer/patient/medical data must be processed over **SSL/TLS encryption**.
 
-7. **Validity of prescription.** Dispense Rx drugs only on a valid prescription from an authorized prescriber; comply with all telemedicine laws. Key line: *"A prescription or prescription drug must not be prescribed or dispensed prior to the provision of care by a licensed medical professional."* (No questionnaire-only prescribing where care standards require more.)
+7. **Validity of prescription.** Dispense Rx drugs only on a valid prescription from an authorized prescriber; comply with all telemedicine laws. Key line: _"A prescription or prescription drug must not be prescribed or dispensed prior to the provision of care by a licensed medical professional."_ (No questionnaire-only prescribing where care standards require more.)
 
 8. **Transparency — prohibited claims.** All practices, offers, and claims must be accurate and non-misleading about the pharmacy, staff, practitioners, drugs, treatments, or financial transactions. **Explicitly prohibited: claims of benefits "that have not been supported by a regulatory body, such as the FTC, FDA, etc."** Failure to provide full/accurate info during review = denial (remediation during review is allowed without penalty).
 
@@ -64,6 +64,7 @@ Takeaway: every rule in this document is backed by the LegitScript standards PDF
 ## What this forces into the Saludlink build (actionable)
 
 ### Must-display on the website (Standards 5, 6, 8)
+
 - [ ] **State-availability page/section** listing exactly which states Saludlink services (telemedicine + regulated product shipping) are available in. Surface it on the telemedicine landing page and in `/licensing`.
 - [ ] **Privacy Policy** posted and linked in the footer sitewide.
 - [ ] **HIPAA Notice of Privacy Practices (NPP)** as a **separate document** from the Privacy Policy (every certified competitor does this — it is not optional to merge them).
@@ -71,6 +72,7 @@ Takeaway: every rule in this document is backed by the LegitScript standards PDF
 - [ ] **No unsupported health claims** anywhere in product copy, marketing pages, or blog. Supplements/wellness products must not state disease-treatment benefits unless FDA/FTC-supported.
 
 ### Footer trust stack (table stakes across all certified sites)
+
 - [ ] Privacy Policy
 - [ ] Notice of Privacy Practices (HIPAA NPP) — separate link
 - [ ] Terms of Service / Terms of Use
@@ -87,6 +89,7 @@ Takeaway: every rule in this document is backed by the LegitScript standards PDF
 - [ ] LegitScript seal slot (add on approval; seal is encouraged, not required — but standard practice)
 
 ### Process / policy gates (not on the page, but required)
+
 - [ ] **Content-review gate**: no health claim ships without a check against FDA/FTC support (build into the editorial workflow + product-copy review).
 - [ ] **v1 catalog = OTC / devices / wellness only, NO Rx** — this deliberately avoids Standards 1, 2, 4, 7 (pharmacy-tier licensing, certified fulfillment partners, valid-prescription rules). Revisit only when a certified pharmacy fulfillment path exists.
 - [ ] Maintain a list of **all domains we control** and all affiliates/fulfillment partners for the application.
@@ -94,6 +97,7 @@ Takeaway: every rule in this document is backed by the LegitScript standards PDF
 - [ ] Ads must name Saludlink as the merchant and reflect only services actually available; never advertise in violation of a platform's ToS.
 
 ### Eligibility notes
+
 - Eligible categories include: pharmacies, telemedicine providers, digital health platforms, DTC diagnostics, supplement/wellness merchants with accurate claims.
 - **Not eligible**: EMR/EHR without prescription facilitation, non-clinical wellness with no medical component, research-only. (Our EMR stays out of scope — correct.)
 
@@ -102,6 +106,7 @@ Takeaway: every rule in this document is backed by the LegitScript standards PDF
 ## Design/engineering acceptance criteria
 
 A page or feature is **LegitScript-ready** when:
+
 1. Every claim on it is accurate and FDA/FTC-supportable.
 2. If it touches services, the states-served disclosure is reachable within one click.
 3. It is served only over HTTPS.

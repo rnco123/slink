@@ -51,7 +51,9 @@ export default async function LegalPage(props: { params: Promise<Params> }) {
       />
       <Section tone="cream">
         <Container width="narrow">
-          <Eyebrow>{locale === "es" ? "Legal y confianza" : "Legal & Trust"}</Eyebrow>
+          <Eyebrow>
+            {locale === "es" ? "Legal y confianza" : "Legal & Trust"}
+          </Eyebrow>
           <h1 className="mt-3 text-4xl md:text-5xl">{page.title}</h1>
           {page.last_updated && (
             <p className="mt-4 text-sm text-ink-subtle">

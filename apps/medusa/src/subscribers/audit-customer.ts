@@ -1,7 +1,4 @@
-import type {
-  SubscriberArgs,
-  SubscriberConfig,
-} from "@medusajs/framework"
+import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import AuditLogModuleService from "../modules/audit-log/service"
 import { AUDIT_LOG_MODULE } from "../modules/audit-log"
 

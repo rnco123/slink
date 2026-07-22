@@ -79,7 +79,9 @@ export function redact(value: unknown, maxDepth = 8): unknown {
     }
 
     const out: Record<string, unknown> = {}
-    for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
+    for (const [key, child] of Object.entries(
+      node as Record<string, unknown>
+    )) {
       if (matchProhibitedKey(key)) {
         out[key] = REDACTED_PHI
         continue
@@ -151,7 +153,11 @@ export function createSafeLogger(options: SafeLoggerOptions = {}): SafeLogger {
       merged === undefined
         ? undefined
         : (redact(merged, maxDepth) as Record<string, unknown>)
-    sink({ level: lvl, message, ...(safeContext ? { context: safeContext } : {}) })
+    sink({
+      level: lvl,
+      message,
+      ...(safeContext ? { context: safeContext } : {}),
+    })
   }
 
   return {
@@ -160,7 +166,12 @@ export function createSafeLogger(options: SafeLoggerOptions = {}): SafeLogger {
     warn: (m, c) => emit("warn", m, c),
     error: (m, c) => emit("error", m, c),
     child: (childBase) =>
-      createSafeLogger({ level, sink, maxDepth, base: { ...base, ...childBase } }),
+      createSafeLogger({
+        level,
+        sink,
+        maxDepth,
+        base: { ...base, ...childBase },
+      }),
   }
 }
 

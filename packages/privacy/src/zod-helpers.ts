@@ -112,7 +112,10 @@ export const phoneField = (): z.ZodString =>
 
 /** A BCP-47-ish locale such as `en` or `es-US`. */
 export const localeField = (): z.ZodString =>
-  z.string().trim().regex(/^[a-z]{2}(-[A-Z]{2})?$/, "Invalid locale.")
+  z
+    .string()
+    .trim()
+    .regex(/^[a-z]{2}(-[A-Z]{2})?$/, "Invalid locale.")
 
 /** An ISO 3166-1 alpha-2 country code (upper-cased). */
 export const countryCodeField = (): z.ZodString =>

@@ -54,10 +54,7 @@ export function HeroArt({ className }: { className?: string }) {
         d="M240 340c34 4 58-14 64-46-34-4-58 14-64 46Z"
         fill="url(#sl-leaf)"
       />
-      <path
-        d="M240 250c-26 2-44-12-48-36 26-2 44 12 48 36Z"
-        fill="#5e8a6e"
-      />
+      <path d="M240 250c-26 2-44-12-48-36 26-2 44 12 48 36Z" fill="#5e8a6e" />
       <circle cx="240" cy="196" r="12" fill="#c56b4e" />
     </svg>
   )

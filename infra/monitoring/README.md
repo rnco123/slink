@@ -12,16 +12,16 @@ and PHI-free**. It is designed to be aggregated later by a single **Monitoring A
 
 ## Contents
 
-| Path | What |
-|---|---|
-| [docker-compose.monitoring.yml](docker-compose.monitoring.yml) | The observability stack (Prometheus, Grafana, Loki, exporters, Uptime Kuma, Bull Board…). |
-| [.env.monitoring.template](.env.monitoring.template) | All environment variables (copy to `.env`). |
-| [config/](config/) | Per-service config (prometheus, alertmanager, blackbox, loki, promtail, grafana provisioning). |
-| [docs/monitoring-api.md](docs/monitoring-api.md) | Per-tool auth, base URLs, endpoints, examples, rate limits for the future Monitoring API. |
-| [docs/security-scanning.md](docs/security-scanning.md) | ZAP, Trivy, Semgrep, Gitleaks, npm audit, Dependabot. |
-| [docs/seo.md](docs/seo.md) | Search Console, Merchant Center, Bing, Lighthouse CI, PageSpeed Insights, Screaming Frog. |
-| [docs/analytics-posthog.md](docs/analytics-posthog.md) | Existing privacy-safe PostHog config + Monitoring API surface. |
-| [TASK.md](TASK.md) | Live progress tracker + completion %. |
+| Path                                                           | What                                                                                           |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [docker-compose.monitoring.yml](docker-compose.monitoring.yml) | The observability stack (Prometheus, Grafana, Loki, exporters, Uptime Kuma, Bull Board…).      |
+| [.env.monitoring.template](.env.monitoring.template)           | All environment variables (copy to `.env`).                                                    |
+| [config/](config/)                                             | Per-service config (prometheus, alertmanager, blackbox, loki, promtail, grafana provisioning). |
+| [docs/monitoring-api.md](docs/monitoring-api.md)               | Per-tool auth, base URLs, endpoints, examples, rate limits for the future Monitoring API.      |
+| [docs/security-scanning.md](docs/security-scanning.md)         | ZAP, Trivy, Semgrep, Gitleaks, npm audit, Dependabot.                                          |
+| [docs/seo.md](docs/seo.md)                                     | Search Console, Merchant Center, Bing, Lighthouse CI, PageSpeed Insights, Screaming Frog.      |
+| [docs/analytics-posthog.md](docs/analytics-posthog.md)         | Existing privacy-safe PostHog config + Monitoring API surface.                                 |
+| [TASK.md](TASK.md)                                             | Live progress tracker + completion %.                                                          |
 
 CI-based tooling lives at repo root: [.github/workflows/security.yml](../../.github/workflows/security.yml),
 [dast-zap.yml](../../.github/workflows/dast-zap.yml),
@@ -73,6 +73,7 @@ docker compose -f docker-compose.monitoring.yml --env-file .env up -d
 ```
 
 Validate config without booting:
+
 ```bash
 docker compose -f docker-compose.monitoring.yml --env-file .env config >/dev/null && echo OK
 ```
@@ -81,20 +82,20 @@ docker compose -f docker-compose.monitoring.yml --env-file .env config >/dev/nul
 
 ## Docker services & ports
 
-| Service | Image | Container port | Dev host bind | Published in prod? | Persistent volume |
-|---|---|---|---|---|---|
-| prometheus | prom/prometheus:v2.55.1 | 9090 | `127.0.0.1:9090` | **No** (internal) | `prometheus_data` |
-| alertmanager | prom/alertmanager:v0.27.0 | 9093 | `127.0.0.1:9093` | **No** (internal) | `alertmanager_data` |
-| grafana | grafana/grafana-oss:11.3.1 | 3000 | `127.0.0.1:3001` | via admin subdomain + auth | `grafana_data` |
-| node-exporter | prom/node-exporter:v1.8.2 | 9100 | — | No | — |
-| postgres-exporter | prometheuscommunity/postgres-exporter:v0.16.0 | 9187 | — | No | — |
-| redis-exporter | oliver006/redis_exporter:v1.66.0 | 9121 | — | No | — |
-| cadvisor | cadvisor:v0.49.1 | 8080 | — | No | — |
-| blackbox-exporter | prom/blackbox-exporter:v0.25.0 | 9115 | — | No | — |
-| loki | grafana/loki:3.2.1 | 3100 | `127.0.0.1:3100` | **No** (internal) | `loki_data` |
-| promtail | grafana/promtail:3.2.1 | 9080 | — | No | — |
-| uptime-kuma | louislam/uptime-kuma:1.23.16 | 3001 | `127.0.0.1:3002` | via admin subdomain + auth | `uptimekuma_data` |
-| bull-board | deadly0/bull-board:3.2.6 | 3000 | `127.0.0.1:3003` | via admin subdomain + auth | — |
+| Service           | Image                                         | Container port | Dev host bind    | Published in prod?         | Persistent volume   |
+| ----------------- | --------------------------------------------- | -------------- | ---------------- | -------------------------- | ------------------- |
+| prometheus        | prom/prometheus:v2.55.1                       | 9090           | `127.0.0.1:9090` | **No** (internal)          | `prometheus_data`   |
+| alertmanager      | prom/alertmanager:v0.27.0                     | 9093           | `127.0.0.1:9093` | **No** (internal)          | `alertmanager_data` |
+| grafana           | grafana/grafana-oss:11.3.1                    | 3000           | `127.0.0.1:3001` | via admin subdomain + auth | `grafana_data`      |
+| node-exporter     | prom/node-exporter:v1.8.2                     | 9100           | —                | No                         | —                   |
+| postgres-exporter | prometheuscommunity/postgres-exporter:v0.16.0 | 9187           | —                | No                         | —                   |
+| redis-exporter    | oliver006/redis_exporter:v1.66.0              | 9121           | —                | No                         | —                   |
+| cadvisor          | cadvisor:v0.49.1                              | 8080           | —                | No                         | —                   |
+| blackbox-exporter | prom/blackbox-exporter:v0.25.0                | 9115           | —                | No                         | —                   |
+| loki              | grafana/loki:3.2.1                            | 3100           | `127.0.0.1:3100` | **No** (internal)          | `loki_data`         |
+| promtail          | grafana/promtail:3.2.1                        | 9080           | —                | No                         | —                   |
+| uptime-kuma       | louislam/uptime-kuma:1.23.16                  | 3001           | `127.0.0.1:3002` | via admin subdomain + auth | `uptimekuma_data`   |
+| bull-board        | deadly0/bull-board:3.2.6                      | 3000           | `127.0.0.1:3003` | via admin subdomain + auth | —                   |
 
 **Exposure policy:** only the three admin UIs (Grafana, Uptime Kuma, Bull Board)
 are meant to be reachable, and only via `manage.saludlinkusa.com` behind
@@ -107,18 +108,18 @@ auth + WAF/IP allow-list. Exporters, Prometheus, Alertmanager and Loki are
 
 All in [.env.monitoring.template](.env.monitoring.template). Highlights:
 
-| Var | Purpose | Prod guidance |
-|---|---|---|
-| `MONITORING_ENV` | dev / staging / production label | set per env |
-| `BIND_ADDR` | host bind for published ports | keep `127.0.0.1`; drop published ports entirely in prod |
-| `APP_NETWORK` | app's docker network name | match compose project |
-| `PG_EXPORTER_DSN` | Postgres exporter connection | **read-only monitoring role**, TLS, from Secrets Manager |
-| `REDIS_EXPORTER_ADDR` | Redis exporter target | + `REDIS_EXPORTER_PASSWORD` |
-| `GRAFANA_ADMIN_PASSWORD` | Grafana admin | Secrets Manager; rotate |
-| `BULL_BOARD_USER/PASSWORD` | Bull Board basic auth | Secrets Manager |
-| `PROMETHEUS_RETENTION` / `LOKI_RETENTION_HOURS` | data retention | size to disk + compliance |
-| `ALERT_SLACK_WEBHOOK_URL` / `ALERT_EMAIL_TO` | alert delivery | Secrets Manager |
-| `BLACKBOX_TARGETS` | probed URLs | staging/prod public URLs |
+| Var                                             | Purpose                          | Prod guidance                                            |
+| ----------------------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| `MONITORING_ENV`                                | dev / staging / production label | set per env                                              |
+| `BIND_ADDR`                                     | host bind for published ports    | keep `127.0.0.1`; drop published ports entirely in prod  |
+| `APP_NETWORK`                                   | app's docker network name        | match compose project                                    |
+| `PG_EXPORTER_DSN`                               | Postgres exporter connection     | **read-only monitoring role**, TLS, from Secrets Manager |
+| `REDIS_EXPORTER_ADDR`                           | Redis exporter target            | + `REDIS_EXPORTER_PASSWORD`                              |
+| `GRAFANA_ADMIN_PASSWORD`                        | Grafana admin                    | Secrets Manager; rotate                                  |
+| `BULL_BOARD_USER/PASSWORD`                      | Bull Board basic auth            | Secrets Manager                                          |
+| `PROMETHEUS_RETENTION` / `LOKI_RETENTION_HOURS` | data retention                   | size to disk + compliance                                |
+| `ALERT_SLACK_WEBHOOK_URL` / `ALERT_EMAIL_TO`    | alert delivery                   | Secrets Manager                                          |
+| `BLACKBOX_TARGETS`                              | probed URLs                      | staging/prod public URLs                                 |
 
 **Secrets never live in git.** Templates carry safe local placeholders only
 (`change_me_*`), which are allow-listed in [.gitleaks.toml](../../.gitleaks.toml).
@@ -185,6 +186,7 @@ docker run --rm \
 #   saludlink-monitoring_loki_data         (logs — retention-bound)
 #   saludlink-monitoring_alertmanager_data (silences)
 ```
+
 Config (this directory) is version-controlled — that **is** its backup.
 In production, snapshot the underlying EBS volumes on a schedule instead.
 
@@ -212,6 +214,7 @@ docker compose -f docker-compose.monitoring.yml --env-file .env pull
 docker compose -f docker-compose.monitoring.yml --env-file .env up -d
 # 3. Re-verify health (above). Roll back by reverting the tag + up -d.
 ```
+
 Read release notes for Prometheus (TSDB format), Loki (schema `v13`) and Grafana
 (plugin/db migrations) before major bumps. Volumes persist across upgrades.
 
@@ -236,10 +239,10 @@ Read release notes for Prometheus (TSDB format), Loki (schema `v13`) and Grafana
 
 ## Troubleshooting
 
-| Symptom | Fix |
-|---|---|
-| `postgres`/`redis` targets `up=0` | App stack not running, or `APP_NETWORK` wrong. `docker network ls` and confirm `saludlink_default` exists; check `PG_EXPORTER_DSN`. |
-| `blackbox-http` `up=0` | App not running on :8000/:9000, or `host.docker.internal` unresolved on Linux (the compose sets `host-gateway`). |
-| Grafana "datasource not found" | Provisioning volume not mounted; confirm [config/grafana/provisioning](config/grafana/provisioning) path. |
+| Symptom                           | Fix                                                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `postgres`/`redis` targets `up=0` | App stack not running, or `APP_NETWORK` wrong. `docker network ls` and confirm `saludlink_default` exists; check `PG_EXPORTER_DSN`.                     |
+| `blackbox-http` `up=0`            | App not running on :8000/:9000, or `host.docker.internal` unresolved on Linux (the compose sets `host-gateway`).                                        |
+| Grafana "datasource not found"    | Provisioning volume not mounted; confirm [config/grafana/provisioning](config/grafana/provisioning) path.                                               |
 | cAdvisor crash-looping on Windows | Docker Desktop/WSL2 quirk — cAdvisor needs the standard host mounts; it may report a subset of metrics on Windows. Non-fatal for the rest of the stack. |
-| Bull Board shows no queues | Medusa hasn't created BullMQ queues yet (needs Redis-backed event bus running + activity), or `BULL_PREFIX` mismatch. |
+| Bull Board shows no queues        | Medusa hasn't created BullMQ queues yet (needs Redis-backed event bus running + activity), or `BULL_PREFIX` mismatch.                                   |

@@ -25,9 +25,11 @@ scrape_configs:
         regex: "/(.*)"
         target_label: container
       # Compose service + project for grouping in Grafana.
-      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+      - source_labels:
+          ["__meta_docker_container_label_com_docker_compose_service"]
         target_label: compose_service
-      - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
+      - source_labels:
+          ["__meta_docker_container_label_com_docker_compose_project"]
         target_label: compose_project
       - target_label: job
         replacement: docker
@@ -36,19 +38,19 @@ scrape_configs:
       # Bearer / API tokens.
       - replace:
           expression: '(?i)(authorization:\s*bearer\s+)([A-Za-z0-9._\-]+)'
-          replace: '${1}[REDACTED]'
+          replace: "${1}[REDACTED]"
       # Generic key=secret / password=... / token=... assignments.
       - replace:
           expression: '(?i)(password|passwd|secret|token|api[_-]?key|cookie|set-cookie|jwt)("?\s*[:=]\s*"?)([^\s",}]+)'
-          replace: '${1}${2}[REDACTED]'
+          replace: "${1}${2}[REDACTED]"
       # Stripe live/test secret keys.
       - replace:
-          expression: '(sk_(live|test)_)[A-Za-z0-9]+'
-          replace: '${1}[REDACTED]'
+          expression: "(sk_(live|test)_)[A-Za-z0-9]+"
+          replace: "${1}[REDACTED]"
       # Email addresses (potential PII / patient identifiers).
       - replace:
           expression: '([A-Za-z0-9._%+\-]+)@([A-Za-z0-9.\-]+\.[A-Za-z]{2,})'
-          replace: '[REDACTED_EMAIL]'
+          replace: "[REDACTED_EMAIL]"
       # US SSN pattern — must never appear; drop the whole line if seen.
       - drop:
           expression: '\b\d{3}-\d{2}-\d{4}\b'

@@ -29,8 +29,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       // Same-origin proxy path (next.config.js rewrites → PostHog Cloud).
       api_host: "/ingest",
       // Real host, used only to build links back to the PostHog UI.
-      ui_host:
-        process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.posthog.com",
+      ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.posthog.com",
       defaults: "2025-05-24",
       // Only create person profiles once a user is identified (login/checkout),
       // keeping anonymous marketing traffic profile-free.

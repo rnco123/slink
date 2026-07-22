@@ -46,8 +46,8 @@
   --sl-gold-700: #9a7433;
 
   /* ---- Ink / text ---- */
-  --sl-ink: #1b211d;        /* warm near-black */
-  --sl-ink-muted: #5a625b;  /* secondary text */
+  --sl-ink: #1b211d; /* warm near-black */
+  --sl-ink-muted: #5a625b; /* secondary text */
   --sl-ink-subtle: #8a8f88; /* tertiary / captions */
   --sl-ink-inverse: #fbf8f3;
 
@@ -67,9 +67,12 @@
 
   /* ---- Typography ---- */
   /* next/font supplies --font-* variables (self-hosted); fall back to system stacks */
-  --sl-font-display: var(--font-display), ui-serif, Georgia, "Times New Roman", serif;
-  --sl-font-body: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --sl-font-mono: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --sl-font-display: var(--font-display), ui-serif, Georgia, "Times New Roman",
+    serif;
+  --sl-font-body: var(--font-body), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --sl-font-mono: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo,
+    monospace;
 
   /* Fluid type scale (clamp: min .. vw .. max) */
   --sl-text-xs: 0.75rem;

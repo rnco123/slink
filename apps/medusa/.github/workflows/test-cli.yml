@@ -1,9 +1,9 @@
 name: Test CLI
 on:
- pull_request:
-  branches:
-    - 'master'
-    - 'ci'
+  pull_request:
+    branches:
+      - "master"
+      - "ci"
 
 jobs:
   test-cli-yarn:
@@ -23,7 +23,7 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
- 
+
       postgres:
         image: postgres
         env:
@@ -37,7 +37,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
- 
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-  
+
       - name: Install Dependencies
         run: yarn install
 
@@ -80,7 +80,7 @@ jobs:
       - name: Kill server
         shell: "bash"
         run: kill -9 $(lsof -t -i :9000)
-          
+
   test-cli-npm:
     name: "Test CLI (npm)"
     env:
@@ -88,7 +88,7 @@ jobs:
       REDIS_URL: redis://localhost:6379
       DATABASE_URL: "postgres://postgres:postgres@localhost/cli-test"
       POSTGRES_URL: "postgres://postgres:postgres@localhost/cli-test"
-    services: 
+    services:
       postgres:
         image: postgres
         env:
@@ -102,7 +102,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
- 
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -120,7 +120,7 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-  
+
       - name: Install Dependencies
         run: npm install
 
@@ -146,7 +146,7 @@ jobs:
       - name: Kill server
         shell: "bash"
         run: kill -9 $(lsof -t -i :9000)
-          
+
   test-cli-pnpm:
     name: "Test CLI (pnpm)"
     env:
@@ -154,7 +154,7 @@ jobs:
       REDIS_URL: redis://localhost:6379
       DATABASE_URL: "postgres://postgres:postgres@localhost/cli-test"
       POSTGRES_URL: "postgres://postgres:postgres@localhost/cli-test"
-    services: 
+    services:
       postgres:
         image: postgres
         env:
@@ -168,7 +168,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
- 
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -193,7 +193,7 @@ jobs:
         with:
           node-version: 20
           cache: "pnpm"
-  
+
       - name: Install Dependencies
         run: pnpm install
 
@@ -219,4 +219,3 @@ jobs:
       - name: Kill server
         shell: "bash"
         run: kill -9 $(lsof -t -i :9000)
-          

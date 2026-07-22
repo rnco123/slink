@@ -1,0 +1,70 @@
+# Continuous integration — Saludlink.
+# The security workflows scan the repo but never COMPILE it; this workflow is the
+# actual correctness gate: format → lint → typecheck → build → unit tests across
+# the whole pnpm/turbo workspace on every push to main and every PR.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Public build-time env baked into the storefront bundle. Dummy values are fine
+  # for COMPILATION — real values are injected at deploy time. check-env-variables.js
+  # hard-requires the publishable key at build.
+  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_ci_placeholder
+  NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+  NEXT_PUBLIC_BASE_URL: http://localhost:8000
+  # `medusa build` reads medusa-config at build time (it compiles, it does NOT
+  # connect to Postgres/Redis), so dummy connection strings + secrets are enough.
+  DATABASE_URL: postgres://ci:ci@localhost:5432/medusa
+  REDIS_URL: redis://localhost:6379
+  JWT_SECRET: ci_placeholder_jwt_secret
+  COOKIE_SECRET: ci_placeholder_cookie_secret
+  STORE_CORS: http://localhost:8000
+  ADMIN_CORS: http://localhost:9000
+  AUTH_CORS: http://localhost:8000,http://localhost:9000
+
+jobs:
+  quality:
+    name: format · lint · typecheck · build · test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier format check
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm turbo run lint
+
+      - name: Typecheck
+        run: pnpm turbo run typecheck
+
+      - name: Build
+        run: pnpm turbo run build
+
+      - name: Unit tests
+        run: pnpm turbo run test

@@ -7,10 +7,9 @@ import { expect, type Page, type Response } from "@playwright/test"
 export async function gotoOk(page: Page, url: string): Promise<Response> {
   const res = await page.goto(url, { waitUntil: "domcontentloaded" })
   expect(res, `no response for ${url}`).not.toBeNull()
-  expect(
-    res!.status(),
-    `${url} returned HTTP ${res!.status()}`
-  ).toBeLessThan(400)
+  expect(res!.status(), `${url} returned HTTP ${res!.status()}`).toBeLessThan(
+    400
+  )
   return res!
 }
 

@@ -58,6 +58,9 @@ test.describe("Content pages", () => {
   }) => {
     await gotoOk(page, path("/telemedicine"))
     const cta = page.getByRole("link", { name: /start a visit/i }).first()
-    await expect(cta).toHaveAttribute("href", /care\.saludlinkusa\.com|utm_source=storefront/)
+    await expect(cta).toHaveAttribute(
+      "href",
+      /care\.saludlinkusa\.com|utm_source=storefront/
+    )
   })
 })

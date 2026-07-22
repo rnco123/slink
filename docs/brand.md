@@ -8,16 +8,16 @@ Name: **Saludlink** ("salud" = health, "link" = connection) · domain **saludlin
 
 ## Color
 
-| Role | Token | Hex |
-|---|---|---|
-| Primary brand | `evergreen-600` | `#2e5540` |
+| Role                                  | Token               | Hex                   |
+| ------------------------------------- | ------------------- | --------------------- |
+| Primary brand                         | `evergreen-600`     | `#2e5540`             |
 | Primary deep (text on cream, headers) | `evergreen-800/900` | `#1a3227` / `#12241c` |
-| Page background | `cream` | `#fbf8f3` |
-| Warm neutral surfaces/lines | `sand-*` | `#f7f2ea` … `#6f6249` |
-| **Accent / CTA** | `clay-500` | `#c56b4e` |
-| Trust flourish (badges, seals) | `gold-500` | `#c99a4e` |
-| Ink (body text) | `ink` | `#1b211d` |
-| Muted text | `ink-muted` | `#5a625b` |
+| Page background                       | `cream`             | `#fbf8f3`             |
+| Warm neutral surfaces/lines           | `sand-*`            | `#f7f2ea` … `#6f6249` |
+| **Accent / CTA**                      | `clay-500`          | `#c56b4e`             |
+| Trust flourish (badges, seals)        | `gold-500`          | `#c99a4e`             |
+| Ink (body text)                       | `ink`               | `#1b211d`             |
+| Muted text                            | `ink-muted`         | `#5a625b`             |
 
 Semantic: success `#3d6b50` · warning `#b8862f` · error `#a83a2b` · info `#35617d`.
 

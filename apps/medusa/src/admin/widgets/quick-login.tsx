@@ -55,7 +55,9 @@ const QuickLogin = () => {
       <Button variant="secondary" size="small" onClick={doLogin} type="button">
         ⚡ Dev quick login
       </Button>
-      <span className="text-ui-fg-subtle text-xs">{DEV_EMAIL} (local only)</span>
+      <span className="text-ui-fg-subtle text-xs">
+        {DEV_EMAIL} (local only)
+      </span>
     </div>
   )
 }

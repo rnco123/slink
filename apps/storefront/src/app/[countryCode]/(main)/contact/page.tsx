@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 
 import { Container, Section, Eyebrow } from "@components/ui/layout-primitives"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { JsonLd, breadcrumbJsonLd } from "@lib/seo/jsonld"
 import { siteConfig } from "@lib/config/site"
 import { getDictionary } from "@lib/i18n"
@@ -54,7 +55,10 @@ export default async function ContactPage(props: { params: Promise<Params> }) {
               </a>
               <p className="mt-1 text-ink-muted">
                 <a
-                  href={`tel:${siteConfig.contact.phone.replace(/[^0-9+]/g, "")}`}
+                  href={`tel:${siteConfig.contact.phone.replace(
+                    /[^0-9+]/g,
+                    ""
+                  )}`}
                   className="hover:text-evergreen-700"
                 >
                   {siteConfig.contact.phone}
@@ -76,19 +80,19 @@ export default async function ContactPage(props: { params: Promise<Params> }) {
 
           <p className="mt-8 text-sm text-ink-subtle">
             {t.privacyNote}{" "}
-            <a
+            <LocalizedClientLink
               href="/legal/privacy-policy"
               className="underline hover:text-evergreen-700"
             >
               {dict.footer.legal}
-            </a>
+            </LocalizedClientLink>
             . {t.accessibilityNote}{" "}
-            <a
+            <LocalizedClientLink
               href="/legal/accessibility"
               className="underline hover:text-evergreen-700"
             >
               {dict.footer.legal}
-            </a>
+            </LocalizedClientLink>
             .
           </p>
         </Container>

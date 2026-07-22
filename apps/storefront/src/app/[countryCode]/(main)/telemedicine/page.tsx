@@ -92,7 +92,9 @@ export default async function TelemedicinePage(props: {
               labels={dict.availability}
             />
           </div>
-          <p className="mt-4 text-sm text-ink-subtle">{dict.common.emergency}</p>
+          <p className="mt-4 text-sm text-ink-subtle">
+            {dict.common.emergency}
+          </p>
         </Container>
       </Section>
 

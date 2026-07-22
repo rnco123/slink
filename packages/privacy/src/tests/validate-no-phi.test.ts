@@ -119,7 +119,11 @@ describe("validateNoPhi — free-text scanning", () => {
   })
 
   it("does not block legitimate product-search phrases even when scanning all text", () => {
-    for (const q of ["Blood Pressure Monitor", "Vitamin D", "Glucose Monitor"]) {
+    for (const q of [
+      "Blood Pressure Monitor",
+      "Vitamin D",
+      "Glucose Monitor",
+    ]) {
       const r = validateNoPhi({ note: q }, { scanAllText: true })
       expect(r.ok, `"${q}" should be allowed`).toBe(true)
     }

@@ -31,8 +31,12 @@ test.describe("Locale routing (middleware)", () => {
     ).toBeVisible()
     // Nav uses the Spanish "Nosotros" label for About (the hidden mobile-menu
     // copy comes first in the DOM, so filter to the visible one).
-    await expect(page.locator('a[href$="/about"]:visible').first()).toBeVisible()
-    await expect(page.getByRole("link", { name: "Nosotros" }).first()).toBeVisible()
+    await expect(
+      page.locator('a[href$="/about"]:visible').first()
+    ).toBeVisible()
+    await expect(
+      page.getByRole("link", { name: "Nosotros" }).first()
+    ).toBeVisible()
   })
 })
 

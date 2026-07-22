@@ -26,7 +26,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 
 ## PHASE 1 — FOUNDATION (scaffold, already begun)
 
-- ◐ **T5. Monorepo skeleton.** pnpm workspaces + Turborepo + gitignore + docker-compose (Postgres 16 + Redis 7). *(done)*
+- ◐ **T5. Monorepo skeleton.** pnpm workspaces + Turborepo + gitignore + docker-compose (Postgres 16 + Redis 7). _(done)_
 - ☐ **T6. Install & boot both apps.** Storefront (Next.js 15) + Medusa v2 backend install cleanly under pnpm; both dev servers run; admin loads at `/app`.
 - ☐ **T7. Shared packages.** `packages/config-typescript`, `packages/types` (incl. future SSO JWT claims contract), `packages/ui` (design tokens from T1).
 - ☐ **T8. Apply design system to storefront.** Wire T1/T2 tokens + components into the storefront; strip the starter's demo styling.
@@ -78,6 +78,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 ---
 
 ### Verification gates (per phase)
+
 - **Design:** every screen reviewed against the 8 learnings + LegitScript display rules before code.
 - **Phase 2:** Lighthouse (Perf ≥95, SEO 100, LCP <2.0s, CLS <0.05); Google Rich Results passes; securityheaders.com grade A.
 - **Phase 3:** Playwright checkout e2e; ISR revalidation (admin edit → live update).
