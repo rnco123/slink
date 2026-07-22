@@ -13,6 +13,7 @@
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,yml,yaml}\"",
+    "check:env": "node scripts/check-env-drift.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
