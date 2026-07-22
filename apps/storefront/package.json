@@ -15,7 +15,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:commerce": "cross-env E2E_INCLUDE_COMMERCE=1 playwright test",
-    "test:e2e:report": "playwright show-report e2e/.artifacts/report"
+    "test:e2e:report": "playwright show-report e2e/.artifacts/report",
+    "test": "vitest run"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -60,7 +61,8 @@
     "postcss": "^8.4.8",
     "prettier": "^2.8.8",
     "tailwindcss": "^3.0.23",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.2",
+    "vitest": "^3.2.6"
   },
   "resolutions": {
     "@types/react": "19.0.5",
