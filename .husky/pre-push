@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Pre-push gate: full type safety across the monorepo before code leaves the
+# machine. Turbo caches, so this is near-instant when nothing changed.
+
+pnpm turbo run typecheck || {
+  echo "typecheck failed — push aborted. Fix type errors before pushing."
+  exit 1
+}

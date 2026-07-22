@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# Fast (<5s) staged-file gate: format staged files, then scan them for secrets.
+# ESLint + typecheck run in pre-push and CI (eslint config is per-package; only
+# the storefront has one, so a repo-wide staged eslint here would be fragile).
+
+npx lint-staged || exit 1
+
+# gitleaks is optional locally; the same scan runs in CI (security.yml). Skip
+# gracefully when the binary isn't installed so committing still works offline.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner || {
+    echo "gitleaks: potential secret in staged changes — commit aborted."
+    exit 1
+  }
+else
+  echo "gitleaks not installed locally — skipping staged secret scan (enforced in CI)."
+fi
