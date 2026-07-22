@@ -3,6 +3,7 @@ import { Metadata } from "next"
 import { headers } from "next/headers"
 import { fontVariables } from "@lib/fonts"
 import { PostHogProvider } from "@lib/analytics/posthog"
+import ConsentBanner from "@modules/common/components/consent-banner"
 // Design tokens first so their CSS custom properties are defined before globals/Tailwind
 // consume them. Imported via JS (not a CSS @import) so Next resolves the package `exports`
 // map and inlines it — a bare CSS @import of a package specifier can't resolve in the browser.
@@ -33,6 +34,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       <body className="bg-cream font-body text-ink antialiased">
         <PostHogProvider>
           <main className="relative">{props.children}</main>
+          <ConsentBanner />
         </PostHogProvider>
       </body>
     </html>
