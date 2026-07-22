@@ -46,8 +46,14 @@ export default defineConfig({
   // Exclude backend-dependent commerce specs unless explicitly opted in.
   grepInvert: process.env.E2E_INCLUDE_COMMERCE ? undefined : /@commerce/,
   reporter: process.env.CI
-    ? [["github"], ["html", { outputFolder: "./e2e/.artifacts/report", open: "never" }]]
-    : [["list"], ["html", { outputFolder: "./e2e/.artifacts/report", open: "never" }]],
+    ? [
+        ["github"],
+        ["html", { outputFolder: "./e2e/.artifacts/report", open: "never" }],
+      ]
+    : [
+        ["list"],
+        ["html", { outputFolder: "./e2e/.artifacts/report", open: "never" }],
+      ],
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -57,11 +63,20 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      // Preview cookie (written by global-setup) so specs start past the
+      // coming-soon wall, which is enabled in all environments (task 82). The
+      // wall spec opts out per-test with an empty storageState.
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "./e2e/.artifacts/preview-state.json",
+      },
     },
     {
       name: "mobile-chrome",
-      use: { ...devices["Pixel 7"] },
+      use: {
+        ...devices["Pixel 7"],
+        storageState: "./e2e/.artifacts/preview-state.json",
+      },
       // Mobile-only concerns (hamburger menu) live in navigation.spec.ts.
       testMatch: /navigation\.spec\.ts/,
     },

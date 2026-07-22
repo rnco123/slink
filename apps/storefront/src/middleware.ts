@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
+import {
+  PREVIEW_COOKIE,
+  PREVIEW_TOKEN,
+  isComingSoonEnabled,
+} from "@lib/preview"
 
 /**
  * Locale routing middleware. Saludlink is US-only but bilingual: the first path segment is
@@ -7,6 +12,10 @@ import { NextRequest, NextResponse } from "next/server"
  *
  * - Valid locale prefix  → continue, remember choice in NEXT_LOCALE cookie.
  * - Missing/invalid prefix → redirect to the detected locale (cookie → Accept-Language → en).
+ *
+ * Also hosts the coming-soon wall (task 82): while COMING_SOON is enabled, every
+ * route is rewritten to /coming-soon unless the visitor holds the preview cookie.
+ * This runs BEFORE locale routing so gated visitors never reach a localized page.
  */
 const LOCALES = ["en", "es"] as const
 const DEFAULT_LOCALE = "en"
@@ -37,6 +46,24 @@ export function middleware(request: NextRequest) {
   // Let static assets through untouched.
   if (pathname.includes(".")) {
     return NextResponse.next()
+  }
+
+  // The coming-soon page renders directly (no locale prefix, no self-rewrite).
+  if (pathname === "/coming-soon") {
+    return NextResponse.next()
+  }
+
+  // Coming-soon wall — gate everything else before locale routing. `/api/health`
+  // is already excluded by the matcher below; robots.txt/sitemap.xml carry a dot
+  // and exit above, so they stay reachable while the wall is up.
+  if (isComingSoonEnabled()) {
+    const hasPreview =
+      request.cookies.get(PREVIEW_COOKIE)?.value === PREVIEW_TOKEN
+    if (!hasPreview) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/coming-soon"
+      return NextResponse.rewrite(url)
+    }
   }
 
   const segment = pathname.split("/")[1]
