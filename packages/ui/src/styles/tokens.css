@@ -36,7 +36,7 @@
   --sl-clay-200: #e9b79f;
   --sl-clay-300: #dd9270;
   --sl-clay-400: #d1734b;
-  --sl-clay-500: #c56b4e; /* accent */
+  --sl-clay-500: #ad5436; /* accent — deepened from #c56b4e to meet 4.5:1 as CTA text/bg (WCAG AA) */
   --sl-clay-600: #a5523a;
   --sl-clay-700: #83402e;
 
@@ -48,7 +48,7 @@
   /* ---- Ink / text ---- */
   --sl-ink: #1b211d; /* warm near-black */
   --sl-ink-muted: #5a625b; /* secondary text */
-  --sl-ink-subtle: #8a8f88; /* tertiary / captions */
+  --sl-ink-subtle: #676d66; /* tertiary / captions — deepened from #8a8f88 to meet 4.5:1 on cream/sand (WCAG AA) */
   --sl-ink-inverse: #fbf8f3;
 
   /* ---- Semantic ---- */
