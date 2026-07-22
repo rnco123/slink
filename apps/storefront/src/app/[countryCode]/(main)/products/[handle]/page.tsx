@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
+import TrackEvent from "@modules/analytics/track-event"
 import { HttpTypes } from "@medusajs/types"
 
 type Props = {
@@ -121,11 +122,27 @@ export default async function ProductPage(props: Props) {
   }
 
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images}
-    />
+    <>
+      {/* Funnel event (task 10) — product view, IDs + price only, PHI-safe. */}
+      <TrackEvent
+        event="product_viewed"
+        payload={{
+          product_id: pricedProduct.id,
+          category: pricedProduct.categories?.[0]?.name ?? undefined,
+          price:
+            pricedProduct.variants?.[0]?.calculated_price?.calculated_amount ??
+            undefined,
+          currency_code:
+            pricedProduct.variants?.[0]?.calculated_price?.currency_code ??
+            undefined,
+        }}
+      />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images}
+      />
+    </>
   )
 }

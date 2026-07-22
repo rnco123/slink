@@ -2,6 +2,7 @@
 
 import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
+import { captureSafeEvent } from "@saludlink/privacy"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
@@ -130,6 +131,16 @@ export default function ProductActions({
       variantId: selectedVariant.id,
       quantity: 1,
       countryCode,
+    })
+
+    // Funnel event (task 10) — PHI-safe, IDs + price only, no free text.
+    captureSafeEvent("product_added_to_cart", {
+      product_id: product.id,
+      variant_id: selectedVariant.id,
+      quantity: 1,
+      price: selectedVariant.calculated_price?.calculated_amount ?? undefined,
+      currency_code:
+        selectedVariant.calculated_price?.currency_code ?? undefined,
     })
 
     setIsAdding(false)
