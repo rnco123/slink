@@ -45,8 +45,8 @@ const AgeGate = ({ minAge }: Props) => {
         {declined ? (
           <>
             <p className="mt-3 text-sm text-ui-fg-subtle">
-              We're sorry — you must be at least {minAge} years old to view or
-              purchase this product.
+              We&apos;re sorry — you must be at least {minAge} years old to view
+              or purchase this product.
             </p>
             <button
               type="button"

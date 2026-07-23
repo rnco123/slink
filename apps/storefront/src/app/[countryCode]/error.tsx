@@ -37,6 +37,7 @@ export default function LocaleError({
         >
           Try again
         </button>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a hard full-page reload is the intended recovery from an error boundary (resets client state / escapes the errored subtree); a client-nav Link would keep the broken state. */}
         <a
           href="/"
           className="rounded-md border border-ui-border-base px-4 py-2 text-sm font-medium"
