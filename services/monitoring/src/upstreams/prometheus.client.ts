@@ -17,12 +17,22 @@ export interface PromTarget {
 
 interface PromQueryResponse {
   status: string
-  data: { resultType: string; result: Array<{ metric: Record<string, string>; value: [number, string] }> }
+  data: {
+    resultType: string
+    result: Array<{ metric: Record<string, string>; value: [number, string] }>
+  }
 }
 
 interface PromTargetsResponse {
   status: string
-  data: { activeTargets: Array<{ labels: Record<string, string>; health: string; lastError: string; scrapeUrl: string }> }
+  data: {
+    activeTargets: Array<{
+      labels: Record<string, string>
+      health: string
+      lastError: string
+      scrapeUrl: string
+    }>
+  }
 }
 
 @Injectable()
@@ -32,14 +42,18 @@ export class PrometheusClient {
 
   async ready(): Promise<boolean> {
     // /-/ready returns plaintext, so read it as text and trust the status code.
-    const res = await getText(`${this.base}/-/ready`, { timeoutMs: this.timeout })
+    const res = await getText(`${this.base}/-/ready`, {
+      timeoutMs: this.timeout,
+    })
     return res.ok
   }
 
   /** Instant vector query. Returns one row per series. */
   async query(promql: string): Promise<PromInstant[]> {
     const url = `${this.base}/api/v1/query?query=${encodeURIComponent(promql)}`
-    const res = await getJson<PromQueryResponse>(url, { timeoutMs: this.timeout })
+    const res = await getJson<PromQueryResponse>(url, {
+      timeoutMs: this.timeout,
+    })
     if (!res.ok || !res.data || res.data.status !== "success") return []
     return res.data.data.result.map((r) => {
       const rawVal = r.value?.[1] ?? null
@@ -60,7 +74,9 @@ export class PrometheusClient {
 
   async targets(): Promise<PromTarget[]> {
     const url = `${this.base}/api/v1/targets?state=active`
-    const res = await getJson<PromTargetsResponse>(url, { timeoutMs: this.timeout })
+    const res = await getJson<PromTargetsResponse>(url, {
+      timeoutMs: this.timeout,
+    })
     if (!res.ok || !res.data) return []
     return res.data.data.activeTargets.map((t) => ({
       job: t.labels.job ?? "",

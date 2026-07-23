@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common"
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common"
 import { Request } from "express"
 import { loadEnv } from "../config/env"
 
@@ -17,7 +22,9 @@ export class TokenGuard implements CanActivate {
     if (!this.token) return true
     const req = context.switchToHttp().getRequest<Request>()
     const auth = req.header("authorization") ?? ""
-    const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : ""
+    const bearer = auth.toLowerCase().startsWith("bearer ")
+      ? auth.slice(7).trim()
+      : ""
     const apiKey = req.header("x-api-key") ?? ""
     const presented = bearer || apiKey
     if (presented && timingSafeEqual(presented, this.token)) return true

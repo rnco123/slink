@@ -9,10 +9,14 @@ async function bootstrap(): Promise<void> {
   const env = loadEnv()
   const log = new Logger("monitoring-api")
 
-  const app = await NestFactory.create(AppModule, { logger: ["log", "warn", "error"] })
+  const app = await NestFactory.create(AppModule, {
+    logger: ["log", "warn", "error"],
+  })
 
   // CORS: only the configured admin origin(s); empty = no cross-origin.
-  const origins = env.MONITORING_CORS_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean)
+  const origins = env.MONITORING_CORS_ORIGINS.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
   app.enableCors({
     origin: origins.length > 0 ? origins : false,
     methods: ["GET"],
@@ -28,6 +32,9 @@ async function bootstrap(): Promise<void> {
 
 bootstrap().catch((err) => {
   // eslint-disable-next-line no-console
-  console.error("[monitoring-api] fatal boot error:", err instanceof Error ? err.message : err)
+  console.error(
+    "[monitoring-api] fatal boot error:",
+    err instanceof Error ? err.message : err
+  )
   process.exit(1)
 })

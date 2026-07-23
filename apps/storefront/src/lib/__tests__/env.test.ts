@@ -30,7 +30,10 @@ describe("validateStorefrontEnv", () => {
 
   it("rejects a publishable key without the pk_ prefix", () => {
     expect(() =>
-      validateStorefrontEnv({ ...base, NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "xx" })
+      validateStorefrontEnv({
+        ...base,
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "xx",
+      })
     ).toThrow(/pk_/)
   })
 
@@ -51,7 +54,11 @@ describe("validateStorefrontEnv", () => {
 
   it("rejects a non-6-digit PREVIEW_CODE", () => {
     expect(() =>
-      validateStorefrontEnv({ ...base, COMING_SOON: "true", PREVIEW_CODE: "12" })
+      validateStorefrontEnv({
+        ...base,
+        COMING_SOON: "true",
+        PREVIEW_CODE: "12",
+      })
     ).toThrow(/6-digit/)
   })
 

@@ -1,4 +1,11 @@
-import { BadRequestException, Controller, Get, Param, Query, UseGuards } from "@nestjs/common"
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+} from "@nestjs/common"
 import { MonitoringService } from "./monitoring.service"
 import { TokenGuard } from "../common/token.guard"
 import { isMetricKind, METRIC_KINDS } from "../upstreams/promql"
@@ -25,7 +32,11 @@ export class MonitoringController {
   @Get("metrics/:kind")
   metrics(@Param("kind") kind: string) {
     if (!isMetricKind(kind)) {
-      throw new BadRequestException(`unknown metric kind '${kind}'. Expected one of: ${METRIC_KINDS.join(", ")}`)
+      throw new BadRequestException(
+        `unknown metric kind '${kind}'. Expected one of: ${METRIC_KINDS.join(
+          ", "
+        )}`
+      )
     }
     return this.svc.metrics(kind)
   }
@@ -73,7 +84,12 @@ export class MonitoringController {
   }
 }
 
-function clampInt(raw: string | undefined, fallback: number, min: number, max: number): number {
+function clampInt(
+  raw: string | undefined,
+  fallback: number,
+  min: number,
+  max: number
+): number {
   if (raw === undefined) return fallback
   const n = Number.parseInt(raw, 10)
   if (!Number.isFinite(n)) return fallback

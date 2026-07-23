@@ -15,16 +15,16 @@ there — dashboards must not assume properties that don't exist.
 
 ## Approved events (ground truth)
 
-| Event                   | Key properties (all PHI-free)                                  | Fired from (task 10)                        |
-| ----------------------- | -------------------------------------------------------------- | ------------------------------------------- |
-| `page_viewed`           | `path`, `locale?`                                              | (manual `$pageview` also on) route changes  |
-| `product_viewed`        | `product_id`, `category?`, `price?`, `currency_code?`          | PDP `products/[handle]/page.tsx`            |
-| `product_added_to_cart` | `product_id`, `variant_id`, `quantity`, `price?`, `currency_code?` | `product-actions/index.tsx`             |
-| `cart_viewed`           | `cart_id`, `item_count`, `subtotal?`, `currency_code?`         | `cart/page.tsx`                             |
-| `checkout_started`      | `cart_id`, `item_count`, `value?`, `currency_code?`            | `checkout/page.tsx`                         |
-| `order_completed`       | `order_id`, `value`, `currency_code`, `item_count`, `coupon?`  | `order/[id]/confirmed/page.tsx`             |
-| `newsletter_signup`     | `source?`, `locale?`                                           | newsletter form (no email captured)         |
-| `search_performed`      | `query_length`, `results_count`, `category?`                  | search (raw query never sent)               |
+| Event                   | Key properties (all PHI-free)                                      | Fired from (task 10)                       |
+| ----------------------- | ------------------------------------------------------------------ | ------------------------------------------ |
+| `page_viewed`           | `path`, `locale?`                                                  | (manual `$pageview` also on) route changes |
+| `product_viewed`        | `product_id`, `category?`, `price?`, `currency_code?`              | PDP `products/[handle]/page.tsx`           |
+| `product_added_to_cart` | `product_id`, `variant_id`, `quantity`, `price?`, `currency_code?` | `product-actions/index.tsx`                |
+| `cart_viewed`           | `cart_id`, `item_count`, `subtotal?`, `currency_code?`             | `cart/page.tsx`                            |
+| `checkout_started`      | `cart_id`, `item_count`, `value?`, `currency_code?`                | `checkout/page.tsx`                        |
+| `order_completed`       | `order_id`, `value`, `currency_code`, `item_count`, `coupon?`      | `order/[id]/confirmed/page.tsx`            |
+| `newsletter_signup`     | `source?`, `locale?`                                               | newsletter form (no email captured)        |
+| `search_performed`      | `query_length`, `results_count`, `category?`                       | search (raw query never sent)              |
 
 > PostHog auto-adds `$current_url`, `$pathname`, and `utm_*` (from the landing
 > URL) to events — these power the campaign breakdowns below without any code
@@ -80,18 +80,18 @@ Drop-off between any two adjacent numbers is the optimization target. `purchased
 
 ## 2. Supporting insights (one dashboard: "Saludlink — Commerce & Growth")
 
-| Tile                     | Type      | Definition                                                                                 |
-| ------------------------ | --------- | ------------------------------------------------------------------------------------------ |
-| Purchase funnel          | Funnel    | The 5 steps from §1.                                                                        |
-| Conversion rate (30d)    | Trend     | `order_completed` ÷ unique users with `product_viewed`, weekly.                             |
-| Revenue proxy            | Trend     | `sum(order_completed.value)` by day. (Aggregate only — never per-person.)                  |
-| AOV                      | Formula   | `sum(order_completed.value) / count(order_completed)`.                                      |
-| Top products viewed      | Trend     | `product_viewed` broken down by `product_id` (map ids → names in the panel, not in PostHog).|
-| Add-to-cart rate by product | Trend  | `product_added_to_cart` ÷ `product_viewed`, breakdown `product_id`.                         |
-| Search performance       | Trend     | `search_performed` avg `results_count`; count where `results_count = 0` (zero-result rate).|
-| Newsletter conversions   | Trend     | `newsletter_signup` by `source`.                                                            |
-| Locale split             | Trend     | any event, breakdown `locale` (`en` vs `es`).                                               |
-| Traffic by channel       | Trend     | `$pageview` breakdown `utm_source` / `utm_medium` (see §3).                                 |
+| Tile                        | Type    | Definition                                                                                   |
+| --------------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| Purchase funnel             | Funnel  | The 5 steps from §1.                                                                         |
+| Conversion rate (30d)       | Trend   | `order_completed` ÷ unique users with `product_viewed`, weekly.                              |
+| Revenue proxy               | Trend   | `sum(order_completed.value)` by day. (Aggregate only — never per-person.)                    |
+| AOV                         | Formula | `sum(order_completed.value) / count(order_completed)`.                                       |
+| Top products viewed         | Trend   | `product_viewed` broken down by `product_id` (map ids → names in the panel, not in PostHog). |
+| Add-to-cart rate by product | Trend   | `product_added_to_cart` ÷ `product_viewed`, breakdown `product_id`.                          |
+| Search performance          | Trend   | `search_performed` avg `results_count`; count where `results_count = 0` (zero-result rate).  |
+| Newsletter conversions      | Trend   | `newsletter_signup` by `source`.                                                             |
+| Locale split                | Trend   | any event, breakdown `locale` (`en` vs `es`).                                                |
+| Traffic by channel          | Trend   | `$pageview` breakdown `utm_source` / `utm_medium` (see §3).                                  |
 
 Keep every tile **aggregate**. Do not add tiles that require identifying a person
 (session recordings are off; person profiles are `identified_only`).
@@ -109,13 +109,13 @@ standard 5 UTM params. PostHog captures them automatically onto the first
 pageview of the session (`$initial_utm_*` on the person, `utm_*` on events), so
 the funnel and traffic tiles can break down by them with **no code change**.
 
-| Param          | Meaning                     | Example values                                  |
-| -------------- | --------------------------- | ----------------------------------------------- |
-| `utm_source`   | where the click came from   | `google`, `meta`, `newsletter`, `care` (portal) |
-| `utm_medium`   | channel type                | `cpc`, `social`, `email`, `referral`            |
-| `utm_campaign` | the campaign                | `metabolic-launch-2026q3`                       |
-| `utm_content`  | which creative/placement    | `hero-a`, `footer-cta`                          |
-| `utm_term`     | paid keyword (search ads)   | `berberine`                                     |
+| Param          | Meaning                   | Example values                                  |
+| -------------- | ------------------------- | ----------------------------------------------- |
+| `utm_source`   | where the click came from | `google`, `meta`, `newsletter`, `care` (portal) |
+| `utm_medium`   | channel type              | `cpc`, `social`, `email`, `referral`            |
+| `utm_campaign` | the campaign              | `metabolic-launch-2026q3`                       |
+| `utm_content`  | which creative/placement  | `hero-a`, `footer-cta`                          |
+| `utm_term`     | paid keyword (search ads) | `berberine`                                     |
 
 Convention: **lowercase, hyphen-separated, no spaces**; `utm_campaign` ends with
 a `YYYYqN` suffix so campaigns stay sortable.
@@ -142,11 +142,11 @@ crossing over (UTM params are campaign metadata, not identifiers).
 
 **Recommended convention for the link-out:**
 
-| Param          | Value                                                    |
-| -------------- | -------------------------------------------------------- |
-| `utm_source`   | `storefront`                                             |
-| `utm_medium`   | `cta`                                                    |
-| `utm_campaign` | `telehealth-linkout`                                     |
+| Param          | Value                                                                          |
+| -------------- | ------------------------------------------------------------------------------ |
+| `utm_source`   | `storefront`                                                                   |
+| `utm_medium`   | `cta`                                                                          |
+| `utm_campaign` | `telehealth-linkout`                                                           |
 | `utm_content`  | the placement: `nav` \| `mobile-menu` \| `home-section` \| `telemedicine-page` |
 
 Per-placement `utm_content` is the one gap today: all four placements share the
@@ -157,7 +157,8 @@ session, not this monitoring session.** Suggested shape:
 ```ts
 // apps/storefront/src/lib/config/site.ts — code-session follow-up
 export function telemedicineUrl(placement: string): string {
-  const base = process.env.NEXT_PUBLIC_TELEMEDICINE_URL || "https://care.saludlinkusa.com"
+  const base =
+    process.env.NEXT_PUBLIC_TELEMEDICINE_URL || "https://care.saludlinkusa.com"
   const u = new URL(base)
   u.searchParams.set("utm_source", "storefront")
   u.searchParams.set("utm_medium", "cta")
@@ -170,7 +171,7 @@ export function telemedicineUrl(placement: string): string {
 Until then, the single default URL still attributes storefront→portal traffic at
 the source/medium level; only the per-placement breakdown is missing.
 
-> **Optional link-out event.** If we want the *storefront's* PostHog to also
+> **Optional link-out event.** If we want the _storefront's_ PostHog to also
 > count outbound clicks (not just the portal's), add a `telemedicine_link_clicked`
 > event to the approved registry in `packages/privacy/src/analytics.ts` with a
 > `{ placement }` payload (no ids/PHI) and fire it via `captureSafeEvent` on

@@ -113,7 +113,11 @@
         "reduceOptions": { "calcs": ["lastNotNull"] }
       },
       "targets": [
-        { "expr": "avg_over_time(probe_success[30m]) * 100", "legendFormat": "{{instance}}", "refId": "A" }
+        {
+          "expr": "avg_over_time(probe_success[30m]) * 100",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
       ]
     },
     {
@@ -141,7 +145,11 @@
         "reduceOptions": { "calcs": ["lastNotNull"] }
       },
       "targets": [
-        { "expr": "avg_over_time(probe_http_duration_seconds{phase=\"processing\"}[30m])", "legendFormat": "{{instance}}", "refId": "A" }
+        {
+          "expr": "avg_over_time(probe_http_duration_seconds{phase=\"processing\"}[30m])",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
       ]
     },
     {
@@ -152,7 +160,13 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP", "color": "green" }
+              }
+            }
           ],
           "thresholds": {
             "mode": "absolute",
@@ -197,7 +211,10 @@
         "reduceOptions": { "calcs": ["lastNotNull"] }
       },
       "targets": [
-        { "expr": "count(ALERTS{alertstate=\"firing\", severity=\"critical\"}) or vector(0)", "refId": "A" }
+        {
+          "expr": "count(ALERTS{alertstate=\"firing\", severity=\"critical\"}) or vector(0)",
+          "refId": "A"
+        }
       ]
     },
     {
@@ -205,9 +222,16 @@
       "title": "Probe availability (success) by target",
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 26 },
-      "fieldConfig": { "defaults": { "unit": "bool", "min": 0, "max": 1 }, "overrides": [] },
+      "fieldConfig": {
+        "defaults": { "unit": "bool", "min": 0, "max": 1 },
+        "overrides": []
+      },
       "targets": [
-        { "expr": "probe_success", "legendFormat": "{{instance}}", "refId": "A" }
+        {
+          "expr": "probe_success",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
       ]
     },
     {
@@ -217,7 +241,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 26 },
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "targets": [
-        { "expr": "probe_http_duration_seconds{phase=\"processing\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        {
+          "expr": "probe_http_duration_seconds{phase=\"processing\"}",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
       ]
     }
   ]

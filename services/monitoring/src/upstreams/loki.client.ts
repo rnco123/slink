@@ -13,7 +13,10 @@ interface LokiQueryRangeResponse {
   status: string
   data: {
     resultType: string
-    result: Array<{ stream: Record<string, string>; values: Array<[string, string]> }>
+    result: Array<{
+      stream: Record<string, string>
+      values: Array<[string, string]>
+    }>
   }
 }
 
@@ -46,7 +49,9 @@ export class LokiClient {
       direction: "backward",
     })
     const url = `${this.base}/loki/api/v1/query_range?${params.toString()}`
-    const res = await getJson<LokiQueryRangeResponse>(url, { timeoutMs: this.timeout })
+    const res = await getJson<LokiQueryRangeResponse>(url, {
+      timeoutMs: this.timeout,
+    })
     if (!res.ok || !res.data || res.data.status !== "success") return []
 
     const out: LogEntry[] = []

@@ -11,7 +11,7 @@ when a secret may have leaked — see the runbook's §7.
 ## Principles
 
 - **Source of truth = SSM Parameter Store** (`/slink/prod/*`, SecureString,
-  us-east-1). The box's `.env` is *derived* from SSM via
+  us-east-1). The box's `.env` is _derived_ from SSM via
   [`infra/deploy/build-env.sh`](../../deploy/build-env.sh) — never hand-edit
   `.env` as the canonical copy; change SSM then rebuild.
 - **Rotate forward, verify, then retire.** For anything with a live dependency
@@ -23,22 +23,22 @@ when a secret may have leaked — see the runbook's §7.
 
 ## Blast-radius & cadence at a glance
 
-| Secret | Store | Rotating it disrupts | Cadence | Steps |
-| ------ | ----- | -------------------- | ------- | ----- |
-| `JWT_SECRET` | SSM `/slink/prod/jwt` | **Logs out all admin/customer sessions** | 90d / on suspicion | §1 |
-| `COOKIE_SECRET` | SSM `/slink/prod/cookie` | Invalidates signed cookies (re-login) | 90d / on suspicion | §1 |
-| `REVALIDATE_SECRET` | SSM `/slink/prod/revalidate` | ISR revalidation webhook until both sides updated | 90d | §1 |
-| App DB password | SSM `/slink/prod/db_password` (+ `database_url`) | Brief app DB reconnect | 90d / on suspicion | §2 |
-| `slink_exporter` DB password | SSM (new: `/slink/prod/pg_exporter_password`) | postgres-exporter metrics gap (seconds) | 90d | §3 |
-| Grafana admin password | SSM (`/slink/prod/grafana_admin_password`) | Grafana UI login | 180d | §4 |
-| Bull Board password | SSM (`/slink/prod/bull_board_password`) | Bull Board UI login | 180d | §4 |
-| Monitoring API token | SSM (`/slink/prod/monitoring_api_token`) | Admin panel → Monitoring API calls | 180d | §4 |
-| Medusa **publishable** key | Medusa admin + storefront env | Storefront → Medusa store API | on compromise | §5 |
-| PostHog personal API key | SSM (when analytics armed) | `/monitoring/analytics` reads | 180d | §6 |
-| Stripe keys | SSM (when task 20 lands) | Payments | per Stripe policy | §6 |
-| SES SMTP creds | SSM (when task 34/62 lands) | Order emails | 180d | §6 |
-| GitHub PAT | local `completion.md` cred block | CI/repo push | **after roadmap complete** (task 16) | §7 |
-| SSH key `slink-key` | `~/.ssh/slink-key.pem` + EC2 key pair | SSH access to the box | on staff change/compromise | §8 |
+| Secret                       | Store                                            | Rotating it disrupts                              | Cadence                              | Steps |
+| ---------------------------- | ------------------------------------------------ | ------------------------------------------------- | ------------------------------------ | ----- |
+| `JWT_SECRET`                 | SSM `/slink/prod/jwt`                            | **Logs out all admin/customer sessions**          | 90d / on suspicion                   | §1    |
+| `COOKIE_SECRET`              | SSM `/slink/prod/cookie`                         | Invalidates signed cookies (re-login)             | 90d / on suspicion                   | §1    |
+| `REVALIDATE_SECRET`          | SSM `/slink/prod/revalidate`                     | ISR revalidation webhook until both sides updated | 90d                                  | §1    |
+| App DB password              | SSM `/slink/prod/db_password` (+ `database_url`) | Brief app DB reconnect                            | 90d / on suspicion                   | §2    |
+| `slink_exporter` DB password | SSM (new: `/slink/prod/pg_exporter_password`)    | postgres-exporter metrics gap (seconds)           | 90d                                  | §3    |
+| Grafana admin password       | SSM (`/slink/prod/grafana_admin_password`)       | Grafana UI login                                  | 180d                                 | §4    |
+| Bull Board password          | SSM (`/slink/prod/bull_board_password`)          | Bull Board UI login                               | 180d                                 | §4    |
+| Monitoring API token         | SSM (`/slink/prod/monitoring_api_token`)         | Admin panel → Monitoring API calls                | 180d                                 | §4    |
+| Medusa **publishable** key   | Medusa admin + storefront env                    | Storefront → Medusa store API                     | on compromise                        | §5    |
+| PostHog personal API key     | SSM (when analytics armed)                       | `/monitoring/analytics` reads                     | 180d                                 | §6    |
+| Stripe keys                  | SSM (when task 20 lands)                         | Payments                                          | per Stripe policy                    | §6    |
+| SES SMTP creds               | SSM (when task 34/62 lands)                      | Order emails                                      | 180d                                 | §6    |
+| GitHub PAT                   | local `completion.md` cred block                 | CI/repo push                                      | **after roadmap complete** (task 16) | §7    |
+| SSH key `slink-key`          | `~/.ssh/slink-key.pem` + EC2 key pair            | SSH access to the box                             | on staff change/compromise           | §8    |
 
 ---
 

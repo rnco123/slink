@@ -11,7 +11,7 @@
 #       env: production
 # (For TLS cert-expiry monitoring, also add the https roots to blackbox-tls.yml.)
 - targets:
-    - http://host.docker.internal:8000        # storefront
+    - http://host.docker.internal:8000 # storefront
     - http://host.docker.internal:9000/health # medusa backend health
   labels:
     env: development

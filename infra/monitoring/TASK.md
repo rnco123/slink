@@ -58,8 +58,8 @@ _Last updated: 2026-07-23._
 
 ## Analytics
 
-| Tool                   | Status | Configured                                | Verified | Docs                                           | Files    |
-| ---------------------- | ------ | ----------------------------------------- | -------- | ---------------------------------------------- | -------- |
+| Tool                   | Status | Configured                                | Verified | Docs                                                                                                  | Files    |
+| ---------------------- | ------ | ----------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- | -------- |
 | PostHog (privacy-safe) | ☑      | ✅ existing config documented (unchanged) | existing | [analytics-posthog](docs/analytics-posthog.md) · [dashboards+UTM (t65)](docs/analytics-dashboards.md) | doc only |
 
 ## Security

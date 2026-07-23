@@ -43,12 +43,12 @@ prod is a single hot-reloaded edit (no restart):
 Uptime Kuma has no config file / no REST CRUD (per the API contract) — monitors
 are created once in its UI (`:3002`, behind the admin subdomain). Create these:
 
-| Monitor name        | Type     | URL / target                              | Interval | Notes                          |
-| ------------------- | -------- | ----------------------------------------- | -------- | ------------------------------ |
-| Storefront          | HTTP(s)  | `https://saludlinkusa.com/api/health`     | 60s      | keyword check `"ok"`           |
-| Admin (Medusa)      | HTTP(s)  | `https://manage.saludlinkusa.com/health`  | 60s      | keyword check `OK`             |
-| Storefront home     | HTTP(s)  | `https://saludlinkusa.com`                | 300s     | 200 (wall page is a valid 200) |
-| TLS expiry          | (auto)   | any https monitor surfaces cert age       | —        | Kuma warns ~14d by default     |
+| Monitor name    | Type    | URL / target                             | Interval | Notes                          |
+| --------------- | ------- | ---------------------------------------- | -------- | ------------------------------ |
+| Storefront      | HTTP(s) | `https://saludlinkusa.com/api/health`    | 60s      | keyword check `"ok"`           |
+| Admin (Medusa)  | HTTP(s) | `https://manage.saludlinkusa.com/health` | 60s      | keyword check `OK`             |
+| Storefront home | HTTP(s) | `https://saludlinkusa.com`               | 300s     | 200 (wall page is a valid 200) |
+| TLS expiry      | (auto)  | any https monitor surfaces cert age      | —        | Kuma warns ~14d by default     |
 
 Then create a **status page** with slug `saludlink` (the Monitoring API reads
 `/api/status-page/heartbeat/saludlink`). Optionally enable **Settings → API Keys**
