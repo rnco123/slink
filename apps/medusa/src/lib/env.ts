@@ -161,7 +161,7 @@ function refine(env: MedusaEnv, ctx: z.RefinementCtx) {
     }
   }
 
-  // --- Stripe: key format + webhook secret pairing (all environments) ------
+  // --- Stripe: key format (all environments) -------------------------------
   if (env.STRIPE_API_KEY) {
     if (!/^(sk|rk)_(test|live)_/.test(env.STRIPE_API_KEY)) {
       ctx.addIssue({
@@ -171,7 +171,13 @@ function refine(env: MedusaEnv, ctx: z.RefinementCtx) {
           "STRIPE_API_KEY must be a Stripe secret key (starts with sk_test_ / sk_live_ / rk_...).",
       })
     }
-    if (!env.STRIPE_WEBHOOK_SECRET) {
+    // Webhook secret is only *required* in production. In dev you can boot with
+    // just the secret key to test the checkout flow (payment intents create +
+    // confirm client-side); the webhook only verifies the async capture-confirm
+    // event. Locally you obtain the whsec_ from `stripe listen` (see STRIPE.md)
+    // and set it when working task 34. In prod it is mandatory — an unverified
+    // webhook means orders can be spoofed as paid.
+    if (isProd && !env.STRIPE_WEBHOOK_SECRET) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["STRIPE_WEBHOOK_SECRET"],
