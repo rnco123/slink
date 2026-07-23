@@ -143,3 +143,19 @@ jobs:
           cd /opt/slink
           docker compose exec -T -e SEED_CONTENT_FORCE=1 medusa \
             npx medusa exec ./src/scripts/seed-content.js
+
+      # Give products their artwork. The illustrations live in the repo at
+      # apps/storefront/public/products/<handle>.svg, so they ship with the
+      # storefront image and are served statically — no S3 and no ephemeral
+      # upload directory involved.
+      #
+      # Non-destructive: the script only fills products that have NO image yet
+      # (see ATTACH_IMAGES_FORCE), so real product photography uploaded through
+      # Admin is never reverted by a deploy.
+      - name: Attach product artwork (only where missing)
+        run: |
+          set -euo pipefail
+          cd /opt/slink
+          docker compose exec -T \
+            -e PRODUCT_IMAGE_BASE=https://saludlinkusa.com/products medusa \
+            npx medusa exec ./src/scripts/attach-images.js

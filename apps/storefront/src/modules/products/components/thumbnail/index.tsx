@@ -27,11 +27,16 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   return (
     <Container
       className={clx(
-        "relative w-full overflow-hidden p-4 bg-ui-bg-subtle shadow-elevation-card-rest rounded-large group-hover:shadow-elevation-card-hover transition-shadow ease-in-out duration-150",
+        // Saludlink surface, not the Medusa starter's grey card: warm sand tile
+        // with a hairline border, and no inner padding so the full-bleed product
+        // illustrations fill the tile edge-to-edge.
+        "relative w-full overflow-hidden rounded-lg border border-line bg-sand-50 transition-shadow duration-150 ease-in-out group-hover:shadow-md",
         className,
         {
           "aspect-[11/14]": isFeatured,
-          "aspect-[9/16]": !isFeatured && size !== "square",
+          // Square by default — the product illustrations are square, so the old
+          // 9:16 portrait tile left most of the card empty.
+          "aspect-square": !isFeatured && size !== "square",
           "aspect-[1/1]": size === "square",
           "w-[180px]": size === "small",
           "w-[290px]": size === "medium",

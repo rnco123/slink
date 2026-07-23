@@ -1,4 +1,3 @@
-import { Text } from "@medusajs/ui"
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
@@ -37,11 +36,16 @@ export default async function ProductPreview({
           size="full"
           isFeatured={isFeatured}
         />
-        <div className="flex txt-compact-medium mt-4 justify-between">
-          <Text className="text-ui-fg-subtle" data-testid="product-title">
+        {/* Saludlink typography: readable ink title that reacts on hover, with
+            the price held on one line so long titles can't squash it. */}
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <h3
+            className="text-sm font-medium leading-snug text-ink transition-colors group-hover:text-evergreen-800"
+            data-testid="product-title"
+          >
             {product.title}
-          </Text>
-          <div className="flex items-center gap-x-2">
+          </h3>
+          <div className="shrink-0 whitespace-nowrap text-sm font-semibold text-evergreen-800">
             {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
           </div>
         </div>
