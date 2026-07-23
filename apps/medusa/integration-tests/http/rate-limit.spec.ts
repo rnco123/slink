@@ -52,6 +52,10 @@ medusaIntegrationTestRunner({
     ) => {
       const headers: Record<string, string> = {
         ...pk.storeAs(customer.token).headers,
+        // Opt this suite back into the limiter, which is inert by default under
+        // NODE_ENV=test so unrelated feature suites aren't throttled. See
+        // api/rate-limit.ts.
+        "x-ratelimit-test": "1",
       }
       if (xff) {
         headers["x-forwarded-for"] = xff

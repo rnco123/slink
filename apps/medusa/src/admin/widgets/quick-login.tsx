@@ -2,17 +2,16 @@ import { defineWidgetConfig } from "@medusajs/admin-sdk"
 import { Button } from "@medusajs/ui"
 
 /**
- * Dev-only "Quick login" button on the admin login screen. Fills the local owner
- * credentials into the real form and submits, so local development is one click. Renders
- * ONLY on localhost — it returns null on any other host, so it never ships to production.
+ * Dev-only "Quick login" button on the admin login screen. Pre-fills the local
+ * owner email into the real form so local development is faster. Renders ONLY on
+ * localhost — it returns null on any other host, so it never ships to production.
  *
- * Credentials come from Vite env (VITE_DEV_ADMIN_EMAIL / VITE_DEV_ADMIN_PASSWORD in your
- * local, gitignored .env) so NO real password is baked into source or the admin bundle.
- * Unset → the button pre-fills the email only and you type the password.
+ * No password is baked in: this file is part of the compiled admin bundle, so a
+ * hardcoded value would leak into it (and into source). The button fills the
+ * email and focuses the password field for you to type — set whatever password
+ * you gave the admin user when you created it locally.
  */
-const env = (import.meta as { env?: Record<string, string | undefined> }).env ?? {}
-const DEV_EMAIL = env.VITE_DEV_ADMIN_EMAIL ?? "owner@saludlinkusa.com"
-const DEV_PASSWORD = env.VITE_DEV_ADMIN_PASSWORD ?? ""
+const DEV_EMAIL = "owner@saludlinkusa.com"
 
 // React tracks input values internally; set via the native setter + fire an input event
 // so React's state updates before the form submits.
@@ -41,24 +40,14 @@ const QuickLogin = () => {
       'input[type="password"], input[name="password"]'
     )
     if (email) setReactInputValue(email, DEV_EMAIL)
-    if (password) setReactInputValue(password, DEV_PASSWORD)
-
-    // Let React flush, then submit the form.
-    setTimeout(() => {
-      const form = password?.closest("form") || email?.closest("form")
-      const submit =
-        form?.querySelector<HTMLButtonElement>('button[type="submit"]') ||
-        Array.from(document.querySelectorAll("button")).find((b) =>
-          /continue|sign in|log ?in/i.test(b.textContent || "")
-        )
-      submit?.click()
-    }, 120)
+    // Focus the password field so you can type your local password and submit.
+    password?.focus()
   }
 
   return (
     <div className="mt-4 flex flex-col items-center gap-1">
       <Button variant="secondary" size="small" onClick={doLogin} type="button">
-        ⚡ Dev quick login
+        ⚡ Fill dev email
       </Button>
       <span className="text-ui-fg-subtle text-xs">
         {DEV_EMAIL} (local only)

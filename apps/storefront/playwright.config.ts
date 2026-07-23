@@ -89,6 +89,16 @@ export default defineConfig({
         reuseExistingServer: !process.env.CI,
         stdout: "pipe",
         stderr: "pipe",
+        // The coming-soon wall is enabled in ALL environments (task 82):
+        // global-setup writes the preview cookie so specs start past it, and
+        // coming-soon.spec clears the cookie to exercise the gate + robots.txt
+        // Disallow. Boot the managed dev server with the wall UP so those hold.
+        // PREVIEW_CODE defaults to 900800 (the value coming-soon.spec enters).
+        env: {
+          ...(process.env as Record<string, string>),
+          COMING_SOON: "true",
+          PREVIEW_CODE: process.env.PREVIEW_CODE ?? "900800",
+        },
       }
     : undefined,
 })

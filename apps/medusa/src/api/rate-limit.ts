@@ -97,6 +97,18 @@ export function rateLimit(options: RateLimitOptions) {
     res: MedusaResponse,
     next: MedusaNextFunction
   ): Promise<void> {
+    // Test env: the limiter is inert by default so feature integration suites —
+    // which legitimately POST many times from a single client IP — aren't
+    // self-throttled into flaky 429s (e.g. product-reviews.spec). The dedicated
+    // rate-limit suite opts back in per-request with `x-ratelimit-test: 1`. This
+    // branch is dead code outside tests (NODE_ENV is never "test" in prod/dev).
+    if (
+      process.env.NODE_ENV === "test" &&
+      req.headers["x-ratelimit-test"] !== "1"
+    ) {
+      return next()
+    }
+
     try {
       const cache = req.scope.resolve<ICacheService>(Modules.CACHE)
       const nowSeconds = Math.floor(Date.now() / 1000)
