@@ -1,28 +1,30 @@
-# Deploy — build the storefront + medusa images and push to GHCR (roadmap task 35).
+# Deploy — build the storefront + medusa images, push to GHCR, then roll the box.
 #
-# Triggered manually (workflow_dispatch) or on push to main after CI is green.
-# The box then pulls these images (`docker compose pull && up -d`) — see
-# infra/deploy/README.md. GHCR auth uses the built-in GITHUB_TOKEN (no extra
-# secret). SSH-based auto pull/up on the box is a follow-up once the box SSH key
-# is stored as an Actions secret; until then the operator runs the compose step.
+# FULLY AUTOMATIC. Every push to `main` (i.e. every merged PR) rebuilds the two
+# images and rolls the live box. No manual step, no SSH keys stored in GitHub, no
+# firewall holes:
+#
+#   • `images`  runs on a GitHub-hosted runner — builds + pushes to GHCR.
+#   • `deploy`  runs on a SELF-HOSTED runner installed ON the box, so it just runs
+#     `docker compose pull && up` locally. The box reaches OUT to GitHub; nothing
+#     reaches in. That is why we don't need to open SSH to GitHub's IP ranges.
+#
+# `main` is protected (CI required before merge), so whatever lands here is already
+# green. Use the "Run workflow" button for a manual redeploy.
 name: deploy
 
 on:
-  # Cost control (private repo): deploy on an intentional version TAG or the
-  # manual "Run workflow" button — NOT on every push to main (image builds are
-  # ~30 min each). To release: `git tag v1.2.3 && git push origin v1.2.3`, or
-  # click Actions → deploy → Run workflow.
-  workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
+# Never roll the box with two deploys at once; let an in-flight one finish.
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: deploy-main
   cancel-in-progress: false
 
 env:
@@ -76,26 +78,34 @@ jobs:
           cache-to: type=gha,mode=max,scope=storefront
 
   # ---------------------------------------------------------------------------
-  # Auto-deploy: SSH to the box and roll the new images. Runs after images push.
-  # The box already has /opt/slink/{docker-compose.yml,Caddyfile,.env} and a
-  # persistent `docker login ghcr.io` (one-time operator setup). The
-  # medusa-migrate one-shot applies migrations before server/worker start.
+  # Roll the box. Runs ON the box via a self-hosted runner labelled `slink-box`,
+  # so it needs no SSH/keys — it operates on the local /opt/slink compose project.
+  # The `medusa-migrate` one-shot applies migrations before server/worker start.
   # ---------------------------------------------------------------------------
   deploy:
-    name: deploy to box
-    needs: images
-    runs-on: ubuntu-latest
+    name: roll the box
+    needs: [images]
+    runs-on: [self-hosted, slink-box]
     steps:
-      - name: SSH — pull + up
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ vars.DEPLOY_HOST || '23.21.167.196' }}
-          username: ubuntu
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          command_timeout: 20m
-          script: |
-            set -e
-            cd /opt/slink
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker image prune -f
+      - name: Pull latest images + roll
+        run: |
+          set -euo pipefail
+          cd /opt/slink
+          docker compose pull
+          docker compose up -d --remove-orphans
+          docker image prune -f
+
+      - name: Health check (fail the deploy if the API doesn't come up)
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" https://manage.saludlinkusa.com/health || true)
+            if [ "$code" = "200" ]; then
+              echo "✅ medusa healthy (HTTP 200)"
+              exit 0
+            fi
+            echo "waiting for medusa to come up… ($i/30, last=$code)"
+            sleep 5
+          done
+          echo "❌ medusa did not return 200 within 150s"
+          exit 1
