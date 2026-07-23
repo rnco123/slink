@@ -24,10 +24,10 @@
   "comment-pg-god": "Declared at the workspace root (not just apps/medusa) because @medusajs/test-utils@2.16 does a bare `require('pg-god')` to create/drop the throwaway integration DB but fails to declare it — a packaging bug. A root devDependency lands in the top-level node_modules where test-utils resolves it, without needing a public-hoist-pattern (which would force a full node_modules purge). Tasks 23/24.",
   "devDependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^17.1.1",
+    "lint-staged": "^17.2.0",
     "pg-god": "^1.0.12",
     "prettier": "^2.8.8",
-    "turbo": "^2.5.0"
+    "turbo": "^2.10.6"
   },
   "pnpm": {
     "comment-types-react": "Single @types/react across the monorepo. Medusa's admin runtime stays on react@18 (runtime, not types); pinning the DefinitelyTyped stubs to 19 stops a stray 18 copy from merging into the storefront's type program and breaking JSX component types (TS2786).",
