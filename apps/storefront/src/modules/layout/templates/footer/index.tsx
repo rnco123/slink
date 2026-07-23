@@ -34,16 +34,11 @@ export default function Footer({
             <p className="mt-4 max-w-xs text-sm text-ink-muted">
               {siteConfig.tagline}
             </p>
-            <div className="mt-5 flex items-center gap-3">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded border border-line bg-surface text-[9px] text-ink-subtle">
-                LEGIT
-                <br />
-                SCRIPT
-              </span>
-              <span className="text-xs text-ink-subtle">
-                {dict.footer.certificationPending}
-              </span>
-            </div>
+            {/* LegitScript seal intentionally omitted until the real certified
+                seal/asset arrives (roadmap task 43). A self-made "certification
+                pending" placeholder is worse than nothing: it implies an
+                affiliation we can't yet evidence. Drop the official seal in here
+                when LegitScript issues it. */}
             <div className="mt-5">
               <LanguageSwitcher />
             </div>
