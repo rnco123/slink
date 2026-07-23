@@ -121,3 +121,25 @@ jobs:
           done
           echo "❌ medusa did not return 200 within 150s"
           exit 1
+
+      # Copy that lives in code (legal/policy pages, the sample article, site
+      # settings) is pushed into the DB on every deploy, so editing text in the
+      # repo is all it takes to update the live site — no manual seeding step.
+      # SEED_CONTENT_FORCE=1 makes the seed REWRITE existing rows instead of
+      # skipping them; without it an environment keeps whatever copy it was FIRST
+      # seeded with, which is how prod ended up serving one-paragraph policies
+      # while the full versions sat in the repo.
+      #
+      # CONTRACT: for the slugs defined in seed-content.ts the REPO is the source
+      # of truth — edits made to those pages in Admin are overwritten on the next
+      # deploy. Pages created in Admin that aren't in that file are left alone.
+      #
+      # Runs after the health check so medusa is known-up before we exec into it.
+      # The image ships the BUILT server (.medusa/server), so the path is the
+      # compiled ./src/scripts/seed-content.js — not the .ts source.
+      - name: Sync content from code
+        run: |
+          set -euo pipefail
+          cd /opt/slink
+          docker compose exec -T -e SEED_CONTENT_FORCE=1 medusa \
+            npx medusa exec ./src/scripts/seed-content.js

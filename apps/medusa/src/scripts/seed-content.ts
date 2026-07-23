@@ -252,15 +252,43 @@ const LEGAL: Array<{
 export default async function seedContent({ container }: ExecArgs) {
   const service: ContentModuleService = container.resolve(CONTENT_MODULE)
 
+  /**
+   * Refresh mode (`SEED_CONTENT_FORCE=1`).
+   *
+   * By default this seed SKIPS rows that already exist, so a routine re-run can
+   * never clobber copy someone edited in Admin. The downside: once an
+   * environment has been seeded, expanded copy in this file can NEVER reach it —
+   * which is exactly what happened to prod (seeded from an older revision, so it
+   * still serves the short one-paragraph policies while this file carries the
+   * full multi-section versions).
+   *
+   * With the flag set, existing pages are rewritten from this file instead of
+   * skipped. Opt-in on purpose: run it only when this file is the source of
+   * truth, since it overwrites Admin edits for these slugs.
+   */
+  const force = process.env.SEED_CONTENT_FORCE === "1"
+
   // Legal / policy pages (EN + ES)
   let created = 0
+  let updated = 0
   for (const p of LEGAL) {
     for (const locale of ["en", "es"] as const) {
       const [existing] = await service.listContentPages({
         slug: p.slug,
         locale,
       })
-      if (existing) continue
+      if (existing) {
+        if (!force) continue
+        await service.updateContentPages({
+          id: existing.id,
+          title: p[locale].title,
+          body: p[locale].body,
+          status: "published",
+          last_updated: "2026-07-24",
+        })
+        updated++
+        continue
+      }
       await service.createContentPages({
         slug: p.slug,
         locale,
@@ -277,9 +305,7 @@ export default async function seedContent({ container }: ExecArgs) {
   // Sample health article (EN + ES)
   const articleSlug = "understanding-metabolic-health"
   for (const locale of ["en", "es"] as const) {
-    const [existing] = await service.listArticles({ slug: articleSlug, locale })
-    if (existing) continue
-    await service.createArticles({
+    const article = {
       slug: articleSlug,
       locale,
       title:
@@ -301,7 +327,16 @@ export default async function seedContent({ container }: ExecArgs) {
       reviewed_at: "2026-07-22",
       status: "published",
       published_at: "2026-07-22",
-    })
+    }
+
+    const [existing] = await service.listArticles({ slug: articleSlug, locale })
+    if (existing) {
+      if (!force) continue
+      await service.updateArticles({ id: existing.id, ...article })
+      updated++
+      continue
+    }
+    await service.createArticles(article)
     created++
   }
 
@@ -337,5 +372,10 @@ export default async function seedContent({ container }: ExecArgs) {
     "State availability (LegitScript disclosure)"
   )
 
-  console.log(`✔ Seeded content: ${created} pages/articles + 3 settings`)
+  console.log(
+    `✔ Seeded content: ${created} created, ${updated} refreshed (pages/articles) + 3 settings` +
+      (updated === 0 && !force
+        ? " — existing rows were SKIPPED; re-run with SEED_CONTENT_FORCE=1 to refresh them from this file"
+        : "")
+  )
 }

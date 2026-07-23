@@ -144,6 +144,39 @@ the `deploy` job sits "Queued", waiting for the `slink-box` runner to exist.
 
 ---
 
+## 4b. Content is code (legal/policy pages)
+
+The `Sync content from code` step runs `seed-content.ts` with
+`SEED_CONTENT_FORCE=1` on **every deploy**, so **editing text in the repo is all
+it takes to update the live site** — no manual seeding.
+
+**Why this exists:** the seed is normally idempotent and _skips_ rows that
+already exist. That means an environment keeps whatever copy it was FIRST seeded
+with — which is exactly how prod ended up serving one-paragraph legal policies
+while the full multi-section versions sat in `seed-content.ts`. The force flag
+rewrites existing rows instead.
+
+**The contract — read this before editing content:**
+
+- For the slugs defined in `seed-content.ts` (the 10 legal pages EN+ES, the
+  sample article, site settings) the **repo is the source of truth**. Edits made
+  to those pages in Admin **will be overwritten on the next deploy**.
+- Pages created in Admin that are **not** in that file are never touched.
+- So: change legal copy in `seed-content.ts` and open a PR. You get a git audit
+  trail of every wording change — useful when counsel reviews (task 40).
+
+To refresh content manually without a deploy, on the box:
+
+```bash
+cd /opt/slink
+docker compose exec -T -e SEED_CONTENT_FORCE=1 medusa \
+  npx medusa exec ./src/scripts/seed-content.js
+```
+
+(The image ships the **built** server, so the path is the compiled `.js`, not `.ts`.)
+
+---
+
 ## 5. Troubleshooting
 
 | Symptom                     | Cause                             | Fix                                                                                          |
