@@ -248,6 +248,12 @@ module.exports = defineConfig({
       httpOnly: true,
       sameSite: "lax",
       secure: isProduction,
+      // Absolute admin-session lifetime (task 41 — HIPAA session timeout). The
+      // session cookie expires after this window, forcing re-authentication.
+      // Default 8h (a work shift); tighten via ADMIN_SESSION_MAX_AGE_S (seconds).
+      maxAge:
+        (Number.parseInt(process.env.ADMIN_SESSION_MAX_AGE_S || "", 10) ||
+          8 * 60 * 60) * 1000,
     },
   },
 
