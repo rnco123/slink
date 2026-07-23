@@ -11,13 +11,9 @@ import { gotoOk } from "./support/helpers"
  * (the actionable, high-signal tiers). `minor`/`moderate` are reported in the
  * attachment for follow-up but don't fail the build, keeping the gate stable.
  */
-const ROUTES = [
-  "/",
-  "/about",
-  "/contact",
-  "/conditions",
-  "/legal/privacy-policy",
-]
+// Backend-FREE routes only (default lane). Legal pages are Medusa-content-driven
+// (covered by the @commerce legal.spec), so they're excluded here.
+const ROUTES = ["/", "/about", "/contact", "/conditions", "/telemedicine"]
 
 const BLOCKING = new Set(["serious", "critical"])
 

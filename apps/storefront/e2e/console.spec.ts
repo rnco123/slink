@@ -8,13 +8,15 @@ import { path } from "./support/routes"
  * fail the build (third-party libs emit benign warnings); console errors and
  * uncaught exceptions are real defects and DO fail.
  */
+// Backend-FREE routes only (this spec runs in the default, no-backend lane).
+// Legal pages are Medusa-content-driven → covered by the @commerce legal.spec.
 const ROUTES = [
   "/",
   "/about",
   "/contact",
   "/conditions",
   "/telemedicine",
-  "/legal/privacy-policy",
+  "/licensing",
 ]
 
 // Known-benign error substrings to ignore (network noise from optional
