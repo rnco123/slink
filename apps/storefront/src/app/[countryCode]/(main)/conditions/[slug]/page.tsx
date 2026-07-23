@@ -10,6 +10,13 @@ import { getDictionary } from "@lib/i18n"
 import { resolveLocale } from "@lib/i18n/config"
 import { alternatesFor } from "@lib/i18n/routing"
 
+// Render per-request (task 84). The root layout reads headers() (x-locale → lang),
+// a dynamic API, so any SSG route that tries to prerender bails with
+// DYNAMIC_SERVER_USAGE → 500 on the deployed image. This is the last of the 5
+// generateStaticParams pages to move to dynamic (products/legal/categories/
+// collections already are). generateStaticParams still enumerates the slugs.
+export const dynamic = "force-dynamic"
+
 type Params = { countryCode: string; slug: string }
 type Slug = (typeof conditionVerticals)[number]["slug"]
 
