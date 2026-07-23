@@ -57,6 +57,11 @@ const SES_SECRET_ACCESS_KEY =
   process.env.SES_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY
 const sesEnabled = Boolean(SES_FROM && SES_REGION)
 
+// Production toggle — drives secure cookie flags (task 52). Cookies must NOT be
+// `Secure` over plain http in local dev or the admin session breaks on
+// localhost; in prod everything is https behind Caddy so Secure is required.
+const isProduction = process.env.NODE_ENV === "production"
+
 // ---------------------------------------------------------------------------
 // Redis-backed infrastructure modules (only when REDIS_URL is set).
 // Built as an array we spread into `modules` below so the fallback is a clean
@@ -214,7 +219,10 @@ module.exports = defineConfig({
     redisUrl: REDIS_URL,
 
     http: {
-      // CORS: storefront on :8000, admin/vite on :9000/:5173 by local default.
+      // CORS (task 52): env-driven, with localhost defaults ONLY for dev. In
+      // production these come from STORE_CORS/ADMIN_CORS/AUTH_CORS and env.ts
+      // (validateMedusaEnv) hard-rejects any non-https origin at boot, so a
+      // misconfigured prod CORS fails fast instead of silently allowing http.
       storeCors: process.env.STORE_CORS || "http://localhost:8000",
       adminCors:
         process.env.ADMIN_CORS || "http://localhost:9000,http://localhost:5173",
@@ -225,6 +233,21 @@ module.exports = defineConfig({
       // Secrets — MUST be overridden in production via env / Secrets Manager.
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
+    },
+
+    // Session / auth cookie flags (task 52). Applied to the cookies Medusa sets
+    // for the admin session. Storefront customer auth uses a bearer JWT stored
+    // in an httpOnly cookie the STOREFRONT sets — those flags live in
+    // apps/storefront/src/lib/data/cookies.ts (already httpOnly + sameSite:strict
+    // + secure-in-prod).
+    //   - httpOnly: JS can never read the cookie (XSS can't exfiltrate it).
+    //   - sameSite "lax": sent on top-level navigations (admin login redirects
+    //     work) but not on cross-site subrequests (CSRF mitigation).
+    //   - secure: https-only in prod; off in dev so localhost http still works.
+    cookieOptions: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProduction,
     },
   },
 
