@@ -31,8 +31,10 @@ pnpm dev                       # boots medusa :9000 + storefront :8000
 - Storefront: http://localhost:8000/en (or `/es`). The **coming-soon wall is ON
   in every environment** (task 82) — enter `900800` once; the ~30-day preview
   cookie lets you back through.
-- Admin: http://localhost:9000/app — `owner@saludlinkusa.com` / `Saludlink#2026`.
-- Demo customer: `demo@saludlinkusa.com` / `Demo#2026`.
+- Admin: http://localhost:9000/app — `owner@saludlinkusa.com` / _the password you set
+  when creating the admin_. Put it in your gitignored `.env` as `ADMIN_PASSWORD` (and
+  `VITE_DEV_ADMIN_PASSWORD`) to enable the ⚡ dev quick-login button. Never commit it.
+- Demo customer: `demo@saludlinkusa.com` / _your local demo password_ (set at seed time).
 
 ## Windows quirks (this host) ⚠️
 

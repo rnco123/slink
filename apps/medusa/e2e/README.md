@@ -44,7 +44,7 @@ pnpm --filter @saludlink/medusa test:e2e:admin
 | `ADMIN_BASE_URL`      | `http://localhost:9000`  | Point at an already-running admin           |
 | `MEDUSA_PORT`         | `9000`                   | Port when `ADMIN_BASE_URL` is unset         |
 | `ADMIN_EMAIL`         | `owner@saludlinkusa.com` | Login used by `global-setup`                |
-| `ADMIN_PASSWORD`      | `Saludlink#2026`         | Login password                              |
+| `ADMIN_PASSWORD`      | _(required — set in .env/CI)_ | Login password (never hardcoded in source) |
 | `ADMIN_MANAGE_SERVER` | _(unset)_                | `1` → let Playwright boot `pnpm dev` itself |
 
 `global-setup.ts` logs in once through the real login form and saves an

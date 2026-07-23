@@ -2,12 +2,17 @@ import { defineWidgetConfig } from "@medusajs/admin-sdk"
 import { Button } from "@medusajs/ui"
 
 /**
- * Dev-only "Quick login" button on the admin login screen. Fills the seeded owner
+ * Dev-only "Quick login" button on the admin login screen. Fills the local owner
  * credentials into the real form and submits, so local development is one click. Renders
  * ONLY on localhost — it returns null on any other host, so it never ships to production.
+ *
+ * Credentials come from Vite env (VITE_DEV_ADMIN_EMAIL / VITE_DEV_ADMIN_PASSWORD in your
+ * local, gitignored .env) so NO real password is baked into source or the admin bundle.
+ * Unset → the button pre-fills the email only and you type the password.
  */
-const DEV_EMAIL = "owner@saludlinkusa.com"
-const DEV_PASSWORD = "Saludlink#2026"
+const env = (import.meta as { env?: Record<string, string | undefined> }).env ?? {}
+const DEV_EMAIL = env.VITE_DEV_ADMIN_EMAIL ?? "owner@saludlinkusa.com"
+const DEV_PASSWORD = env.VITE_DEV_ADMIN_PASSWORD ?? ""
 
 // React tracks input values internally; set via the native setter + fire an input event
 // so React's state updates before the form submits.

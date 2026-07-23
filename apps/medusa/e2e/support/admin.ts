@@ -7,7 +7,10 @@ import { Page, expect } from "@playwright/test"
 // Seeded local owner (see completion.md / quick-login widget). Override via env
 // for other environments.
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "owner@saludlinkusa.com"
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "Saludlink#2026"
+// No real password in source: set ADMIN_PASSWORD in your local (gitignored) .env or a CI
+// secret. Empty fallback means the login step fails loudly if you forget, rather than
+// shipping a credential in the repo.
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? ""
 
 // Custom admin route paths (src/admin/routes/<name> → /app/<name>).
 export const ROUTES = {
