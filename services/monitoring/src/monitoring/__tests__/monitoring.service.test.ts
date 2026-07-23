@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { MonitoringService } from "../monitoring.service"
-import type { PrometheusClient, PromInstant, PromTarget } from "../../upstreams/prometheus.client"
+import type {
+  PrometheusClient,
+  PromInstant,
+  PromTarget,
+} from "../../upstreams/prometheus.client"
 import type { AlertmanagerClient } from "../../upstreams/alertmanager.client"
 import type { LokiClient } from "../../upstreams/loki.client"
 import type { UptimeKumaClient } from "../../upstreams/uptimekuma.client"
@@ -38,13 +42,31 @@ function makeService(over: {
     healthy: async () => over.amHealthy ?? true,
     activeAlerts: async () => over.alerts ?? [],
   } as unknown as AlertmanagerClient
-  const loki = { ready: async () => over.ready ?? true } as unknown as LokiClient
-  const kuma = { monitors: async () => over.monitors ?? [] } as unknown as UptimeKumaClient
-  const bull = { queues: async () => over.queues ?? [] } as unknown as BullBoardClient
+  const loki = {
+    ready: async () => over.ready ?? true,
+  } as unknown as LokiClient
+  const kuma = {
+    monitors: async () => over.monitors ?? [],
+  } as unknown as UptimeKumaClient
+  const bull = {
+    queues: async () => over.queues ?? [],
+  } as unknown as BullBoardClient
   const grafana = {
-    health: async () => ({ ok: over.grafanaOk ?? true, version: "11.3.1", database: "ok" }),
+    health: async () => ({
+      ok: over.grafanaOk ?? true,
+      version: "11.3.1",
+      database: "ok",
+    }),
   } as unknown as GrafanaClient
-  return new MonitoringService(passthroughCache, prom, am, loki, kuma, bull, grafana)
+  return new MonitoringService(
+    passthroughCache,
+    prom,
+    am,
+    loki,
+    kuma,
+    bull,
+    grafana
+  )
 }
 
 describe("MonitoringService.health", () => {
@@ -66,7 +88,12 @@ describe("MonitoringService.health", () => {
     const svc = makeService({
       targets: [
         { job: "node", instance: "n", health: "up", lastError: "" },
-        { job: "postgres", instance: "p", health: "down", lastError: "conn refused" },
+        {
+          job: "postgres",
+          instance: "p",
+          health: "down",
+          lastError: "conn refused",
+        },
       ],
     })
     const h = await svc.health()
@@ -139,9 +166,27 @@ describe("MonitoringService.alerts / queues", () => {
   it("summarizes alerts by severity", async () => {
     const svc = makeService({
       alerts: [
-        { name: "A", severity: "critical", state: "active", startsAt: "", summary: "" },
-        { name: "B", severity: "warning", state: "active", startsAt: "", summary: "" },
-        { name: "C", severity: "critical", state: "active", startsAt: "", summary: "" },
+        {
+          name: "A",
+          severity: "critical",
+          state: "active",
+          startsAt: "",
+          summary: "",
+        },
+        {
+          name: "B",
+          severity: "warning",
+          state: "active",
+          startsAt: "",
+          summary: "",
+        },
+        {
+          name: "C",
+          severity: "critical",
+          state: "active",
+          startsAt: "",
+          summary: "",
+        },
       ],
     })
     const a = await svc.alerts()
@@ -153,8 +198,24 @@ describe("MonitoringService.alerts / queues", () => {
   it("totals failed jobs across queues", async () => {
     const svc = makeService({
       queues: [
-        { name: "event-bus", waiting: 0, active: 1, completed: 5, failed: 2, delayed: 0, paused: 0 },
-        { name: "workflows", waiting: 3, active: 0, completed: 9, failed: 1, delayed: 0, paused: 0 },
+        {
+          name: "event-bus",
+          waiting: 0,
+          active: 1,
+          completed: 5,
+          failed: 2,
+          delayed: 0,
+          paused: 0,
+        },
+        {
+          name: "workflows",
+          waiting: 3,
+          active: 0,
+          completed: 9,
+          failed: 1,
+          delayed: 0,
+          paused: 0,
+        },
       ],
     })
     const q = await svc.queues()

@@ -33,7 +33,11 @@ export class CacheService {
    * Returns the cached value if fresh, otherwise runs `producer`, caches and
    * returns it. A `ttlMsOverride` of 0 disables caching for that key.
    */
-  async wrap<T>(key: string, producer: () => Promise<T>, ttlMsOverride?: number): Promise<T> {
+  async wrap<T>(
+    key: string,
+    producer: () => Promise<T>,
+    ttlMsOverride?: number
+  ): Promise<T> {
     const ttl = ttlMsOverride ?? this.ttlMs
     const hit = this.store.get(key) as Entry<T> | undefined
     const t = this.now()

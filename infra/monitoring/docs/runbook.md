@@ -1,7 +1,7 @@
 # Saludlink — Operations Runbook (task 47)
 
 **Audience:** whoever is on the keyboard when something breaks. Optimised for
-*copy-paste under pressure*. Every command names the real resource. When a step
+_copy-paste under pressure_. Every command names the real resource. When a step
 says "verify", actually run the check before moving on.
 
 > Owner: Session 3 (monitoring). Companion docs:
@@ -15,20 +15,20 @@ says "verify", actually run the check before moving on.
 
 ## 0. At a glance
 
-| Thing              | Value                                                                    |
-| ------------------ | ------------------------------------------------------------------------ |
-| Public storefront  | `https://saludlinkusa.com` (+ `www.`) — behind the coming-soon wall      |
-| Admin              | `https://manage.saludlinkusa.com` (Medusa login is the gate)             |
-| EC2 (single box)   | `i-06ab3de34df6cbd8c` · t3.small · x86 Ubuntu 24.04 · **EIP 23.21.167.196** |
-| SSH                | `ssh -i ~/.ssh/slink-key.pem ubuntu@23.21.167.196`                       |
-| RDS                | `slink-db` · PG16.14 db.t4g.micro · `slink-db.cw10w44cq99y.us-east-1.rds.amazonaws.com` · **7-day PITR** |
-| Route53 zone       | `Z06260013ISSB2PIIPCJS` (saludlinkusa.com)                               |
-| VPC / SGs          | `vpc-07d2508f1b4689d26` · web `sg-02dbf31924ab776fb` · db `sg-0e1b28356a574f11c` |
-| Media / key / AMI  | S3 `slink-media-537124932549` · key `slink-key` · AMI `ami-052355af2a014bd2c` |
-| Secrets            | SSM `/slink/prod/*` (SecureString), region `us-east-1`                    |
-| AWS access         | PowerShell: `$env:AWS_PROFILE='slink'` (account 537124932549, us-east-1) |
-| Compose services   | `caddy · storefront · medusa · worker · medusa-migrate · redis` (on the box) |
-| Compose file       | `~/slink/docker-compose.prod.yml` on the box (from `infra/deploy/`)       |
+| Thing             | Value                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| Public storefront | `https://saludlinkusa.com` (+ `www.`) — behind the coming-soon wall                                      |
+| Admin             | `https://manage.saludlinkusa.com` (Medusa login is the gate)                                             |
+| EC2 (single box)  | `i-06ab3de34df6cbd8c` · t3.small · x86 Ubuntu 24.04 · **EIP 23.21.167.196**                              |
+| SSH               | `ssh -i ~/.ssh/slink-key.pem ubuntu@23.21.167.196`                                                       |
+| RDS               | `slink-db` · PG16.14 db.t4g.micro · `slink-db.cw10w44cq99y.us-east-1.rds.amazonaws.com` · **7-day PITR** |
+| Route53 zone      | `Z06260013ISSB2PIIPCJS` (saludlinkusa.com)                                                               |
+| VPC / SGs         | `vpc-07d2508f1b4689d26` · web `sg-02dbf31924ab776fb` · db `sg-0e1b28356a574f11c`                         |
+| Media / key / AMI | S3 `slink-media-537124932549` · key `slink-key` · AMI `ami-052355af2a014bd2c`                            |
+| Secrets           | SSM `/slink/prod/*` (SecureString), region `us-east-1`                                                   |
+| AWS access        | PowerShell: `$env:AWS_PROFILE='slink'` (account 537124932549, us-east-1)                                 |
+| Compose services  | `caddy · storefront · medusa · worker · medusa-migrate · redis` (on the box)                             |
+| Compose file      | `~/slink/docker-compose.prod.yml` on the box (from `infra/deploy/`)                                      |
 
 **Health endpoints** (the truth about "is it up"):
 
@@ -68,18 +68,18 @@ account is shared with **vonlinkage** — never stop/modify/delete anything else
 
 Each alert in [`rules.yml`](../config/prometheus/alerts/rules.yml) maps to a play:
 
-| Alert (severity)             | Means                                   | Go to |
-| ---------------------------- | --------------------------------------- | ----- |
-| `SiteProbeFailing` (crit)    | Public URL not returning 2xx            | §3    |
-| `TargetDown` (crit)          | A scrape target is unreachable          | §3.3 / §3.5 |
-| `PostgresDown` (crit)        | `pg_up==0`, DB unreachable              | §3.5  |
-| `RedisDown` (crit)           | `redis_up==0`, event bus/queues down    | §3.6  |
-| `HostLowDisk` (crit)         | <10% disk on the box                    | §3.7  |
-| `SiteSlowResponse` (warn)    | processing >2s                          | §3.4  |
-| `TLSCertExpiringSoon` (warn) | cert <14 days                           | §3.4  |
-| `HostHighCpu/Memory` (warn)  | saturation                              | §3.7  |
-| `PostgresTooManyConnections` | pool >85% of max                        | §3.5  |
-| `RedisHighMemory` (warn)     | Redis near maxmemory                    | §3.6  |
+| Alert (severity)             | Means                                | Go to       |
+| ---------------------------- | ------------------------------------ | ----------- |
+| `SiteProbeFailing` (crit)    | Public URL not returning 2xx         | §3          |
+| `TargetDown` (crit)          | A scrape target is unreachable       | §3.3 / §3.5 |
+| `PostgresDown` (crit)        | `pg_up==0`, DB unreachable           | §3.5        |
+| `RedisDown` (crit)           | `redis_up==0`, event bus/queues down | §3.6        |
+| `HostLowDisk` (crit)         | <10% disk on the box                 | §3.7        |
+| `SiteSlowResponse` (warn)    | processing >2s                       | §3.4        |
+| `TLSCertExpiringSoon` (warn) | cert <14 days                        | §3.4        |
+| `HostHighCpu/Memory` (warn)  | saturation                           | §3.7        |
+| `PostgresTooManyConnections` | pool >85% of max                     | §3.5        |
+| `RedisHighMemory` (warn)     | Redis near maxmemory                 | §3.6        |
 
 ---
 
@@ -206,7 +206,7 @@ docker compose -f docker-compose.prod.yml up -d medusa worker storefront
 > ⚠ **Migrations:** if the bad release ran a forward DB migration
 > (`medusa-migrate`), a code rollback alone may mismatch the schema. This is why
 > migrations MUST be expand→contract ([MIGRATIONS.md](../../../docs/MIGRATIONS.md)):
-> the previous image keeps working against the new schema. If a *destructive*
+> the previous image keeps working against the new schema. If a _destructive_
 > migration shipped, you need §5 (restore) — do not roll code back over a dropped
 > column.
 >
@@ -289,7 +289,7 @@ independently, so a lost EC2 instance is recoverable by rebuilding the compute.
 3. **Deploy the stack:** copy `infra/deploy/*` to `~/slink`, run
    `build-env.sh` (pulls `/slink/prod/*` from SSM into `.env`), then
    `docker compose -f docker-compose.prod.yml pull && up -d`. The
-   `medusa-migrate` one-shot runs migrations against the *existing* RDS (no data
+   `medusa-migrate` one-shot runs migrations against the _existing_ RDS (no data
    loss).
 4. **Verify** health endpoints + Alertmanager clears. Bring the monitoring stack
    back up too (`infra/monitoring/`).

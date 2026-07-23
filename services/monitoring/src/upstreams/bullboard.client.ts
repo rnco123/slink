@@ -34,7 +34,10 @@ export class BullBoardClient {
   async queues(): Promise<QueueCounts[]> {
     const res = await getJson<BullBoardResponse>(`${this.base}/api/queues`, {
       timeoutMs: this.timeout,
-      basicAuth: { user: this.env.BULL_BOARD_USER, pass: this.env.BULL_BOARD_PASSWORD },
+      basicAuth: {
+        user: this.env.BULL_BOARD_USER,
+        pass: this.env.BULL_BOARD_PASSWORD,
+      },
     })
     if (!res.ok || !res.data?.queues) return []
     return res.data.queues.map((q) => {

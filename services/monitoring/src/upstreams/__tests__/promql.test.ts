@@ -3,7 +3,12 @@ import { isMetricKind, METRIC_KINDS, queriesFor } from "../promql"
 
 describe("promql catalog", () => {
   it("exposes exactly the four documented kinds", () => {
-    expect([...METRIC_KINDS].sort()).toEqual(["containers", "db", "host", "redis"])
+    expect([...METRIC_KINDS].sort()).toEqual([
+      "containers",
+      "db",
+      "host",
+      "redis",
+    ])
   })
 
   it("isMetricKind narrows valid kinds", () => {

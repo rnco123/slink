@@ -99,7 +99,8 @@ const CONTAINERS: NamedQuery[] = [
     key: "cpu_per_s",
     label: "Container CPU (cores)",
     unit: "cores",
-    query: 'sum by (name)(rate(container_cpu_usage_seconds_total{name!=""}[5m]))',
+    query:
+      'sum by (name)(rate(container_cpu_usage_seconds_total{name!=""}[5m]))',
   },
   {
     key: "mem_bytes",

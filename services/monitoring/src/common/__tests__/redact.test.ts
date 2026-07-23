@@ -9,7 +9,9 @@ describe("redactLine", () => {
   })
 
   it("redacts bearer tokens", () => {
-    expect(redactLine("auth Bearer abc.DEF-123 done")).toBe("auth Bearer [REDACTED_TOKEN] done")
+    expect(redactLine("auth Bearer abc.DEF-123 done")).toBe(
+      "auth Bearer [REDACTED_TOKEN] done"
+    )
   })
 
   it("redacts known secret prefixes", () => {
@@ -19,7 +21,7 @@ describe("redactLine", () => {
   })
 
   it("redacts key=value secrets", () => {
-    const out = redactLine('password=hunter2 and api_key: superSecret')
+    const out = redactLine("password=hunter2 and api_key: superSecret")
     expect(out).not.toContain("hunter2")
     expect(out).not.toContain("superSecret")
     expect(out).toContain("[REDACTED]")
@@ -48,6 +50,9 @@ describe("redactLine", () => {
   })
 
   it("redactLines maps over an array", () => {
-    expect(redactLines(["a@b.com", "clean"])).toEqual(["[REDACTED_EMAIL]", "clean"])
+    expect(redactLines(["a@b.com", "clean"])).toEqual([
+      "[REDACTED_EMAIL]",
+      "clean",
+    ])
   })
 })

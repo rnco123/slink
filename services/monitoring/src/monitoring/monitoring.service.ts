@@ -12,14 +12,25 @@ import { MetricKind, queriesFor } from "../upstreams/promql"
 export interface HealthRollup {
   status: "ok" | "degraded" | "down"
   generatedAt: string
-  targets: { total: number; up: number; down: number; list: Array<{ job: string; health: string }> }
+  targets: {
+    total: number
+    up: number
+    down: number
+    list: Array<{ job: string; health: string }>
+  }
   components: Record<string, { up: boolean; detail?: string }>
 }
 
 export interface UptimeRollup {
   status: "ok" | "degraded" | "down"
   probes: Array<{ instance: string; up: boolean; latencyMs: number | null }>
-  monitors: Array<{ id: string; name: string; up: boolean | null; uptime24h: number | null; uptime30d: number | null }>
+  monitors: Array<{
+    id: string
+    name: string
+    up: boolean | null
+    uptime24h: number | null
+    uptime30d: number | null
+  }>
 }
 
 export interface MetricSample {
@@ -53,13 +64,14 @@ export class MonitoringService {
   // --- /monitoring/health -----------------------------------------------------
   async health(): Promise<HealthRollup> {
     return this.cache.wrap("health", async () => {
-      const [targets, promReady, lokiReady, grafanaHealth, amHealthy] = await Promise.all([
-        this.prom.targets(),
-        this.prom.ready(),
-        this.loki.ready(),
-        this.grafana.health(),
-        this.am.healthy(),
-      ])
+      const [targets, promReady, lokiReady, grafanaHealth, amHealthy] =
+        await Promise.all([
+          this.prom.targets(),
+          this.prom.ready(),
+          this.loki.ready(),
+          this.grafana.health(),
+          this.am.healthy(),
+        ])
 
       const up = targets.filter((t) => t.health === "up").length
       const down = targets.length - up
@@ -67,12 +79,19 @@ export class MonitoringService {
       const components: HealthRollup["components"] = {
         prometheus: { up: promReady },
         loki: { up: lokiReady },
-        grafana: { up: grafanaHealth.ok, detail: grafanaHealth.version ?? undefined },
+        grafana: {
+          up: grafanaHealth.ok,
+          detail: grafanaHealth.version ?? undefined,
+        },
         alertmanager: { up: amHealthy },
       }
 
       const coreUp = Object.values(components).every((c) => c.up)
-      const status: HealthRollup["status"] = !coreUp ? "down" : down > 0 ? "degraded" : "ok"
+      const status: HealthRollup["status"] = !coreUp
+        ? "down"
+        : down > 0
+        ? "degraded"
+        : "ok"
 
       return {
         status,
@@ -99,7 +118,8 @@ export class MonitoringService {
 
       const durByInstance = new Map<string, number>()
       for (const d of probeDuration) {
-        if (d.value !== null) durByInstance.set(d.metric.instance ?? "", d.value)
+        if (d.value !== null)
+          durByInstance.set(d.metric.instance ?? "", d.value)
       }
 
       const probes = probeSuccess.map((p) => {
@@ -118,8 +138,8 @@ export class MonitoringService {
         probes.length === 0 && monitors.length === 0
           ? "down"
           : anyProbeDown || anyMonitorDown
-            ? "degraded"
-            : "ok"
+          ? "degraded"
+          : "ok"
 
       return { status, probes, monitors }
     })
@@ -129,7 +149,9 @@ export class MonitoringService {
   async metrics(kind: MetricKind): Promise<MetricSample[]> {
     return this.cache.wrap(`metrics:${kind}`, async () => {
       const defs = queriesFor(kind)
-      const results = await Promise.all(defs.map((d) => this.prom.query(d.query)))
+      const results = await Promise.all(
+        defs.map((d) => this.prom.query(d.query))
+      )
       return defs.map((d, i) => {
         const rows = results[i]
         // Multi-series (containers, per-db) → expose the series; else a scalar.
@@ -157,13 +179,19 @@ export class MonitoringService {
     return this.cache.wrap("alerts", async () => {
       const list = await this.am.activeAlerts()
       const bySeverity: Record<string, number> = {}
-      for (const a of list) bySeverity[a.severity] = (bySeverity[a.severity] ?? 0) + 1
+      for (const a of list)
+        bySeverity[a.severity] = (bySeverity[a.severity] ?? 0) + 1
       return { count: list.length, bySeverity, alerts: list }
     })
   }
 
   // --- /monitoring/logs -------------------------------------------------------
-  async logs(opts: { service?: string; query?: string; limit: number; sinceMs: number }) {
+  async logs(opts: {
+    service?: string
+    query?: string
+    limit: number
+    sinceMs: number
+  }) {
     // Not cached — logs are point-in-time and cheap-ish at low limits.
     const selector = opts.service
       ? `{compose_service="${sanitizeLabel(opts.service)}"}`
@@ -193,7 +221,11 @@ export class MonitoringService {
       }
     }
     // Full GitHub code-scanning aggregation lands when the repo is public/GHAS.
-    return { configured: false, hint: "GitHub integration wired but not yet enabled.", data: null }
+    return {
+      configured: false,
+      hint: "GitHub integration wired but not yet enabled.",
+      data: null,
+    }
   }
 
   seo(): GatedResult<never> {
@@ -212,7 +244,11 @@ export class MonitoringService {
         data: null,
       }
     }
-    return { configured: false, hint: "PostHog integration wired but not yet enabled.", data: null }
+    return {
+      configured: false,
+      hint: "PostHog integration wired but not yet enabled.",
+      data: null,
+    }
   }
 }
 

@@ -46,7 +46,10 @@ medusaIntegrationTestRunner({
     // X-Forwarded-For; its rightmost hop is what a single trusted proxy (Caddy)
     // would append, i.e. the value the limiter must key on. Always resolves to a
     // response object (200/201/400/429) so callers can assert on status/headers.
-    const postReview = (xff?: string, body: Record<string, unknown> = VALID_BODY) => {
+    const postReview = (
+      xff?: string,
+      body: Record<string, unknown> = VALID_BODY
+    ) => {
       const headers: Record<string, string> = {
         ...pk.storeAs(customer.token).headers,
       }

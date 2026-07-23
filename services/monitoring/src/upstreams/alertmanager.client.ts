@@ -23,14 +23,19 @@ export class AlertmanagerClient {
   private readonly timeout = loadEnv().UPSTREAM_TIMEOUT_MS
 
   async healthy(): Promise<boolean> {
-    const res = await getText(`${this.base}/-/healthy`, { timeoutMs: this.timeout })
+    const res = await getText(`${this.base}/-/healthy`, {
+      timeoutMs: this.timeout,
+    })
     return res.ok
   }
 
   async activeAlerts(): Promise<ActiveAlert[]> {
-    const res = await getJson<AmAlert[]>(`${this.base}/api/v2/alerts?active=true&silenced=false&inhibited=false`, {
-      timeoutMs: this.timeout,
-    })
+    const res = await getJson<AmAlert[]>(
+      `${this.base}/api/v2/alerts?active=true&silenced=false&inhibited=false`,
+      {
+        timeoutMs: this.timeout,
+      }
+    )
     if (!res.ok || !res.data) return []
     return res.data.map((a) => ({
       name: a.labels.alertname ?? "unknown",

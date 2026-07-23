@@ -28,12 +28,19 @@ export async function getJson<T = unknown>(
 ): Promise<UpstreamResult<T>> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs)
-  const headers: Record<string, string> = { Accept: "application/json", ...opts.headers }
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...opts.headers,
+  }
   if (opts.basicAuth) {
     headers.Authorization = toBasic(opts.basicAuth.user, opts.basicAuth.pass)
   }
   try {
-    const res = await fetch(url, { method: "GET", headers, signal: controller.signal })
+    const res = await fetch(url, {
+      method: "GET",
+      headers,
+      signal: controller.signal,
+    })
     const status = res.status
     if (!res.ok) {
       return { ok: false, status, data: null, error: `upstream ${status}` }
@@ -61,12 +68,27 @@ export async function getText(
     headers.Authorization = toBasic(opts.basicAuth.user, opts.basicAuth.pass)
   }
   try {
-    const res = await fetch(url, { method: "GET", headers, signal: controller.signal })
-    if (!res.ok) return { ok: false, status: res.status, data: null, error: `upstream ${res.status}` }
+    const res = await fetch(url, {
+      method: "GET",
+      headers,
+      signal: controller.signal,
+    })
+    if (!res.ok)
+      return {
+        ok: false,
+        status: res.status,
+        data: null,
+        error: `upstream ${res.status}`,
+      }
     return { ok: true, status: res.status, data: await res.text() }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    return { ok: false, status: 0, data: null, error: msg.includes("aborted") ? "timeout" : msg }
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      error: msg.includes("aborted") ? "timeout" : msg,
+    }
   } finally {
     clearTimeout(timer)
   }

@@ -21,19 +21,19 @@ implements the contract in
 
 ## Endpoints
 
-| Route                        | Source                                   | Status                  |
-| ---------------------------- | ---------------------------------------- | ----------------------- |
-| `GET /healthz`               | the API itself (liveness)                | live                    |
-| `GET /monitoring/health`     | Prometheus `/targets` + Grafana/Loki/AM  | live                    |
-| `GET /monitoring/uptime`     | blackbox `probe_success` + Uptime Kuma   | live                    |
+| Route                           | Source                                   | Status                  |
+| ------------------------------- | ---------------------------------------- | ----------------------- |
+| `GET /healthz`                  | the API itself (liveness)                | live                    |
+| `GET /monitoring/health`        | Prometheus `/targets` + Grafana/Loki/AM  | live                    |
+| `GET /monitoring/uptime`        | blackbox `probe_success` + Uptime Kuma   | live                    |
 | `GET /monitoring/metrics/:kind` | PromQL — `host｜db｜redis｜containers`   | live                    |
-| `GET /monitoring/alerts`     | Alertmanager `/api/v2/alerts`            | live                    |
-| `GET /monitoring/logs`       | Loki `query_range` (redacted, paginated) | live                    |
-| `GET /monitoring/queues`     | Bull Board `/api/queues` (BullMQ)        | live                    |
-| `GET /monitoring/security`   | GitHub code-scanning + Dependabot        | **gated** (needs token) |
-| `GET /monitoring/seo`        | Search Console + PSI + Lighthouse        | **gated** (needs URL)   |
-| `GET /monitoring/analytics`  | PostHog privacy-safe aggregates          | **gated** (needs key)   |
-| `GET /` and `GET /dashboard` | the admin Monitoring UI (HTML)           | live                    |
+| `GET /monitoring/alerts`        | Alertmanager `/api/v2/alerts`            | live                    |
+| `GET /monitoring/logs`          | Loki `query_range` (redacted, paginated) | live                    |
+| `GET /monitoring/queues`        | Bull Board `/api/queues` (BullMQ)        | live                    |
+| `GET /monitoring/security`      | GitHub code-scanning + Dependabot        | **gated** (needs token) |
+| `GET /monitoring/seo`           | Search Console + PSI + Lighthouse        | **gated** (needs URL)   |
+| `GET /monitoring/analytics`     | PostHog privacy-safe aggregates          | **gated** (needs key)   |
+| `GET /` and `GET /dashboard`    | the admin Monitoring UI (HTML)           | live                    |
 
 Gated endpoints return `{ "configured": false, "hint": "..." }` until their
 credentials exist — the SaaS tools can't be reached before there is a deployed,
