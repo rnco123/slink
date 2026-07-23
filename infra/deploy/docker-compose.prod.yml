@@ -42,6 +42,10 @@ services:
   medusa-migrate:
     image: ${MEDUSA_IMAGE:-ghcr.io/rnco123/slink-medusa:latest}
     command: ["npx", "medusa", "db:migrate"]
+    # HOME → a writable dir: the image's `medusa` system user has no home, so the
+    # Medusa CLI's mkdir ~/.config/medusa fails with EACCES otherwise.
+    environment:
+      HOME: /tmp
     env_file: [./.env]
     restart: "no"
     depends_on:
@@ -53,6 +57,7 @@ services:
     restart: unless-stopped
     environment:
       MEDUSA_WORKER_MODE: server
+      HOME: /tmp
     env_file: [./.env]
     depends_on:
       medusa-migrate:
@@ -69,6 +74,7 @@ services:
     environment:
       MEDUSA_WORKER_MODE: worker
       MEDUSA_ADMIN_DISABLE: "true"
+      HOME: /tmp
     env_file: [./.env]
     depends_on:
       medusa-migrate:
