@@ -1,0 +1,50 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    "apps/storefront": {
+      "entry": [
+        "src/middleware.ts",
+        "src/instrumentation.ts",
+        "next.config.js",
+        "next-sitemap.js",
+        "check-env-variables.js",
+        "playwright.config.ts",
+        "vitest.config.ts",
+        "e2e/**/*.ts",
+        "src/**/*.test.{ts,tsx}"
+      ],
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignore": ["next-env.d.ts"],
+      "ignoreDependencies": ["webpack", "babel-loader", "@babel/core"]
+    },
+    "apps/medusa": {
+      "entry": [
+        "medusa-config.ts",
+        "src/api/**/route.ts",
+        "src/api/**/middlewares.ts",
+        "src/api/middlewares.ts",
+        "src/modules/*/index.ts",
+        "src/modules/*/service.ts",
+        "src/modules/*/models/*.ts",
+        "src/modules/*/migrations/*.ts",
+        "src/admin/**/*.{ts,tsx}",
+        "src/subscribers/*.ts",
+        "src/jobs/*.ts",
+        "src/workflows/**/*.ts",
+        "src/links/*.ts",
+        "src/scripts/*.ts",
+        "integration-tests/**/*.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx}", "medusa-config.ts"],
+      "ignore": [".medusa/**"]
+    },
+    "packages/privacy": {
+      "entry": ["src/**/*.test.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/ui": {
+      "project": ["src/**/*.{ts,tsx}"]
+    }
+  },
+  "ignoreWorkspaces": ["services/monitoring"]
+}

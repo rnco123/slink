@@ -52,7 +52,10 @@ proxied same-origin (e.g. the PostHog `/ingest` proxy).
 
 ## 2. Cookie contract
 
-### Medusa admin session cookie — `projectConfig.http.cookieOptions`
+### Medusa admin session cookie — `projectConfig.cookieOptions`
+
+> Note: this option lives at `projectConfig.cookieOptions` in Medusa v2.17, NOT
+> under `projectConfig.http`.
 
 Set on the `connect.sid` session cookie Medusa issues for the admin dashboard:
 
@@ -96,8 +99,13 @@ per-process and trivially multiplied by rotating replicas).
 
 Behaviour:
 
-- **Client IP** is taken from the first hop of `x-forwarded-for` (set by Caddy
-  in prod), falling back to `req.ip` / socket address in dev.
+- **Client IP** is taken from the **rightmost** hop of `x-forwarded-for` — the
+  address the single trusted proxy (Caddy) appended, which is the real connecting
+  peer. The leftmost entries are client-supplied and spoofable, so keying on them
+  would let an attacker rotate a fake value per request and evade the limit.
+  Falls back to `req.ip` / socket address when hit directly (dev / no proxy). If
+  a CDN or extra proxy is ever placed in front of Caddy, revisit the trusted-hop
+  count.
 - On limit, responds **429** with `Retry-After` and `RateLimit-Limit /
 -Remaining / -Reset` headers.
 - **Fail-open:** if the cache backend errors, the request is allowed through —
