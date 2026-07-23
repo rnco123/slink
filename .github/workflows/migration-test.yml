@@ -1,0 +1,72 @@
+# Fresh-DB migration test (roadmap task 70).
+#
+# Spins up an EMPTY Postgres and runs `medusa db:migrate` from zero, asserting a
+# clean exit. This guards the zero-downtime migration rule (docs/MIGRATIONS.md,
+# task 49): every core + custom-module migration (audit-log, content,
+# product-review) must apply cleanly onto a brand-new database — the exact path
+# a fresh prod bring-up (and the deploy migration one-shot) takes.
+name: migration-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "apps/medusa/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/migration-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migration-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  migrate:
+    name: medusa db:migrate (empty DB)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: medusa
+          POSTGRES_PASSWORD: medusa
+          POSTGRES_DB: medusa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U medusa"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Point Medusa at the empty service DB. db:migrate is a tooling phase, so
+      # env.ts skips prod-strictness and dummy secrets are accepted.
+      DATABASE_URL: postgres://medusa:medusa@localhost:5432/medusa
+      JWT_SECRET: ci_placeholder_jwt_secret
+      COOKIE_SECRET: ci_placeholder_cookie_secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      # Runs core + every custom-module migration onto the empty DB. A non-zero
+      # exit (failed/duplicate/broken migration) fails the job.
+      - name: Migrate from zero
+        run: pnpm --filter @saludlink/medusa exec medusa db:migrate

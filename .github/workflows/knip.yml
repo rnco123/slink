@@ -1,0 +1,50 @@
+# knip — dead-code / unused-deps / unused-exports scan (roadmap task 77).
+#
+# Weekly (not on push): dead code accrues slowly and this is a hygiene signal,
+# not a correctness gate. Knip cross-checks the whole pnpm/turbo workspace for
+# unused files, dependencies, and exports.
+#
+# Report-only for now (`continue-on-error`): a first pass over a Next.js App
+# Router + Medusa framework monorepo surfaces framework-convention files and
+# type-only exports that need a human triage pass (mirrors how security.yml's
+# semgrep step started). The config (knip.json) declares the framework entry
+# points; once a maintainer has triaged the remainder, drop continue-on-error to
+# make it a gate.
+name: knip
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: knip-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  knip:
+    name: knip (dead code / unused deps)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      # Report-only: surfaces findings in the log without failing the workflow
+      # until the config is fully triaged (see header note).
+      - name: Run knip
+        continue-on-error: true
+        run: pnpm dlx knip@5 --no-progress

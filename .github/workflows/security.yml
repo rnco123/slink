@@ -50,14 +50,33 @@ jobs:
       image: semgrep/semgrep:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run Semgrep (security rulesets)
-        # Scoped to the SECURITY rulesets (dropped the noisy p/default and
-        # style-oriented p/typescript). `--error` surfaces findings but the step
-        # is report-only for now: the initial scan flagged ~52 items (many in
-        # test files / best-practice) that need a one-time triage pass before we
-        # flip this to a hard gate. SARIF still uploads for review. TODO(task 30):
-        # triage findings, add `// nosemgrep` where justified, then drop
-        # continue-on-error.
+
+      # HARD GATE (task 30 triage complete). A one-time triage of the security
+      # rulesets (p/security-audit + p/secrets + p/nextjs + p/owasp-top-ten,
+      # excluding tests) found ZERO ERROR-severity findings across the whole
+      # repo — every finding was WARNING, and all were the single best-practice
+      # rule `github-actions-mutable-action-tag` (pin actions to a commit SHA).
+      # So we gate on ERROR severity (semgrep's high-confidence tier): a real
+      # SAST finding fails CI, while the best-practice/style WARNINGs stay
+      # report-only (next step) instead of blocking on noise. SHA-pinning the
+      # actions is tracked separately (not blanket-nosemgrep'd here — the fix is
+      # to pin, not to suppress).
+      - name: Semgrep gate (ERROR severity fails the build)
+        run: |
+          semgrep scan \
+            --config p/security-audit \
+            --config p/secrets \
+            --config p/nextjs \
+            --config p/owasp-top-ten \
+            --severity ERROR \
+            --error \
+            --exclude '*.test.ts' --exclude '*.spec.ts'
+        env:
+          SEMGREP_SEND_METRICS: "off" # privacy: no telemetry
+
+      # Full report (all severities) → SARIF for the Security tab. Report-only:
+      # WARNING/INFO best-practice findings are visible but don't block.
+      - name: Semgrep full report (all severities, non-blocking)
         continue-on-error: true
         run: |
           semgrep scan \
@@ -66,7 +85,6 @@ jobs:
             --config p/nextjs \
             --config p/owasp-top-ten \
             --sarif --output semgrep.sarif \
-            --error --verbose \
             --exclude '*.test.ts' --exclude '*.spec.ts'
         env:
           SEMGREP_SEND_METRICS: "off" # privacy: no telemetry

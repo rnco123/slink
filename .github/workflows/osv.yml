@@ -1,0 +1,47 @@
+# OSV-Scanner — weekly dependency vulnerability scan (roadmap task 30).
+#
+# Complements the on-push `security.yml` (Gitleaks / Semgrep / pnpm-audit /
+# Trivy). OSV-Scanner cross-references the pnpm lockfile against the OSV.dev
+# database (Google's open-source vulnerability feed, aggregating GHSA, npm,
+# RUSTSEC, PyPA and more) — a second, independent source to `pnpm audit`.
+#
+# Weekly (not on push) because the dependency set changes slowly and a fresh OSV
+# feed matters more than per-commit latency; Dependabot already opens PRs for new
+# advisories between runs. `workflow_dispatch` allows an on-demand run.
+#
+# The scanner is installed via `go install` rather than a marketplace action:
+# it's version-agnostic (no tag to keep pinned) and avoids the SARIF upload step
+# the official action performs, which requires GitHub Advanced Security (not
+# available on this private repo — same constraint noted in security.yml).
+name: osv-scanner
+
+on:
+  schedule:
+    - cron: "0 8 * * 1" # Mondays 08:00 UTC — an hour after security.yml's deep scan
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: osv-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: osv-scanner (lockfile vulns)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install OSV-Scanner
+        run: go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
+
+      # Scans the single root pnpm-lock.yaml, which covers every workspace
+      # package. Exits non-zero (fails the job) when any vulnerability is found.
+      - name: Scan pnpm lockfile
+        run: osv-scanner scan --lockfile=./pnpm-lock.yaml

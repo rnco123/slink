@@ -1,0 +1,69 @@
+# Playwright backend-free E2E (roadmap task 68).
+#
+# Runs the DEFAULT Playwright suite — everything NOT tagged @commerce — against
+# the storefront alone, with no Medusa backend. Marketing / legal / SEO / i18n /
+# a11y (task 58) / console-error (task 76) specs render for an anonymous visitor
+# because cart + customer lookups short-circuit to null with no session cookie.
+#
+# The commerce specs (@commerce) need a seeded backend and are excluded here;
+# they run separately once a backend is available.
+#
+# Playwright manages its own dev server (see playwright.config.ts `webServer:
+# pnpm dev`) and warms every route before the specs (global-setup), so this job
+# only needs deps + a browser. Public build env is dummy — no real backend is
+# contacted.
+name: e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  # check-env-variables.js hard-requires the publishable key; dummy is fine since
+  # the backend-free suite never talks to Medusa.
+  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_e2e_placeholder
+  NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+  NEXT_PUBLIC_BASE_URL: http://localhost:8000
+
+jobs:
+  e2e:
+    name: playwright (backend-free)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright chromium (+ OS deps)
+        run: pnpm --filter @saludlink/storefront exec playwright install --with-deps chromium
+
+      - name: Run backend-free E2E suite
+        run: pnpm --filter @saludlink/storefront test:e2e
+
+      # Always publish the HTML report so failures are triageable.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/storefront/e2e/.artifacts/report
+          retention-days: 7

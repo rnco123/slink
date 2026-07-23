@@ -71,6 +71,14 @@ jobs:
       - name: Build
         run: pnpm turbo run build
 
+      # Bundle-size regression budget (roadmap task 57). Reuses the storefront
+      # build above (reads apps/storefront/.next/app-build-manifest.json) and
+      # fails if the heaviest route's gzipped First Load JS exceeds the budget.
+      - name: Bundle-size budget
+        run: pnpm check:bundle
+        env:
+          BUNDLE_BUDGET_KB: "460"
+
       - name: Typecheck
         run: pnpm turbo run typecheck
 
