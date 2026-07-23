@@ -130,3 +130,38 @@ submission endpoint, so there is no server surface to rate-limit. If a contact
 or newsletter POST is added later, wrap its handler with `rateLimit()` (Medusa
 route) or apply the same per-IP window in the storefront Server Action / API
 route.
+
+## Admin brute-force posture (roadmap task 51)
+
+The admin login (`manage.saludlinkusa.com`) is public and has no WAF, so the
+auth surface is hardened at the app layer:
+
+**Implemented**
+
+- **Per-IP rate limiting on all auth flows** (`/auth/*`, 10 req/min/IP — task
+  50). This is the primary brute-force control: it caps how fast an attacker can
+  guess credentials from any single source, for both admin and customer auth,
+  and returns `429` + `Retry-After`.
+- **Secure session cookies** — `httpOnly` + `SameSite=lax` + `Secure` in prod
+  (task 52), so a stolen session token can't be read by JS or replayed
+  cross-site.
+- **Append-only audit log** of admin actions (audit-log module) for post-hoc
+  review of suspicious activity.
+
+**Operational policy (enforce administratively until code-enforced)**
+
+- **Password policy:** admin passwords ≥ 12 chars, mixed classes, not reused;
+  rotate on suspected compromise. Admins are invited via Settings → Users (no
+  self-service admin signup), which limits the attack surface to known accounts.
+- **MFA:** enable an MFA layer before real customer data (parked with task 41).
+
+**Documented follow-up (needs Medusa auth-provider customization)**
+
+- **Per-account lockout** (lock after N failed attempts within a window) and
+  **emailpass complexity enforcement** require wrapping/overriding the
+  `@medusajs/auth-emailpass` provider — the built-in provider exposes no
+  password-policy or lockout hooks, and a route middleware can't observe whether
+  a login _succeeded_ (only the provider sees that), so a correct lockout must
+  live in the provider. This is a larger, higher-risk change (a bug there locks
+  out legitimate admins), deliberately deferred rather than rushed. Until then
+  the per-IP limit above is the active brute-force control.
