@@ -39,7 +39,8 @@
       "@medusajs/types": "2.16.0",
       "lodash@<4.18.0": "4.18.1",
       "@opentelemetry/propagator-jaeger@<2.9.0": "^2.9.0",
-      "sharp@<0.35.0": "^0.35.0"
+      "sharp@<0.35.0": "^0.35.0",
+      "postcss@<8.5.12": "^8.5.12"
     },
     "auditConfig": {
       "comment-ignore": "GHSA-fx2h-pf6j-xcff (vite server.fs.deny bypass) affects vite<6.4.3, but Medusa's admin bundler is pinned to vite 5 — bumping to vite 6 breaks the admin build. This is a DEV/BUILD-server-only vuln (vite does not run in production; the admin is a pre-built static bundle). Tracked by Dependabot for when Medusa moves to vite 6.",

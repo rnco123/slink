@@ -1,0 +1,12 @@
+# actionlint configuration.
+#
+# Declare the labels of our self-hosted runner so actionlint stops flagging
+# `runs-on: [self-hosted, slink-box]` in deploy.yml as an unknown label. Without
+# this, actionlint only knows GitHub-hosted labels and fails the meta-lint job.
+#
+# `slink-box` is the GitHub Actions runner installed on the production EC2 box
+# (/opt/actions-runner, systemd service as `ubuntu`). It runs only the
+# "roll the box" deploy job — see docs/DEPLOYMENT.md.
+self-hosted-runner:
+  labels:
+    - slink-box
