@@ -23,9 +23,9 @@ jobs:
     name: ZAP baseline scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.14.0
+        uses: zaproxy/action-baseline@7c4deb10e6261301961c86d65d54a516394f9aed # v0.14.0
         with:
           target: ${{ github.event.inputs.target_url || 'https://staging.saludlinkusa.com' }}
           # Rules config lets us mark known-acceptable warnings as WARN/IGNORE.
@@ -35,7 +35,7 @@ jobs:
           fail_action: false # report, don't block (baseline is advisory)
       - name: Upload ZAP report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: zap-baseline-report
           path: |

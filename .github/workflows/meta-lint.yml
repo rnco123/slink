@@ -26,7 +26,7 @@ jobs:
     name: actionlint (workflows)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Run actionlint
         run: |
           docker run --rm -v "$PWD:/repo" --workdir /repo \
@@ -41,9 +41,9 @@ jobs:
           - apps/storefront/Dockerfile
           - apps/medusa/Dockerfile
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Run hadolint on ${{ matrix.dockerfile }}
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
         with:
           dockerfile: ${{ matrix.dockerfile }}
           failure-threshold: error
