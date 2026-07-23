@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "seed:stripe-region": "medusa exec ./src/scripts/enable-stripe-region.ts",
+    "seed:promotions": "medusa exec ./src/scripts/seed-promotions.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
