@@ -2,7 +2,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import { Container, Section, Eyebrow } from "@components/ui/layout-primitives"
 import { Button } from "@components/ui/button"
 import { ConditionIcon } from "@components/ui/icons"
-import { conditionVerticals, siteConfig } from "@lib/config/site"
+import { conditionVerticals, telemedicineUrl } from "@lib/config/site"
 import type { Dictionary } from "@lib/i18n"
 
 /** Trust band — specific social-proof pattern (every certified competitor uses it). */
@@ -104,7 +104,7 @@ export function CareBand({ dict }: { dict: Dictionary }) {
         </div>
         <div className="flex flex-col gap-3">
           <Button
-            href={siteConfig.telemedicineUrl}
+            href={telemedicineUrl("home-section")}
             external
             variant="accent"
             size="lg"
