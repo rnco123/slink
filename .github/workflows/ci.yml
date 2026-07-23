@@ -40,13 +40,13 @@ jobs:
     name: format · lint · typecheck · build · test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 9.15.9
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -84,3 +84,59 @@ jobs:
 
       - name: Unit tests
         run: pnpm turbo run test
+
+  # ---------------------------------------------------------------------------
+  # Medusa HTTP integration tests (roadmap task 86). Boots the real Medusa app
+  # in-process against a throwaway DB (medusa-test-utils + pg-god) and exercises
+  # the store/admin API surfaces — content CRUD, product reviews, rate limiting,
+  # health. This makes the http integration suite a CI gate, not just a local run.
+  #
+  # SSL/localhost (Session 4's fix, see integration-tests/setup.js): medusa-test-
+  # utils forces `ssl: { rejectUnauthorized: false }` for any DB_HOST that is NOT
+  # "localhost", and a plain (non-SSL) Postgres then hangs at boot. So the service
+  # MUST be reached as `localhost` (not 127.0.0.1). pg-god needs a superuser to
+  # create/drop the temp DBs — the service's POSTGRES_USER is one.
+  integration-http:
+    name: medusa integration (http)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: saludlink
+          POSTGRES_PASSWORD: saludlink_local
+          POSTGRES_DB: medusa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U saludlink"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # DB_* (not DATABASE_URL) is what test-utils/pg-god build the throwaway DB
+      # from. DB_HOST MUST contain "localhost" (SSL note above).
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_USERNAME: saludlink
+      DB_PASSWORD: saludlink_local
+      DATABASE_URL: postgres://saludlink:saludlink_local@localhost:5432/medusa
+      JWT_SECRET: ci_placeholder_jwt_secret
+      COOKIE_SECRET: ci_placeholder_cookie_secret
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Run HTTP integration tests
+        run: pnpm --filter @saludlink/medusa test:integration:http
