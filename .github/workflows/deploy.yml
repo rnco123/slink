@@ -87,6 +87,18 @@ jobs:
     needs: [images]
     runs-on: [self-hosted, slink-box]
     steps:
+      # Authenticate to GHCR from inside the workflow rather than relying on a
+      # `docker login` someone ran by hand on the box: the runner service runs in
+      # its own environment and does not see the operator's ~/.docker/config.json,
+      # and the packages may be private. GITHUB_TOKEN can always read this repo's
+      # own packages, so the deploy is self-contained.
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Pull latest images + roll
         run: |
           set -euo pipefail
