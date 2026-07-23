@@ -10,9 +10,14 @@ import { legalLinks } from "@lib/config/site"
 
 type Params = { countryCode: string; slug: string }
 
-// Legal/policy pages are now CMS-driven (Medusa content module) — editable from the admin,
-// bilingual, and revalidated so edits appear on the site within a minute.
-export const revalidate = 60
+// Legal/policy pages are CMS-driven (Medusa content module) — editable from the admin,
+// bilingual. Rendered per-request (force-dynamic, task 84) instead of statically
+// generated: during the deploy's storefront-image build Medusa is unreachable, so a
+// build-time getContentPage() returns null and notFound() would BAKE a permanent 404
+// into the prerendered output. Dynamic rendering fetches the live/seeded prod DB on
+// each request so the pages resolve. generateStaticParams still enumerates the known
+// slugs; force-dynamic just moves rendering to request time (supersedes revalidate).
+export const dynamic = "force-dynamic"
 
 export async function generateStaticParams() {
   return legalLinks.map((l) => ({ slug: l.slug }))
