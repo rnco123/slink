@@ -6,12 +6,11 @@
 #             deployed URL (staging/prod), feeding the Monitoring API.
 name: lighthouse
 
+# Manual-only: Lighthouse-in-CI on a heavy commerce app is flaky/slow on shared
+# runners, so we don't run it on every PR. Dispatch the `lhci` job for a local
+# budget check, or `psi` against a deployed URL. (Was pull_request; moved to
+# workflow_dispatch to keep the Actions tab clean — task 25.)
 on:
-  pull_request:
-    paths:
-      - "apps/storefront/**"
-      - ".github/workflows/lighthouse.yml"
-      - "lighthouserc.json"
   workflow_dispatch:
     inputs:
       psi_url:
