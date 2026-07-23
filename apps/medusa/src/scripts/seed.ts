@@ -134,9 +134,14 @@ export default async function seedDemoData({ container }: ExecArgs) {
           name: "United States",
           currency_code: "usd",
           countries,
-          // pp_stripe_stripe once the Stripe provider is enabled via env;
-          // pp_system_default keeps the seed runnable before Stripe is keyed.
-          payment_providers: ["pp_system_default"],
+          // pp_system_default keeps the seed runnable before Stripe is keyed
+          // (and doubles as a manual/admin payment option). When STRIPE_API_KEY
+          // is set the provider is registered in this exec process, so a fresh
+          // seed also links pp_stripe_stripe. For an ALREADY-seeded DB use the
+          // idempotent enable-stripe-region.ts script instead.
+          payment_providers: process.env.STRIPE_API_KEY
+            ? ["pp_system_default", "pp_stripe_stripe"]
+            : ["pp_system_default"],
         },
       ],
     },

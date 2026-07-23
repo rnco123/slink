@@ -7,6 +7,7 @@
     "build": "medusa build",
     "typecheck": "tsc --noEmit",
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "seed:stripe-region": "medusa exec ./src/scripts/enable-stripe-region.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
@@ -23,6 +24,7 @@
     "@medusajs/framework": "2.16.0",
     "@medusajs/icons": "2.16.0",
     "@medusajs/medusa": "2.16.0",
+    "@medusajs/payment-stripe": "2.16.0",
     "@medusajs/ui": "4.1.16",
     "zod": "^3.23.8"
   },
