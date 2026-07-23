@@ -62,8 +62,22 @@ No open SSH port, no private key stored in GitHub.
     `https://manage.saludlinkusa.com/health` and **fails the run if it doesn't
     return 200** — so a broken deploy shows up red, it doesn't fail silently.
 
-`deploy.yml` triggers on **push to `main`** and on the manual **Run workflow**
-button.
+**What gates a deploy.** `deploy.yml` runs when the **`ci` workflow completes
+successfully on `main`** (`workflow_run`), plus the manual **Run workflow**
+button. It does _not_ run on a raw push, so a red build cannot reach production
+even if someone pushes straight to `main`.
+
+It is gated on **`ci` only** — the correctness gate (format, lint, typecheck,
+build, unit + integration tests). Deliberately **not** gated on
+`security` / `meta-lint` / `knip` / `lighthouse`: those fail for reasons outside
+your control (a new upstream CVE in a transitive dependency, a linter that
+doesn't know a custom runner label). They still run and still report; they just
+never block shipping a working site. Keep it that way — a gate you can't fix by
+changing your own code is a gate that will eventually stop a release you need.
+
+Because `workflow_run` starts from the default branch, the build explicitly
+checks out (and tags images with) `workflow_run.head_sha` — the exact commit CI
+validated — rather than whatever `main` happens to point at when it fires.
 
 ---
 

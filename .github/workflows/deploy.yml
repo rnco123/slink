@@ -14,8 +14,20 @@
 name: deploy
 
 on:
-  push:
+  # Deploy only AFTER ci has actually gone green on main. Previously this ran on
+  # every push regardless of CI, so a red build still reached production.
+  #
+  # Gated on `ci` ONLY — that is the correctness gate (format, lint, typecheck,
+  # build, unit + integration tests). Deliberately NOT gated on security /
+  # meta-lint / knip / lighthouse: those fail on upstream advisories and tooling
+  # config (a stranger publishing a CVE in a transitive dep, a linter not knowing
+  # a runner label), and must never block shipping a working site. They still run
+  # and still report — they just aren't a deploy blocker.
+  workflow_run:
+    workflows: ["ci"]
+    types: [completed]
     branches: [main]
+  # Manual escape hatch: redeploy/roll back without waiting on CI.
   workflow_dispatch:
 
 permissions:
@@ -35,8 +47,16 @@ jobs:
   images:
     name: build + push images
     runs-on: ubuntu-latest
+    # workflow_run fires on ANY ci completion, including failures — so only
+    # proceed when it actually succeeded. Manual dispatch always proceeds.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
+      # Under workflow_run, checkout defaults to the default branch HEAD, which
+      # is not necessarily the commit CI just validated. Pin to that exact commit
+      # so we ship what actually passed.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: docker/setup-buildx-action@v3
 
@@ -56,7 +76,7 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:latest
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:${{ github.event.workflow_run.head_sha || github.sha }}
           cache-from: type=gha,scope=medusa
           cache-to: type=gha,mode=max,scope=medusa
 
@@ -73,7 +93,7 @@ jobs:
             NEXT_PUBLIC_BASE_URL=https://saludlinkusa.com
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:latest
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:${{ github.event.workflow_run.head_sha || github.sha }}
           cache-from: type=gha,scope=storefront
           cache-to: type=gha,mode=max,scope=storefront
 
