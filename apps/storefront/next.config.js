@@ -89,6 +89,13 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: "http", hostname: "localhost" },
+      // Product artwork lives in our own public/products/*.svg but is stored on
+      // the product as an ABSOLUTE url (so Admin and emails resolve it too).
+      // The optimizer therefore treats it as a REMOTE image and refuses any host
+      // that isn't allowlisted — without these entries it returns 400 and every
+      // product tile renders as a broken image.
+      { protocol: "https", hostname: "saludlinkusa.com" },
+      { protocol: "https", hostname: "www.saludlinkusa.com" },
       {
         protocol: "https",
         hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
