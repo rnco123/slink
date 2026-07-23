@@ -8,14 +8,14 @@
 name: deploy
 
 on:
+  # Cost control (private repo): deploy on an intentional version TAG or the
+  # manual "Run workflow" button — NOT on every push to main (image builds are
+  # ~30 min each). To release: `git tag v1.2.3 && git push origin v1.2.3`, or
+  # click Actions → deploy → Run workflow.
   workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - "apps/**"
-      - "packages/**"
-      - "infra/deploy/**"
-      - ".github/workflows/deploy.yml"
+    tags:
+      - "v*"
 
 permissions:
   contents: read
