@@ -81,7 +81,16 @@ function isBuildOrToolingPhase(
 }
 
 function refine(env: MedusaEnv, ctx: z.RefinementCtx) {
-  const isProd = env.NODE_ENV === "production" && !isBuildOrToolingPhase()
+  // PREDEPLOY_SMOKE=1 is the local prod-mode smoke ritual (roadmap 78–81): it
+  // boots the app with NODE_ENV=production to catch prod-build issues, but points
+  // at the LOCAL Postgres + dev secrets. That's intentional and local-only, so
+  // the production-strictness (no-localhost DB, https CORS, real secrets) must be
+  // skipped. A real deploy never sets this flag, so the guard still holds in prod.
+  const isPredeploySmoke = process.env.PREDEPLOY_SMOKE === "1"
+  const isProd =
+    env.NODE_ENV === "production" &&
+    !isBuildOrToolingPhase() &&
+    !isPredeploySmoke
 
   if (isProd) {
     // --- Secrets must be real in production ---------------------------------
