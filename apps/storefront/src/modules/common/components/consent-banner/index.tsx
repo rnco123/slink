@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import {
   getAnalyticsConsent,
   grantAnalyticsConsent,
@@ -21,11 +22,24 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
  */
 const ConsentBanner = () => {
   const [visible, setVisible] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
     // Show only when no prior choice exists.
     setVisible(getAnalyticsConsent() === "unset")
   }, [])
+
+  /**
+   * Never on the coming-soon wall. That page is a single full-viewport holding
+   * screen, and a fixed bottom banner covers its primary action ("Have a preview
+   * code?") outright on short/landscape viewports.
+   *
+   * Safe to omit: capture is opt-OUT by default (posthog.tsx
+   * `opt_out_capturing_by_default: true`, `capture_pageview: false`), so nothing
+   * non-essential runs behind the wall — there is no consent to collect yet. The
+   * banner appears as normal the moment the visitor unlocks and enters the site.
+   */
+  if (pathname === "/coming-soon") return null
 
   if (!visible) return null
 
