@@ -19,5 +19,10 @@ saludlinkusa.com, www.saludlinkusa.com {
 
 manage.saludlinkusa.com {
 	encode zstd gzip
+	# Medusa serves the admin dashboard at /app (API at /store,/admin,/auth,/health),
+	# so the bare root has no handler and 404s. Redirect only "/" → /app so typing
+	# the domain lands on the admin login; every other path passes through.
+	@root path /
+	redir @root /app
 	reverse_proxy medusa:9000
 }
