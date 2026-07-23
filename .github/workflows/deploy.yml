@@ -54,7 +54,7 @@ jobs:
       # Under workflow_run, checkout defaults to the default branch HEAD, which
       # is not necessarily the commit CI just validated. Pin to that exact commit
       # so we ship what actually passed.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
