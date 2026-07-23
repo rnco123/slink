@@ -5,6 +5,14 @@
  * research (LifeMD/Everlywell/Noom all navigate by health category, not shop-vs-services).
  */
 
+/**
+ * Base URL of the external telehealth portal — NO UTM params here; per-placement
+ * campaign tags are added by `telemedicineUrl(placement)` below. CTAs must link
+ * out via that function so `care.` can attribute which placement converts.
+ */
+const TELEMEDICINE_BASE_URL =
+  process.env.NEXT_PUBLIC_TELEMEDICINE_URL || "https://care.saludlinkusa.com"
+
 export const siteConfig = {
   name: "Saludlink",
   legalEntity: "Saludlink, Inc.",
@@ -21,10 +29,41 @@ export const siteConfig = {
     email: "support@saludlinkusa.com",
     hours: "Mon–Fri, 9am–6pm ET",
   },
-  telemedicineUrl:
-    process.env.NEXT_PUBLIC_TELEMEDICINE_URL ||
-    "https://care.saludlinkusa.com?utm_source=storefront&utm_medium=cta",
+  /** Untagged portal base — prefer `telemedicineUrl(placement)` for CTA links. */
+  telemedicineUrl: TELEMEDICINE_BASE_URL,
 } as const
+
+/**
+ * CTA placements that link out to the telehealth portal. Each maps to a distinct
+ * `utm_content` so the portal's analytics can break down storefront→portal
+ * traffic by where the click came from (task 65 §3b).
+ */
+export type TelemedicinePlacement =
+  | "nav"
+  | "mobile-menu"
+  | "home-section"
+  | "telemedicine-page"
+
+/**
+ * Build the outbound telehealth-portal URL for a given CTA placement, tagged with
+ * a consistent UTM convention (source=storefront, medium=cta,
+ * campaign=telehealth-linkout, content=<placement>). No PHI/ids cross over — UTM
+ * params are campaign metadata only. Any query already on the base URL is kept,
+ * with our UTM params taking precedence.
+ */
+export function telemedicineUrl(placement: TelemedicinePlacement): string {
+  try {
+    const u = new URL(TELEMEDICINE_BASE_URL)
+    u.searchParams.set("utm_source", "storefront")
+    u.searchParams.set("utm_medium", "cta")
+    u.searchParams.set("utm_campaign", "telehealth-linkout")
+    u.searchParams.set("utm_content", placement)
+    return u.toString()
+  } catch {
+    // Malformed override env — fall back to the untagged base rather than throw.
+    return TELEMEDICINE_BASE_URL
+  }
+}
 
 /** Lead vertical: weight & metabolic health. Drives condition-hub nav + SEO structure. */
 export const conditionVerticals = [

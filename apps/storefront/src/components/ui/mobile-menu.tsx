@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { siteConfig } from "@lib/config/site"
+import { telemedicineUrl } from "@lib/config/site"
 import { LanguageSwitcher } from "@components/ui/language-switcher"
 import { cn } from "@saludlink/ui"
 
@@ -86,7 +86,7 @@ export function MobileMenu({
           </ul>
           <div className="mt-4 flex items-center justify-between">
             <a
-              href={siteConfig.telemedicineUrl}
+              href={telemedicineUrl("mobile-menu")}
               rel="noopener noreferrer"
               className="inline-flex flex-1 items-center justify-center rounded-pill bg-clay-500 px-4 py-3 font-medium text-cream"
             >

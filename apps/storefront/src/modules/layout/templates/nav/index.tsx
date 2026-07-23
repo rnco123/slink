@@ -5,7 +5,7 @@ import CartButton from "@modules/layout/components/cart-button"
 import { Logo } from "@components/ui/logo"
 import { MobileMenu } from "@components/ui/mobile-menu"
 import { LanguageSwitcher } from "@components/ui/language-switcher"
-import { siteConfig } from "@lib/config/site"
+import { telemedicineUrl } from "@lib/config/site"
 import type { Dictionary } from "@lib/i18n"
 import type { Locale } from "@lib/i18n/config"
 
@@ -59,7 +59,7 @@ export default async function Nav({
           <div className="flex items-center gap-3 md:gap-5">
             <LanguageSwitcher className="hidden sm:inline-flex" />
             <a
-              href={siteConfig.telemedicineUrl}
+              href={telemedicineUrl("nav")}
               rel="noopener noreferrer"
               className="hidden rounded-pill bg-clay-500 px-4 py-2 text-sm font-medium text-cream transition-colors hover:bg-clay-600 sm:inline-flex"
             >

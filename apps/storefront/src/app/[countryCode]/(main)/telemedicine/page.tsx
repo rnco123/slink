@@ -4,7 +4,7 @@ import { Container, Section, Eyebrow } from "@components/ui/layout-primitives"
 import { Button } from "@components/ui/button"
 import { StateAvailabilityTable } from "@components/marketing/state-availability"
 import { JsonLd, faqJsonLd, breadcrumbJsonLd } from "@lib/seo/jsonld"
-import { siteConfig } from "@lib/config/site"
+import { telemedicineUrl } from "@lib/config/site"
 import { getDictionary } from "@lib/i18n"
 import { resolveLocale } from "@lib/i18n/config"
 import { alternatesFor } from "@lib/i18n/routing"
@@ -51,7 +51,7 @@ export default async function TelemedicinePage(props: {
           <p className="mt-6 max-w-xl text-lg text-ink-muted">{t.heroBody}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button
-              href={siteConfig.telemedicineUrl}
+              href={telemedicineUrl("telemedicine-page")}
               external
               variant="accent"
               size="lg"
