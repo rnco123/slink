@@ -212,6 +212,23 @@ const es = {
     addressTitle: "Dirección postal",
     privacyNote: "Solicitudes de privacidad:",
     accessibilityNote: "Accesibilidad:",
+    formTitle: "Envíanos un mensaje",
+    formIntro: "Normalmente respondemos en un día hábil.",
+    nameLabel: "Tu nombre",
+    emailLabel: "Correo electrónico",
+    phoneLabel: "Teléfono (opcional)",
+    messageLabel: "Tu consulta",
+    messageHint:
+      "Incluye tu número de pedido si tu consulta es sobre un pedido.",
+    submit: "Enviar mensaje",
+    submitting: "Enviando…",
+    successTitle: "Mensaje enviado",
+    successBody:
+      "Gracias — recibimos tu mensaje y te responderemos por correo en un día hábil.",
+    phiNotice:
+      "No incluyas detalles médicos. Este buzón no es para atención clínica — en caso de emergencia llama al 911.",
+    securityNote:
+      "Enviado por una conexión cifrada (TLS). Nunca vendemos tu información.",
   },
   licensing: {
     metaTitle: "Licencias y disponibilidad por estado",

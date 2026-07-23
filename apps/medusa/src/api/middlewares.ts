@@ -21,10 +21,10 @@ import { limitFromEnv, rateLimit } from "./rate-limit"
  * BEFORE the auth entry so an anonymous flood is rejected cheaply (by IP)
  * before hitting the auth stack.
  *
- * Contact form: the storefront "contact" page is a static mailto page with no
- * submission endpoint, so there is no server surface to rate-limit here. If a
- * contact/newsletter POST is added later, wrap it with `rateLimit()` the same
- * way. See docs/SECURITY-CORS-COOKIES.md.
+ * Contact form: `/store/contact` (POST) accepts the storefront contact form and
+ * is rate-limited below, as this note previously anticipated. It is anonymous by
+ * design, so the per-IP guard is the only thing standing in front of it.
+ * See docs/SECURITY-CORS-COOKIES.md.
  */
 export default defineMiddlewares({
   routes: [
@@ -63,6 +63,20 @@ export default defineMiddlewares({
         rateLimit({
           id: "review",
           limit: limitFromEnv("RATE_LIMIT_REVIEW_MAX", 5),
+          windowSeconds: 60,
+        }),
+      ],
+    },
+
+    {
+      // Contact form — fully anonymous, so this per-IP guard is the only thing
+      // in front of it. Deliberately tight: a human sends one message, not five.
+      matcher: "/store/contact",
+      method: "POST",
+      middlewares: [
+        rateLimit({
+          id: "contact",
+          limit: limitFromEnv("RATE_LIMIT_CONTACT_MAX", 5),
           windowSeconds: 60,
         }),
       ],

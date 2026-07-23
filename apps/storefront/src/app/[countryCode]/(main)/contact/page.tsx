@@ -7,6 +7,7 @@ import { siteConfig } from "@lib/config/site"
 import { getDictionary } from "@lib/i18n"
 import { resolveLocale } from "@lib/i18n/config"
 import { alternatesFor } from "@lib/i18n/routing"
+import ContactForm from "./contact-form"
 
 type Params = { countryCode: string }
 
@@ -38,43 +39,54 @@ export default async function ContactPage(props: { params: Promise<Params> }) {
         ])}
       />
       <Section tone="cream">
-        <Container width="narrow">
+        {/* Full container (not `narrow`) — the form + contact details sit side by
+            side on desktop and would be cramped at the narrow measure. */}
+        <Container>
           <Eyebrow>{t.eyebrow}</Eyebrow>
           <h1 className="mt-3 text-4xl">{t.title}</h1>
           <p className="mt-6 text-lg text-ink-muted">{t.intro}</p>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2">
-            <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
-              <h2 className="text-xl text-evergreen-800">{t.supportTitle}</h2>
-              <p className="mt-2 text-ink-muted">{t.supportBody}</p>
-              <a
-                href={`mailto:${siteConfig.contact.email}`}
-                className="mt-3 inline-block text-clay-500 hover:underline"
-              >
-                {siteConfig.contact.email}
-              </a>
-              <p className="mt-1 text-ink-muted">
-                <a
-                  href={`tel:${siteConfig.contact.phone.replace(
-                    /[^0-9+]/g,
-                    ""
-                  )}`}
-                  className="hover:text-evergreen-700"
-                >
-                  {siteConfig.contact.phone}
-                </a>
-              </p>
+          {/* Form is the primary action, so it gets the wider column; the
+              contact details sit alongside as the secondary path. Stacks to a
+              single column on mobile with the form first. */}
+          <div className="mt-10 grid gap-8 lg:grid-cols-5">
+            <div className="lg:col-span-3">
+              <ContactForm t={t} />
             </div>
-            <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
-              <h2 className="text-xl text-evergreen-800">{t.addressTitle}</h2>
-              <address className="mt-2 not-italic text-ink-muted">
-                {siteConfig.legalEntity}
-                <br />
-                {siteConfig.contact.addressLine}
-                <br />
-                {siteConfig.contact.city}, {siteConfig.contact.state}{" "}
-                {siteConfig.contact.zip}
-              </address>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-1">
+              <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
+                <h2 className="text-xl text-evergreen-800">{t.supportTitle}</h2>
+                <p className="mt-2 text-ink-muted">{t.supportBody}</p>
+                <a
+                  href={`mailto:${siteConfig.contact.email}`}
+                  className="mt-3 inline-block text-clay-500 hover:underline"
+                >
+                  {siteConfig.contact.email}
+                </a>
+                <p className="mt-1 text-ink-muted">
+                  <a
+                    href={`tel:${siteConfig.contact.phone.replace(
+                      /[^0-9+]/g,
+                      ""
+                    )}`}
+                    className="hover:text-evergreen-700"
+                  >
+                    {siteConfig.contact.phone}
+                  </a>
+                </p>
+              </div>
+              <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
+                <h2 className="text-xl text-evergreen-800">{t.addressTitle}</h2>
+                <address className="mt-2 not-italic text-ink-muted">
+                  {siteConfig.legalEntity}
+                  <br />
+                  {siteConfig.contact.addressLine}
+                  <br />
+                  {siteConfig.contact.city}, {siteConfig.contact.state}{" "}
+                  {siteConfig.contact.zip}
+                </address>
+              </div>
             </div>
           </div>
 

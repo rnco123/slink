@@ -209,6 +209,23 @@ const en = {
     addressTitle: "Mailing address",
     privacyNote: "Privacy requests:",
     accessibilityNote: "Accessibility:",
+    formTitle: "Send us a message",
+    formIntro: "We usually reply within one business day.",
+    nameLabel: "Your name",
+    emailLabel: "Email address",
+    phoneLabel: "Phone (optional)",
+    messageLabel: "Your query",
+    messageHint:
+      "Include your order number if your question is about an order.",
+    submit: "Send message",
+    submitting: "Sending…",
+    successTitle: "Message sent",
+    successBody:
+      "Thanks — we've got your message and will reply by email within one business day.",
+    phiNotice:
+      "Please don't include medical details. This inbox is not for clinical care — for emergencies call 911.",
+    securityNote:
+      "Sent over an encrypted connection (TLS). We never sell your information.",
   },
   licensing: {
     metaTitle: "Licensing & State Availability",
