@@ -19,7 +19,27 @@ REVAL="$(ssm /slink/prod/revalidate_secret)"
 RDS_HOST="$(aws rds describe-db-instances --db-instance-identifier slink-db \
   --query 'DBInstances[0].Endpoint.Address' --output text --region "$REGION")"
 
-DATABASE_URL="postgres://saludlink:${DB_PW}@${RDS_HOST}:5432/medusa"
+# URL-encode the DB password before putting it in the connection string. A raw
+# password containing URL-reserved characters (/ + = @ : ? #) silently mangles
+# the URL and surfaces as a Postgres 28000 auth failure. Pure-bash encoder so it
+# works on any operator host (no jq/python dependency).
+urlencode() {
+  local s="$1" out="" c i hex
+  for ((i = 0; i < ${#s}; i++)); do
+    c="${s:i:1}"
+    case "$c" in
+      [a-zA-Z0-9.~_-]) out+="$c" ;;
+      *) printf -v hex '%%%02X' "'$c"; out+="$hex" ;;
+    esac
+  done
+  printf '%s' "$out"
+}
+
+# RDS enforces SSL (rds.force_ssl=1 on the default PG16 param group); without
+# sslmode the connection is rejected at auth with a Postgres 28000 error.
+# `no-verify` encrypts the connection without requiring the RDS CA bundle on the
+# box (sufficient for a private-subnet DB reachable only from the app SG).
+DATABASE_URL="postgres://saludlink:$(urlencode "$DB_PW")@${RDS_HOST}:5432/medusa?sslmode=no-verify"
 
 # Publishable key: set as a repo variable once prod is seeded; placeholder keeps
 # the first medusa-only bring-up unblocked.
