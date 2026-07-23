@@ -1,5 +1,9 @@
 # Alert rules — Saludlink. Kept intentionally conservative: page on things that
 # indicate real user-facing impact, warn on saturation trends. No PHI in labels.
+#
+# Every alert carries a `runbook_url` annotation → the matching section of the
+# ops runbook (infra/monitoring/docs/runbook.md), so whoever gets paged lands on
+# the exact play. Alertmanager + Grafana render it as a clickable link.
 groups:
   - name: targets
     rules:
@@ -11,6 +15,7 @@ groups:
         annotations:
           summary: "Scrape target down: {{ $labels.job }} ({{ $labels.instance }})"
           description: "Prometheus has failed to scrape {{ $labels.instance }} for >2m."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#3-site-down-triage-decision-tree"
 
   - name: website
     rules:
@@ -22,6 +27,7 @@ groups:
         annotations:
           summary: "Blackbox probe failing: {{ $labels.instance }}"
           description: "The synthetic HTTP probe for {{ $labels.instance }} has failed for >2m."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#3-site-down-triage-decision-tree"
 
       - alert: SiteSlowResponse
         expr: probe_http_duration_seconds{phase="processing"} > 2
@@ -31,6 +37,7 @@ groups:
         annotations:
           summary: "Slow response from {{ $labels.instance }}"
           description: "Server processing time >2s for >5m."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#34-caddy--tls-edge"
 
       - alert: TLSCertExpiringSoon
         expr: (probe_ssl_earliest_cert_expiry - time()) < 86400 * 14
@@ -40,6 +47,7 @@ groups:
         annotations:
           summary: "TLS certificate for {{ $labels.instance }} expires in <14 days"
           description: "Renew the certificate for {{ $labels.instance }}."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#34-caddy--tls-edge"
 
   - name: host
     rules:
@@ -51,6 +59,7 @@ groups:
         annotations:
           summary: "High CPU on {{ $labels.instance }}"
           description: "CPU >90% for >10m."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#37-host-resources"
 
       - alert: HostLowDisk
         expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 < 10
@@ -60,6 +69,7 @@ groups:
         annotations:
           summary: "Low disk on {{ $labels.instance }} ({{ $labels.mountpoint }})"
           description: "Less than 10% filesystem space remaining."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#37-host-resources"
 
       - alert: HostHighMemory
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
@@ -69,6 +79,7 @@ groups:
         annotations:
           summary: "High memory on {{ $labels.instance }}"
           description: "Memory usage >90% for >10m."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#37-host-resources"
 
   - name: datastores
     rules:
@@ -80,6 +91,7 @@ groups:
         annotations:
           summary: "Postgres exporter reports the database down"
           description: "pg_up == 0 — the app database is unreachable."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#35-postgres-rds"
 
       - alert: PostgresTooManyConnections
         expr: sum by (instance) (pg_stat_activity_count) > (pg_settings_max_connections * 0.85)
@@ -89,6 +101,7 @@ groups:
         annotations:
           summary: "Postgres connection pool near limit"
           description: "Active connections >85% of max_connections for >5m."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#35-postgres-rds"
 
       - alert: RedisDown
         expr: redis_up == 0
@@ -98,6 +111,7 @@ groups:
         annotations:
           summary: "Redis exporter reports the cache down"
           description: "redis_up == 0 — the event bus / workflow engine backing store is unreachable."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#36-redis-queues--event-bus"
 
       - alert: RedisHighMemory
         expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90 and redis_memory_max_bytes > 0
@@ -107,3 +121,37 @@ groups:
         annotations:
           summary: "Redis memory >90% of maxmemory"
           description: "Redis is close to its maxmemory limit; eviction/queue loss risk."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#36-redis-queues--event-bus"
+
+  # ---------------------------------------------------------------------------
+  # App-level SLOs — user-facing signals derived from the blackbox probes. These
+  # complement the resource alerts above: they page on *symptom* (the site is
+  # slow/erroring for users) not just *cause* (a box is hot). Availability +
+  # latency SLO burn, measured over rolling windows.
+  # ---------------------------------------------------------------------------
+  - name: slo
+    rules:
+      # Availability SLO: probe success over 30m. Target ~99.5%. A sustained dip
+      # below 99% is an early availability-burn signal before a hard outage.
+      - alert: SloAvailabilityBurn
+        expr: avg_over_time(probe_success[30m]) < 0.99
+        for: 5m
+        labels:
+          severity: warning
+          slo: availability
+        annotations:
+          summary: "Availability SLO burning for {{ $labels.instance }}"
+          description: "Probe success <99% over the last 30m — user-facing availability is degrading."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#3-site-down-triage-decision-tree"
+
+      # Latency SLO: 90% of probes should complete processing under 1.5s over 30m.
+      - alert: SloLatencyBurn
+        expr: avg_over_time(probe_http_duration_seconds{phase="processing"}[30m]) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+          slo: latency
+        annotations:
+          summary: "Latency SLO burning for {{ $labels.instance }}"
+          description: "Avg processing time >1.5s over 30m — approaching the 2s hard threshold."
+          runbook_url: "https://github.com/rnco123/slink/blob/main/infra/monitoring/docs/runbook.md#34-caddy--tls-edge"
