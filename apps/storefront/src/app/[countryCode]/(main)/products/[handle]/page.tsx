@@ -12,6 +12,16 @@ import { JsonLd } from "@lib/seo/ld-script"
 import { productJsonLd, type ProductAvailability } from "@lib/seo/jsonld"
 import { HttpTypes } from "@medusajs/types"
 
+/**
+ * Render PDPs dynamically (task 21c fix). The age gate reads the httpOnly
+ * `age_verified` cookie server-side via `isAgeVerified()` → `cookies()`, which
+ * is a dynamic API. Without this, static generation of these routes threw
+ * DYNAMIC_SERVER_USAGE and the PDPs 500'd. `generateStaticParams` still enumerates
+ * the handles; rendering just happens per-request so cookies() is allowed.
+ * (Follow-up perf option: move the gate fully client-side to restore ISR.)
+ */
+export const dynamic = "force-dynamic"
+
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
   searchParams: Promise<{ v_id?: string }>
