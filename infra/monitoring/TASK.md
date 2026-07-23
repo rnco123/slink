@@ -134,3 +134,18 @@ exporter now runs as the least-privilege `slink_exporter` role
 - Uptime Kuma monitors + blackbox prod probes + ZAP/PSI/Search Console need the
   deployed URL (coordinate with the deploy session).
 - Embed the dashboard as a Medusa admin route (owned by the Medusa session).
+
+## Ops & runbook docs (Session 3, 2026-07-23)
+
+- [docs/runbook.md](docs/runbook.md) — **site-down triage, rollback, RDS restore,
+  <1h re-provision** (task 47). Every alert's `runbook_url` points here.
+- [docs/secrets-rotation.md](docs/secrets-rotation.md) — **rotation procedure** for
+  every secret (task 53).
+- [docs/prod-monitoring-armup.md](docs/prod-monitoring-armup.md) — **post-deploy
+  flip list** for ZAP/PSI (task 36) + blackbox prod probes / Uptime Kuma (task 37).
+  Blackbox targets are now **file_sd** (`config/prometheus/targets/*.yml`) → arming
+  prod is one hot-reloaded edit.
+- [docs/analytics-dashboards.md](docs/analytics-dashboards.md) — **PostHog funnel +
+  UTM convention** (task 65).
+- Alert rules now carry `runbook_url` + an **SLO group** (availability/latency
+  burn); Grafana overview has an **Application SLOs** panel section.

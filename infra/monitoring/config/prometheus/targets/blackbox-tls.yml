@@ -1,0 +1,15 @@
+# Blackbox HTTPS (TLS) probe targets — file service discovery, hot-reloaded.
+#
+# Intentionally EMPTY in dev (dev uses plain http, so nothing to TLS-probe).
+# This arms TLS certificate-expiry monitoring the moment production is live:
+# uncomment the block below (or add the real https roots) and Prometheus starts
+# probing `probe_ssl_earliest_cert_expiry`, which feeds the TLSCertExpiringSoon
+# alert (fires at <14 days). No restart — just save this file.
+#
+# - targets:
+#     - https://saludlinkusa.com
+#     - https://www.saludlinkusa.com
+#     - https://manage.saludlinkusa.com
+#   labels:
+#     env: production
+[]

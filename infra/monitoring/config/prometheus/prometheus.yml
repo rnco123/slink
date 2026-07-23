@@ -55,17 +55,38 @@ scrape_configs:
     static_configs:
       - targets: ["loki:3100"]
 
-  # Blackbox — synthetic HTTP probes of the public surfaces. The relabel dance
-  # is the standard blackbox pattern: the target URL is passed as a param and the
-  # instance label is set to the probed URL, not the exporter.
+  # Blackbox — synthetic HTTP probes of the public surfaces. Targets come from
+  # file service discovery (config/prometheus/targets/blackbox-http.yml) so the
+  # dev→prod flip is a single hot-reloaded file edit, no Prometheus restart.
+  # The relabel dance is the standard blackbox pattern: the target URL is passed
+  # as a param and the instance label is set to the probed URL, not the exporter.
   - job_name: blackbox-http
     metrics_path: /probe
     params:
       module: [http_2xx]
-    static_configs:
-      - targets:
-          - http://host.docker.internal:8000 # storefront
-          - http://host.docker.internal:9000/health # medusa backend health
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/blackbox-http.yml
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Blackbox TLS — HTTPS probes that also expose probe_ssl_earliest_cert_expiry
+  # (feeds the TLSCertExpiringSoon alert). Targets file is EMPTY until production
+  # is live; add the https roots to blackbox-tls.yml to arm cert monitoring.
+  - job_name: blackbox-http-tls
+    metrics_path: /probe
+    params:
+      module: [http_2xx_tls]
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/blackbox-tls.yml
+        refresh_interval: 30s
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

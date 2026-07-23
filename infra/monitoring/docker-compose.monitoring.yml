@@ -63,6 +63,7 @@ services:
     volumes:
       - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./config/prometheus/alerts:/etc/prometheus/alerts:ro
+      - ./config/prometheus/targets:/etc/prometheus/targets:ro
       - prometheus_data:/prometheus
     ports:
       - "${BIND_ADDR:-127.0.0.1}:${PROMETHEUS_PORT:-9090}:9090"
