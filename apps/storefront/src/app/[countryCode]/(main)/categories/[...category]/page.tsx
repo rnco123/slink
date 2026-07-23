@@ -7,6 +7,11 @@ import { StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
+// Render per-request (task 84): listCategories() → getCacheOptions() → cookies(),
+// a dynamic API. As an SSG route (generateStaticParams) this threw
+// DYNAMIC_SERVER_USAGE at build → 500. force-dynamic renders on demand instead.
+export const dynamic = "force-dynamic"
+
 type Props = {
   params: Promise<{ category: string[]; countryCode: string }>
   searchParams: Promise<{
