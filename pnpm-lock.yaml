@@ -7,6 +7,7 @@ settings:
 overrides:
   '@types/react': 19.0.5
   '@types/react-dom': 19.0.5
+  '@medusajs/types': 2.16.0
   lodash@<4.18.0: 4.18.1
   '@opentelemetry/propagator-jaeger@<2.9.0': ^2.9.0
   sharp@<0.35.0: ^0.35.0
@@ -189,8 +190,8 @@ importers:
         specifier: ^7.17.5
         version: 7.29.7
       '@medusajs/types':
-        specifier: latest
-        version: 2.17.2(ioredis@5.11.1)(vite@5.4.21(@types/node@17.0.21)(terser@5.49.0))
+        specifier: 2.16.0
+        version: 2.16.0(ioredis@5.11.1)(vite@5.4.21(@types/node@17.0.21)(terser@5.49.0))
       '@medusajs/ui-preset':
         specifier: latest
         version: 2.17.2(tailwindcss@3.4.19(yaml@2.9.0))
@@ -1742,18 +1743,6 @@ packages:
 
   '@medusajs/types@2.16.0':
     resolution: {integrity: sha512-QEHLwv8Mnee/sMHKPT0bFw7Z8WSbQmL3ddXL0jdikMwLdVFemPabENDaXVqfkgko1UVaVFXjcezCKJ1nZIixlQ==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      ioredis: ^5.4.1
-      vite: ^5.4.21
-    peerDependenciesMeta:
-      ioredis:
-        optional: true
-      vite:
-        optional: true
-
-  '@medusajs/types@2.17.2':
-    resolution: {integrity: sha512-52JdjyvvgiopdVfv9aA0NO0f3Ks1ndLMEzOuTBX5Gs2I4egwz7JpKpcEaHA8cOZk4JxuiFPZ6WrAbJrKcoe96Q==}
     engines: {node: '>=20'}
     peerDependencies:
       ioredis: ^5.4.1
@@ -10146,19 +10135,19 @@ snapshots:
     dependencies:
       '@medusajs/framework': 2.16.0(@medusajs/cli@2.16.0(@types/node@20.19.43))(@types/node@20.19.43)(ioredis@5.11.1)(vite@5.4.21(@types/node@20.19.43)(terser@5.49.0))(zod@3.25.76)
 
+  '@medusajs/types@2.16.0(ioredis@5.11.1)(vite@5.4.21(@types/node@17.0.21)(terser@5.49.0))':
+    dependencies:
+      bignumber.js: 9.3.1
+    optionalDependencies:
+      ioredis: 5.11.1
+      vite: 5.4.21(@types/node@17.0.21)(terser@5.49.0)
+
   '@medusajs/types@2.16.0(ioredis@5.11.1)(vite@5.4.21(@types/node@20.19.43)(terser@5.49.0))':
     dependencies:
       bignumber.js: 9.3.1
     optionalDependencies:
       ioredis: 5.11.1
       vite: 5.4.21(@types/node@20.19.43)(terser@5.49.0)
-
-  '@medusajs/types@2.17.2(ioredis@5.11.1)(vite@5.4.21(@types/node@17.0.21)(terser@5.49.0))':
-    dependencies:
-      bignumber.js: 9.3.1
-    optionalDependencies:
-      ioredis: 5.11.1
-      vite: 5.4.21(@types/node@17.0.21)(terser@5.49.0)
 
   '@medusajs/ui-preset@2.17.2(tailwindcss@3.4.19(yaml@2.9.0))':
     dependencies:
