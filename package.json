@@ -32,9 +32,11 @@
   "pnpm": {
     "comment-types-react": "Single @types/react across the monorepo. Medusa's admin runtime stays on react@18 (runtime, not types); pinning the DefinitelyTyped stubs to 19 stops a stray 18 copy from merging into the storefront's type program and breaking JSX component types (TS2786).",
     "comment-security-overrides": "Force patched versions of framework-transitive deps flagged by `pnpm audit` (GHSA advisories). lodash: code-injection via _.template (pulled by @medusajs/cli>graphql-codegen). @opentelemetry/propagator-jaeger: DoS (pulled by medusa telemetry). sharp: libvips CVEs (next image optimization). Tracked by Dependabot; remove once the framework updates.",
+    "comment-medusa-types": "Pin @medusajs/types to a single version across the monorepo. The storefront's `latest` @medusajs/* deps (js-sdk/ui/types) can resolve @medusajs/types to a newer minor (2.17.x) than the 2.16.0 the js-sdk actually uses, producing two copies whose StoreCart/StoreOrder types are structurally identical but nominally distinct → TS2322 in cart.ts/orders.ts. Force 2.16.0 (the runtime the app is built against).",
     "overrides": {
       "@types/react": "19.0.5",
       "@types/react-dom": "19.0.5",
+      "@medusajs/types": "2.16.0",
       "lodash@<4.18.0": "4.18.1",
       "@opentelemetry/propagator-jaeger@<2.9.0": "^2.9.0",
       "sharp@<0.35.0": "^0.35.0"
