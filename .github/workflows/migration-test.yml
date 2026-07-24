@@ -10,11 +10,12 @@ name: migration-test
 on:
   push:
     branches: [main]
+  # Run on EVERY pull request, with no paths filter. It is a REQUIRED status
+  # check on main (branch ruleset): a paths filter would skip the job on, say, a
+  # storefront-only PR, the required check would never report, and the PR would
+  # be unmergeable forever — waiting on a status that never arrives. The job is
+  # ~1 min, so always running it is cheaper than that deadlock.
   pull_request:
-    paths:
-      - "apps/medusa/**"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/migration-test.yml"
   workflow_dispatch:
 
 permissions:
