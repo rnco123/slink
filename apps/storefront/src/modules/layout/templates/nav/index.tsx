@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import { Logo } from "@components/ui/logo"
+import { IconCart } from "@components/ui/icons"
 import { MobileMenu } from "@components/ui/mobile-menu"
 import { LanguageSwitcher } from "@components/ui/language-switcher"
 import { telemedicineUrl } from "@lib/config/site"
@@ -76,10 +77,12 @@ export default async function Nav({
               fallback={
                 <LocalizedClientLink
                   href="/cart"
-                  className="text-sm text-ink-muted hover:text-evergreen-700"
+                  className="flex items-center gap-1.5 text-sm text-ink-muted hover:text-evergreen-700"
                   data-testid="nav-cart-link"
+                  aria-label={dict.common.cart}
                 >
-                  {dict.common.cart} (0)
+                  <IconCart width={20} height={20} />
+                  <span className="hidden sm:inline">{dict.common.cart}</span>
                 </LocalizedClientLink>
               }
             >

@@ -13,6 +13,7 @@ import DeleteButton from "@modules/common/components/delete-button"
 import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { IconCart } from "@components/ui/icons"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
@@ -87,9 +88,20 @@ const CartDropdown = ({
         <PopoverButton
           as={LocalizedClientLink}
           href="/cart"
-          className="h-full hover:text-ui-fg-base"
+          className="relative flex h-full items-center gap-1.5 hover:text-ui-fg-base"
           data-testid="nav-cart-link"
-        >{`Cart (${totalItems})`}</PopoverButton>
+          aria-label={`Cart, ${totalItems} item${totalItems === 1 ? "" : "s"}`}
+        >
+          <span className="relative inline-flex">
+            <IconCart width={20} height={20} />
+            {totalItems > 0 ? (
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay-500 px-1 text-[10px] font-semibold leading-none text-cream">
+                {totalItems}
+              </span>
+            ) : null}
+          </span>
+          <span className="hidden sm:inline">Cart</span>
+        </PopoverButton>
         <Transition
           show={cartDropdownOpen}
           as={Fragment}

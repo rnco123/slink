@@ -28,6 +28,16 @@ export function IconWeight(props: IconProps) {
   )
 }
 
+export function IconCart(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 4h2l1.5 10.6a1.2 1.2 0 0 0 1.2 1.05h8.6a1.2 1.2 0 0 0 1.18-.97L19.2 7.5H6.2" />
+      <circle cx="9.2" cy="19" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="16.8" cy="19" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export function IconMetabolic(props: IconProps) {
   return (
     <svg {...base} {...props}>
