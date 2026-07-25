@@ -62,7 +62,7 @@ const es = {
       },
       {
         t: "Mantén el rumbo",
-        d: "Suscríbete para reabastecerte de forma automática y monitorea tu progreso con herramientas para usar en casa.",
+        d: "Vuelve a pedir tus esenciales en unos clics y monitorea tu progreso con herramientas para usar en casa.",
       },
     ],
     careEyebrow: "Atención conectada",
@@ -244,6 +244,25 @@ const es = {
     businessTitle: "Información de la empresa",
     draftNote:
       "Esta página contiene datos de marcador de posición pendientes de la revisión final de cumplimiento. No es para emergencias: en caso de emergencia, llame al 911.",
+  },
+  learn: {
+    metaTitle: "La Revista Saludlink",
+    metaDescription:
+      "Lecturas basadas en evidencia sobre salud metabólica y de peso — con fuentes citadas de salud de EE. UU., escritas con honestidad y sin exageraciones.",
+    eyebrow: "La Revista",
+    title: "Aprende",
+    intro:
+      "Lecturas claras y basadas en evidencia sobre salud metabólica y de peso — con fuentes citadas y escritas sin exageraciones.",
+    featured: "Destacado",
+    latest: "Últimos artículos",
+    reviewedBy: "Revisado médicamente por",
+    by: "Por",
+    readArticle: "Leer artículo",
+    minRead: "min de lectura",
+    empty: "Pronto habrá nuevos artículos. Vuelve pronto.",
+    backToLearn: "Volver a la Revista",
+    disclaimer:
+      "Contenido educativo únicamente — no es consejo médico, diagnóstico ni tratamiento. En una emergencia, llama al 911.",
   },
 } as const
 

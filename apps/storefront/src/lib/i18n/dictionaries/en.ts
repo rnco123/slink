@@ -61,7 +61,7 @@ const en = {
       },
       {
         t: "Stay on track",
-        d: "Subscribe to replenish automatically and monitor progress with at-home tools.",
+        d: "Reorder your essentials in a few clicks and monitor progress with at-home tools.",
       },
     ],
     careEyebrow: "Connected care",
@@ -241,6 +241,25 @@ const en = {
     businessTitle: "Business information",
     draftNote:
       "This page contains placeholder details pending final compliance review. Not for emergencies — call 911 in an emergency.",
+  },
+  learn: {
+    metaTitle: "The Saludlink Journal",
+    metaDescription:
+      "Evidence-informed reading on weight and metabolic health — cited to trusted US health sources, honestly written, and free of hype.",
+    eyebrow: "The Journal",
+    title: "Learn",
+    intro:
+      "Clear, evidence-informed reading on weight and metabolic health — cited to trusted sources and written without hype.",
+    featured: "Featured",
+    latest: "Latest articles",
+    reviewedBy: "Medically reviewed by",
+    by: "By",
+    readArticle: "Read article",
+    minRead: "min read",
+    empty: "New articles are on the way. Check back soon.",
+    backToLearn: "Back to the Journal",
+    disclaimer:
+      "Educational content only — not medical advice, diagnosis, or treatment. In an emergency, call 911.",
   },
 } as const
 
