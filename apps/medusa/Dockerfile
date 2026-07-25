@@ -29,6 +29,13 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 # ---- build: produce .medusa/server -------------------------------------------
 FROM deps AS build
 ENV NODE_ENV=production
+# `medusa build` BAKES the admin dashboard's backend URL into the JS bundle at
+# build time (medusa-config.ts `admin.backendUrl` reads MEDUSA_BACKEND_URL here).
+# Without it the admin defaults to http://localhost:9000, so a browser opening
+# the deployed admin tries to reach the visitor's OWN machine and every request
+# is ERR_CONNECTION_REFUSED — including login. It MUST be the public admin origin.
+ARG MEDUSA_BACKEND_URL=http://localhost:9000
+ENV MEDUSA_BACKEND_URL=$MEDUSA_BACKEND_URL
 COPY apps/medusa ./apps/medusa
 COPY packages/privacy ./packages/privacy
 RUN pnpm --filter @saludlink/medusa build

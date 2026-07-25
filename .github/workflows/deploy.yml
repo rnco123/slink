@@ -67,13 +67,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- Medusa image (no build args) -------------------------------------
+      # --- Medusa image -----------------------------------------------------
+      # MEDUSA_BACKEND_URL is baked into the admin bundle at build time (see the
+      # Dockerfile). It MUST be the public admin origin, or the deployed admin
+      # calls http://localhost:9000 in the browser and login is refused.
       - name: Build + push medusa
         uses: docker/build-push-action@v6
         with:
           context: .
           file: apps/medusa/Dockerfile
           push: true
+          build-args: |
+            MEDUSA_BACKEND_URL=https://manage.saludlinkusa.com
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:${{ github.event.workflow_run.head_sha || github.sha }}
