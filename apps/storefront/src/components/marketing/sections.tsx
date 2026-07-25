@@ -3,6 +3,9 @@ import { Container, Section, Eyebrow } from "@components/ui/layout-primitives"
 import { Button } from "@components/ui/button"
 import { ConditionIcon } from "@components/ui/icons"
 import { conditionVerticals, telemedicineUrl } from "@lib/config/site"
+import { listProducts } from "@lib/data/products"
+import { getRegion } from "@lib/data/regions"
+import ProductPreview from "@modules/products/components/product-preview"
 import type { Dictionary } from "@lib/i18n"
 
 /** Trust band — specific social-proof pattern (every certified competitor uses it). */
@@ -62,6 +65,68 @@ export function ConditionGrid({ dict }: { dict: Dictionary }) {
               </LocalizedClientLink>
             )
           })}
+        </div>
+      </Container>
+    </Section>
+  )
+}
+
+/**
+ * Featured products — a showcase strip on the home page, right after the
+ * condition grid, so visitors go from "shop by need" to actual products. Async
+ * server component: fetches a few priced products for the region. Renders nothing
+ * if the backend/region is unavailable (e.g., during the storefront image build),
+ * so it can never break the home page.
+ */
+export async function FeaturedProducts({
+  dict,
+  countryCode,
+}: {
+  dict: Dictionary
+  countryCode: string
+}) {
+  const t = dict.home
+  const region = await getRegion(countryCode).catch(() => null)
+  if (!region) return null
+
+  const {
+    response: { products },
+  } = await listProducts({
+    countryCode,
+    queryParams: { limit: 4 },
+  }).catch(() => ({ response: { products: [], count: 0 } }))
+
+  if (!products.length) return null
+
+  return (
+    <Section tone="sand">
+      <Container>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="sl-scroll max-w-xl">
+            <Eyebrow>{t.productsEyebrow}</Eyebrow>
+            <h2 className="mt-3 text-3xl">{t.productsTitle}</h2>
+            <p className="mt-4 text-ink-muted">{t.productsBody}</p>
+          </div>
+          <LocalizedClientLink
+            href="/store"
+            className="hidden items-center gap-1 text-sm font-medium text-clay-500 hover:text-clay-600 sm:inline-flex"
+          >
+            {t.productsCta} <span aria-hidden>→</span>
+          </LocalizedClientLink>
+        </div>
+
+        <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
+          {products.map((p) => (
+            <li key={p.id}>
+              <ProductPreview product={p} region={region} />
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-10 sm:hidden">
+          <Button href="/store" variant="outline">
+            {t.productsCta}
+          </Button>
         </div>
       </Container>
     </Section>

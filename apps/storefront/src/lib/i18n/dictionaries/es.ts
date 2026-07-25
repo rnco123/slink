@@ -49,6 +49,11 @@ const es = {
     conditionsTitle: "Encuentra lo que se ajusta a tus metas de salud",
     conditionsBody:
       "Productos seleccionados y organizados en torno a los resultados que importan para el control de peso y la salud metabólica.",
+    productsEyebrow: "Comprar",
+    productsTitle: "Productos destacados",
+    productsBody:
+      "Una selección de nuestra gama de bienestar de venta libre — con enfoque clínico y descrita con honestidad.",
+    productsCta: "Ver todos los productos",
     howEyebrow: "Cómo funciona",
     howTitle: "Un camino más simple hacia la salud metabólica",
     steps: [

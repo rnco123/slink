@@ -48,6 +48,11 @@ const en = {
     conditionsTitle: "Find what fits your health goals",
     conditionsBody:
       "Curated products organized around the outcomes that matter for weight and metabolic health.",
+    productsEyebrow: "Shop",
+    productsTitle: "Featured products",
+    productsBody:
+      "A selection from our over-the-counter wellness range — clinician-informed and honestly described.",
+    productsCta: "Shop all products",
     howEyebrow: "How it works",
     howTitle: "A simpler path to metabolic health",
     steps: [

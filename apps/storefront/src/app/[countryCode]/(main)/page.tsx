@@ -4,6 +4,7 @@ import { Hero } from "@components/marketing/hero"
 import {
   TrustBand,
   ConditionGrid,
+  FeaturedProducts,
   HowItWorks,
   CareBand,
 } from "@components/marketing/sections"
@@ -13,6 +14,12 @@ import { resolveLocale } from "@lib/i18n/config"
 import { alternatesFor } from "@lib/i18n/routing"
 
 type Params = { countryCode: string }
+
+// The home page now fetches featured products from Medusa. Render per-request:
+// during the storefront image build Medusa is unreachable, so a build-time fetch
+// would bake an empty products section. force-dynamic fetches the live DB each
+// request (same pattern as store/learn/legal). See docs/DEPLOYMENT.md.
+export const dynamic = "force-dynamic"
 
 export async function generateMetadata(props: {
   params: Promise<Params>
@@ -39,6 +46,7 @@ export default async function Home(props: { params: Promise<Params> }) {
       <Hero dict={dict} />
       <TrustBand dict={dict} />
       <ConditionGrid dict={dict} />
+      <FeaturedProducts dict={dict} countryCode={countryCode} />
       <HowItWorks dict={dict} />
       <CareBand dict={dict} />
     </>
