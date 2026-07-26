@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useActionState } from "react"
 import { PencilSquare as Edit, Trash } from "@medusajs/icons"
-import { Button, Heading, Text, clx } from "@medusajs/ui"
+import { Button, Text, clx } from "@medusajs/ui"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
 import CountrySelect from "@modules/checkout/components/country-select"
@@ -65,29 +65,30 @@ const EditAddress: React.FC<EditAddressProps> = ({
     <>
       <div
         className={clx(
-          "border rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between transition-colors",
+          "flex h-full min-h-[220px] w-full flex-col justify-between rounded-xl border bg-white p-5 shadow-sm transition-colors sm:p-6",
           {
-            "border-gray-900": isActive,
+            "border-evergreen-600 bg-evergreen-50": isActive,
+            "border-line": !isActive,
           }
         )}
         data-testid="address-container"
       >
         <div className="flex flex-col">
-          <Heading
-            className="text-left text-base-semi"
+          <h3
+            className="text-left font-display text-lg text-evergreen-800"
             data-testid="address-name"
           >
             {address.first_name} {address.last_name}
-          </Heading>
+          </h3>
           {address.company && (
             <Text
-              className="txt-compact-small text-ui-fg-base"
+              className="text-xs text-ink-muted"
               data-testid="address-company"
             >
               {address.company}
             </Text>
           )}
-          <Text className="flex flex-col text-left text-base-regular mt-2">
+          <Text className="mt-2 flex flex-col text-left text-sm text-ink-muted">
             <span data-testid="address-address">
               {address.address_1}
               {address.address_2 && <span>, {address.address_2}</span>}
@@ -103,7 +104,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
         </div>
         <div className="flex items-center gap-x-4">
           <button
-            className="text-small-regular text-ui-fg-base flex items-center gap-x-2"
+            className="flex items-center gap-x-2 text-sm font-medium text-evergreen-700 underline-offset-2 hover:underline"
             onClick={open}
             data-testid="address-edit-button"
           >
@@ -111,7 +112,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
             Edit
           </button>
           <button
-            className="text-small-regular text-ui-fg-base flex items-center gap-x-2"
+            className="flex items-center gap-x-2 text-sm font-medium text-error underline-offset-2 hover:underline"
             onClick={removeAddress}
             data-testid="address-delete-button"
           >
@@ -122,14 +123,12 @@ const EditAddress: React.FC<EditAddressProps> = ({
       </div>
 
       <Modal isOpen={state} close={close} data-testid="edit-address-modal">
-        <Modal.Title>
-          <Heading className="mb-2">Edit address</Heading>
-        </Modal.Title>
+        <Modal.Title>Edit address</Modal.Title>
         <form action={formAction}>
           <input type="hidden" name="addressId" value={address.id} />
           <Modal.Body>
             <div className="grid grid-cols-1 gap-y-2">
-              <div className="grid grid-cols-2 gap-x-2">
+              <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-2">
                 <Input
                   label="First name"
                   name="first_name"
@@ -169,7 +168,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
                 defaultValue={address.address_2 || undefined}
                 data-testid="address-2-input"
               />
-              <div className="grid grid-cols-[144px_1fr] gap-x-2">
+              <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-[144px_1fr]">
                 <Input
                   label="Postal code"
                   name="postal_code"
@@ -211,23 +210,26 @@ const EditAddress: React.FC<EditAddressProps> = ({
               />
             </div>
             {formState.error && (
-              <div className="text-rose-500 text-small-regular py-2">
-                {formState.error}
-              </div>
+              <div className="py-2 text-sm text-error">{formState.error}</div>
             )}
           </Modal.Body>
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex gap-3">
               <Button
                 type="reset"
                 variant="secondary"
                 onClick={close}
-                className="h-10"
+                className="!h-11 !rounded-pill !border-line-strong !bg-white !text-ink hover:!bg-sand-50"
                 data-testid="cancel-button"
               >
                 Cancel
               </Button>
-              <SubmitButton data-testid="save-button">Save</SubmitButton>
+              <SubmitButton
+                data-testid="save-button"
+                className="!rounded-pill !bg-evergreen-700 hover:!bg-evergreen-800 !text-cream !shadow-none"
+              >
+                Save
+              </SubmitButton>
             </div>
           </Modal.Footer>
         </form>

@@ -52,7 +52,7 @@ export default function LegalLayout({
         {/* Draft-review notice — remove once counsel has approved this document. */}
         <div
           role="note"
-          className="mb-12 rounded-rounded border border-line bg-sand-50 px-5 py-4 text-sm text-ink-muted"
+          className="mb-12 rounded-lg border border-line bg-sand-50 px-5 py-4 text-sm text-ink-muted"
         >
           <strong className="text-evergreen-800">Draft for review.</strong> This
           document is draft content prepared for the Saludlink launch and is

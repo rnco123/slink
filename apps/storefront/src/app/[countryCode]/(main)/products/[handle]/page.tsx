@@ -105,10 +105,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${product.title} | Medusa Store`,
+    title: `${product.title} | Saludlink`,
     description: `${product.title}`,
     openGraph: {
-      title: `${product.title} | Medusa Store`,
+      title: `${product.title} | Saludlink`,
       description: `${product.title}`,
       images: product.thumbnail ? [product.thumbnail] : [],
     },
@@ -176,6 +176,7 @@ export default async function ProductPage(props: Props) {
         region={region}
         countryCode={params.countryCode}
         images={images}
+        reviewSummary={reviewData.summary}
       />
       <ProductReviews productId={pricedProduct.id} />
     </>

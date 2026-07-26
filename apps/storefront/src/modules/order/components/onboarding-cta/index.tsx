@@ -5,16 +5,16 @@ import { Button, Container, Text } from "@medusajs/ui"
 
 const OnboardingCta = ({ orderId }: { orderId: string }) => {
   return (
-    <Container className="max-w-4xl h-full bg-ui-bg-subtle w-full">
-      <div className="flex flex-col gap-y-4 center p-4 md:items-center">
-        <Text className="text-ui-fg-base text-xl">
+    <Container className="h-full w-full max-w-4xl rounded-xl border border-line bg-sand-50 shadow-sm">
+      <div className="flex flex-col items-center gap-y-4 p-4 text-center sm:p-6">
+        <Text className="font-display text-lg text-evergreen-800 sm:text-xl">
           Your test order was successfully created! 🎉
         </Text>
-        <Text className="text-ui-fg-subtle text-small-regular">
+        <Text className="text-sm text-ink-muted">
           You can now complete setting up your store in the admin.
         </Text>
         <Button
-          className="w-fit"
+          className="!rounded-pill !bg-evergreen-700 !text-cream !shadow-none hover:!bg-evergreen-800 w-fit"
           size="xlarge"
           onClick={() => resetOnboardingState(orderId)}
         >

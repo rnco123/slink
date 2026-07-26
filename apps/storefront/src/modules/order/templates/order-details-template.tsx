@@ -18,27 +18,35 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
   order,
 }) => {
   return (
-    <div className="flex flex-col justify-center gap-y-4">
-      <div className="flex gap-2 justify-between items-center">
-        <h1 className="text-2xl-semi">Order details</h1>
+    <div className="flex flex-col gap-y-6">
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="font-display text-2xl text-evergreen-800 sm:text-3xl">
+          Order details
+        </h1>
         <LocalizedClientLink
           href="/account/orders"
-          className="flex gap-2 items-center text-ui-fg-subtle hover:text-ui-fg-base"
+          className="flex items-center gap-2 text-sm font-medium text-evergreen-700 hover:underline underline-offset-2"
           data-testid="back-to-overview-button"
         >
           <XMark /> Back to overview
         </LocalizedClientLink>
       </div>
       <div
-        className="flex flex-col gap-4 h-full bg-white w-full"
+        className="grid grid-cols-1 gap-y-6 xl:grid-cols-[1fr_320px] xl:gap-x-8"
         data-testid="order-details-container"
       >
-        <OrderDetails order={order} showStatus />
-        <Items order={order} />
-        <ShippingDetails order={order} />
-        <OrderSummary order={order} />
-        <Help />
+        <div className="flex min-w-0 flex-col gap-y-6">
+          <OrderDetails order={order} showStatus />
+          <Items order={order} />
+          <ShippingDetails order={order} />
+        </div>
+        <div className="min-w-0">
+          <div className="xl:sticky xl:top-24">
+            <OrderSummary order={order} />
+          </div>
+        </div>
       </div>
+      <Help />
     </div>
   )
 }

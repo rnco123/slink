@@ -35,30 +35,33 @@ const AgeGate = ({ minAge }: Props) => {
       aria-modal="true"
       aria-labelledby="age-gate-title"
       data-testid="age-gate"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h2 id="age-gate-title" className="text-xl font-semibold">
+      <div className="w-full max-w-md rounded-xl border border-line bg-cream p-6 shadow-lg">
+        <h2
+          id="age-gate-title"
+          className="font-display text-xl text-evergreen-800"
+        >
           Age verification
         </h2>
 
         {declined ? (
           <>
-            <p className="mt-3 text-sm text-ui-fg-subtle">
+            <p className="mt-3 text-sm text-ink-muted">
               We&apos;re sorry — you must be at least {minAge} years old to view
               or purchase this product.
             </p>
             <button
               type="button"
               onClick={() => router.push("/store")}
-              className="mt-5 w-full rounded-md bg-ui-button-inverted px-4 py-2 text-sm font-medium text-ui-fg-on-inverted"
+              className="mt-5 w-full rounded-pill bg-evergreen-700 px-4 py-2.5 text-sm font-semibold text-cream transition-colors hover:bg-evergreen-800"
             >
               Back to store
             </button>
           </>
         ) : (
           <>
-            <p className="mt-3 text-sm text-ui-fg-subtle">
+            <p className="mt-3 text-sm text-ink-muted">
               This product requires age verification. Please confirm you are at
               least <strong>{minAge}</strong> years old to continue.
             </p>
@@ -68,7 +71,7 @@ const AgeGate = ({ minAge }: Props) => {
                 onClick={confirm}
                 disabled={pending}
                 data-testid="age-gate-confirm"
-                className="w-full rounded-md bg-ui-button-inverted px-4 py-2 text-sm font-medium text-ui-fg-on-inverted disabled:opacity-60"
+                className="w-full rounded-pill bg-evergreen-700 px-4 py-2.5 text-sm font-semibold text-cream transition-colors hover:bg-evergreen-800 disabled:opacity-60"
               >
                 {pending ? "Confirming…" : `I am ${minAge} or older`}
               </button>
@@ -76,12 +79,12 @@ const AgeGate = ({ minAge }: Props) => {
                 type="button"
                 onClick={() => setDeclined(true)}
                 data-testid="age-gate-decline"
-                className="w-full rounded-md border border-ui-border-base px-4 py-2 text-sm font-medium"
+                className="w-full rounded-pill border border-line-strong bg-white px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-sand-50"
               >
                 I am under {minAge}
               </button>
             </div>
-            <p className="mt-3 text-xs text-ui-fg-muted">
+            <p className="mt-3 text-xs text-ink-subtle">
               By confirming you attest that the above is accurate. We do not
               store your date of birth.
             </p>

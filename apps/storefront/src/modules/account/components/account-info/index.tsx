@@ -42,13 +42,18 @@ const AccountInfo = ({
   }, [isSuccess, close])
 
   return (
-    <div className="text-small-regular" data-testid={dataTestid}>
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col">
-          <span className="uppercase text-ui-fg-base">{label}</span>
-          <div className="flex items-center flex-1 basis-0 justify-end gap-x-4">
+    <div className="text-sm" data-testid={dataTestid}>
+      <div className="flex items-end justify-between gap-4">
+        <div className="flex min-w-0 flex-col">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-evergreen-600">
+            {label}
+          </span>
+          <div className="flex flex-1 basis-0 items-center justify-end gap-x-4">
             {typeof currentInfo === "string" ? (
-              <span className="font-semibold" data-testid="current-info">
+              <span
+                className="font-semibold text-ink"
+                data-testid="current-info"
+              >
                 {currentInfo}
               </span>
             ) : (
@@ -59,7 +64,7 @@ const AccountInfo = ({
         <div>
           <Button
             variant="secondary"
-            className="w-[100px] min-h-[25px] py-1"
+            className="!h-11 !min-h-0 !rounded-pill !border-line-strong !bg-white !px-5 !text-sm !font-medium !text-ink hover:!bg-sand-50"
             onClick={handleToggle}
             type={state ? "reset" : "button"}
             data-testid="edit-button"
@@ -124,7 +129,7 @@ const AccountInfo = ({
             <div className="flex items-center justify-end mt-2">
               <Button
                 isLoading={pending}
-                className="w-full small:max-w-[140px]"
+                className="w-full small:max-w-[140px] !rounded-pill !bg-evergreen-700 hover:!bg-evergreen-800 !text-cream !shadow-none"
                 type="submit"
                 data-testid="save-button"
               >

@@ -1,7 +1,7 @@
 "use client"
 
 import { Plus } from "@medusajs/icons"
-import { Button, Heading } from "@medusajs/ui"
+import { Button } from "@medusajs/ui"
 import { useEffect, useState, useActionState } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
@@ -49,22 +49,22 @@ const AddAddress = ({
   return (
     <>
       <button
-        className="border border-ui-border-base rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between"
+        className="flex h-full min-h-[220px] w-full flex-col justify-between rounded-xl border border-line bg-white p-5 text-left shadow-sm transition-colors hover:border-line-strong sm:p-6"
         onClick={open}
         data-testid="add-address-button"
       >
-        <span className="text-base-semi">New address</span>
-        <Plus />
+        <span className="font-display text-lg text-evergreen-800">
+          New address
+        </span>
+        <Plus className="text-evergreen-600" />
       </button>
 
       <Modal isOpen={state} close={close} data-testid="add-address-modal">
-        <Modal.Title>
-          <Heading className="mb-2">Add address</Heading>
-        </Modal.Title>
+        <Modal.Title>Add address</Modal.Title>
         <form action={formAction}>
           <Modal.Body>
             <div className="flex flex-col gap-y-2">
-              <div className="grid grid-cols-2 gap-x-2">
+              <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-2">
                 <Input
                   label="First name"
                   name="first_name"
@@ -99,7 +99,7 @@ const AddAddress = ({
                 autoComplete="address-line2"
                 data-testid="address-2-input"
               />
-              <div className="grid grid-cols-[144px_1fr] gap-x-2">
+              <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-[144px_1fr]">
                 <Input
                   label="Postal code"
                   name="postal_code"
@@ -137,7 +137,7 @@ const AddAddress = ({
             </div>
             {formState.error && (
               <div
-                className="text-rose-500 text-small-regular py-2"
+                className="py-2 text-sm text-error"
                 data-testid="address-error"
               >
                 {formState.error}
@@ -145,17 +145,22 @@ const AddAddress = ({
             )}
           </Modal.Body>
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex gap-3">
               <Button
                 type="reset"
                 variant="secondary"
                 onClick={close}
-                className="h-10"
+                className="!h-11 !rounded-pill !border-line-strong !bg-white !text-ink hover:!bg-sand-50"
                 data-testid="cancel-button"
               >
                 Cancel
               </Button>
-              <SubmitButton data-testid="save-button">Save</SubmitButton>
+              <SubmitButton
+                data-testid="save-button"
+                className="!rounded-pill !bg-evergreen-700 hover:!bg-evergreen-800 !text-cream !shadow-none"
+              >
+                Save
+              </SubmitButton>
             </div>
           </Modal.Footer>
         </form>

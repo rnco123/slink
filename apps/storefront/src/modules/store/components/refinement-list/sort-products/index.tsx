@@ -17,11 +17,11 @@ const sortOptions = [
   },
   {
     value: "price_asc",
-    label: "Price: Low -> High",
+    label: "Price: Low to High",
   },
   {
     value: "price_desc",
-    label: "Price: High -> Low",
+    label: "Price: High to Low",
   },
 ]
 

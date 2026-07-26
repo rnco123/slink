@@ -1,7 +1,6 @@
 import { Container, Heading, Text } from "@medusajs/ui"
 
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
-import Divider from "@modules/common/components/divider"
 import { convertToLocale } from "@lib/util/money"
 import { formatDateTime } from "@lib/util/dates"
 import { HttpTypes } from "@medusajs/types"
@@ -15,32 +14,32 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
 
   return (
     <div>
-      <Heading level="h2" className="flex flex-row text-3xl-regular my-6">
+      <Heading level="h2" className="font-display text-xl text-evergreen-800">
         Payment
       </Heading>
-      <div>
-        {payment && (
-          <div className="flex items-start gap-x-1 w-full">
-            <div className="flex flex-col w-1/3">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
+      {payment && (
+        <div className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <div className="min-w-0 sm:w-1/3">
+              <Text className="mb-1 text-sm font-medium text-ink">
                 Payment method
               </Text>
               <Text
-                className="txt-medium text-ui-fg-subtle"
+                className="text-sm text-ink-muted"
                 data-testid="payment-method"
               >
                 {paymentInfoMap[payment.provider_id].title}
               </Text>
             </div>
-            <div className="flex flex-col w-2/3">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
+            <div className="min-w-0 sm:w-2/3">
+              <Text className="mb-1 text-sm font-medium text-ink">
                 Payment details
               </Text>
-              <div className="flex gap-2 txt-medium text-ui-fg-subtle items-center">
-                <Container className="flex items-center h-7 w-fit p-2 bg-ui-button-neutral-hover">
+              <div className="flex items-center gap-2 text-sm text-ink-muted">
+                <Container className="flex h-7 w-fit items-center bg-sand-50 p-2">
                   {paymentInfoMap[payment.provider_id].icon}
                 </Container>
-                <Text data-testid="payment-amount">
+                <Text data-testid="payment-amount" className="break-words">
                   {isStripeLike(payment.provider_id) && payment.data?.card_last4
                     ? `**** **** **** ${payment.data.card_last4}`
                     : `${convertToLocale({
@@ -51,10 +50,8 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
               </div>
             </div>
           </div>
-        )}
-      </div>
-
-      <Divider className="mt-8" />
+        </div>
+      )}
     </div>
   )
 }

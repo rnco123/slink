@@ -57,13 +57,13 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
 
   return (
     <div className="w-full bg-white flex flex-col">
-      <div className="txt-medium">
+      <div className="text-sm">
         <form action={(a) => addPromotionCode(a)} className="w-full mb-5">
           <Label className="flex gap-x-1 my-2 items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className="txt-medium text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+              className="text-sm font-medium text-evergreen-700 hover:underline underline-offset-2"
               data-testid="add-discount-button"
             >
               Add Promotion Code(s)
@@ -76,17 +76,20 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
 
           {isOpen && (
             <>
-              <div className="flex w-full gap-x-2">
-                <Input
-                  className="size-full"
-                  id="promotion-input"
-                  name="code"
-                  type="text"
-                  autoFocus={false}
-                  data-testid="discount-input"
-                />
+              <div className="flex w-full items-start gap-x-2">
+                <div className="min-w-0 flex-1">
+                  <Input
+                    className="size-full"
+                    id="promotion-input"
+                    name="code"
+                    type="text"
+                    autoFocus={false}
+                    data-testid="discount-input"
+                  />
+                </div>
                 <SubmitButton
                   variant="secondary"
+                  className="shrink-0"
                   data-testid="discount-apply-button"
                 >
                   Apply
@@ -104,7 +107,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
         {promotions.length > 0 && (
           <div className="w-full flex items-center">
             <div className="flex flex-col w-full">
-              <Heading className="txt-medium mb-2">
+              <Heading className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-evergreen-600">
                 Promotion(s) applied:
               </Heading>
 
@@ -115,7 +118,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                     className="flex items-center justify-between w-full max-w-full mb-2"
                     data-testid="discount-row"
                   >
-                    <Text className="flex gap-x-1 items-baseline txt-small-plus w-4/5 pr-1">
+                    <Text className="flex min-w-0 flex-1 gap-x-1 items-baseline text-sm font-medium pr-1">
                       <span className="truncate" data-testid="discount-code">
                         <Badge
                           color={promotion.is_automatic ? "green" : "grey"}

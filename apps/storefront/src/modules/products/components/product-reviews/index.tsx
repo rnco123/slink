@@ -38,7 +38,7 @@ const ProductReviews = async ({ productId }: Props) => {
               />
             </div>
           ) : (
-            <p className="text-ui-fg-subtle mt-1 text-sm">
+            <p className="text-ink-muted mt-1 text-sm">
               No reviews yet — be the first to share your experience.
             </p>
           )}
@@ -49,29 +49,29 @@ const ProductReviews = async ({ productId }: Props) => {
         {/* Reviews list */}
         <div className="flex flex-col gap-4" data-testid="review-list">
           {count === 0 ? (
-            <p className="text-ui-fg-subtle text-sm">
+            <p className="text-ink-muted text-sm">
               There are no approved reviews for this product yet.
             </p>
           ) : (
             reviews.map((r) => (
               <article
                 key={r.id}
-                className="border-b border-ui-border-base pb-4"
+                className="border-b border-line pb-4"
                 data-testid="review-item"
               >
                 <div className="mb-1 flex items-center gap-2">
                   <ReviewStars value={r.rating} size="small" />
                   {r.verified_purchase && (
-                    <span className="rounded bg-green-50 px-1.5 py-0.5 text-xs font-medium text-green-700">
+                    <span className="rounded bg-evergreen-50 px-1.5 py-0.5 text-xs font-medium text-evergreen-700">
                       Verified purchase
                     </span>
                   )}
                 </div>
                 {r.title && <p className="font-medium">{r.title}</p>}
-                <p className="text-ui-fg-subtle mt-1 whitespace-pre-wrap text-sm">
+                <p className="text-ink-muted mt-1 whitespace-pre-wrap text-sm">
                   {r.content}
                 </p>
-                <p className="text-ui-fg-muted mt-2 text-xs">
+                <p className="text-ink-subtle mt-2 text-xs">
                   {r.display_name}
                   {r.created_at ? ` · ${formatDate(r.created_at)}` : ""}
                 </p>

@@ -18,41 +18,44 @@ export default function ProductPrice({
   const selectedPrice = variant ? variantPrice : cheapestPrice
 
   if (!selectedPrice) {
-    return <div className="block w-32 h-9 bg-gray-100 animate-pulse" />
+    return <div className="h-9 w-32 animate-pulse rounded bg-sand-100" />
   }
 
+  const onSale = selectedPrice.price_type === "sale"
+
   return (
-    <div className="flex flex-col text-ui-fg-base">
-      <span
-        className={clx("text-xl-semi", {
-          "text-ui-fg-interactive": selectedPrice.price_type === "sale",
-        })}
-      >
-        {!variant && "From "}
+    <div className="flex flex-col gap-1">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        {!variant && (
+          <span className="text-sm font-medium text-ink-subtle">From</span>
+        )}
         <span
+          className={clx(
+            "font-display text-2xl leading-none sm:text-3xl",
+            onSale ? "text-clay-600" : "text-evergreen-800"
+          )}
           data-testid="product-price"
           data-value={selectedPrice.calculated_price_number}
         >
           {selectedPrice.calculated_price}
         </span>
-      </span>
-      {selectedPrice.price_type === "sale" && (
-        <>
-          <p>
-            <span className="text-ui-fg-subtle">Original: </span>
+
+        {onSale && (
+          <>
             <span
-              className="line-through"
+              className="text-lg text-ink-subtle line-through"
               data-testid="original-product-price"
               data-value={selectedPrice.original_price_number}
             >
               {selectedPrice.original_price}
             </span>
-          </p>
-          <span className="text-ui-fg-interactive">
-            -{selectedPrice.percentage_diff}%
-          </span>
-        </>
-      )}
+            <span className="rounded-pill bg-clay-50 px-2.5 py-1 text-xs font-semibold text-clay-600">
+              Save {selectedPrice.percentage_diff}%
+            </span>
+          </>
+        )}
+      </div>
+      <p className="text-xs text-ink-subtle">Tax included where applicable.</p>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@medusajs/ui"
+import { Button, clx } from "@medusajs/ui"
 import React from "react"
 import { useFormStatus } from "react-dom"
 
@@ -20,7 +20,12 @@ export function SubmitButton({
   return (
     <Button
       size="large"
-      className={className}
+      className={clx(
+        variant === "secondary"
+          ? "!rounded-pill !border-line-strong !bg-white !text-ink hover:!bg-sand-50"
+          : "!rounded-pill !bg-evergreen-700 !text-cream !shadow-none hover:!bg-evergreen-800",
+        className
+      )}
       type="submit"
       isLoading={pending}
       variant={variant || "primary"}

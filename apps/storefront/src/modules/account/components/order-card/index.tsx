@@ -25,11 +25,14 @@ const OrderCard = ({ order }: OrderCardProps) => {
   }, [order])
 
   return (
-    <div className="bg-white flex flex-col" data-testid="order-card">
-      <div className="uppercase text-large-semi mb-1">
+    <div
+      className="flex flex-col rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6"
+      data-testid="order-card"
+    >
+      <div className="mb-1 font-display text-xl text-evergreen-800">
         #<span data-testid="order-display-id">{order.display_id}</span>
       </div>
-      <div className="flex items-center divide-x divide-gray-200 text-small-regular text-ui-fg-base">
+      <div className="flex flex-wrap items-center divide-x divide-line text-sm text-ink-muted">
         <span className="pr-2" data-testid="order-created-at">
           {formatDate(order.created_at)}
         </span>
@@ -43,18 +46,18 @@ const OrderCard = ({ order }: OrderCardProps) => {
           numberOfLines > 1 ? "items" : "item"
         }`}</span>
       </div>
-      <div className="grid grid-cols-2 small:grid-cols-4 gap-4 my-4">
+      <div className="my-4 grid grid-cols-2 gap-4 sm:grid-cols-3 small:grid-cols-4">
         {order.items?.slice(0, 3).map((i) => {
           return (
             <div
               key={i.id}
-              className="flex flex-col gap-y-2"
+              className="flex min-w-0 flex-col gap-y-2"
               data-testid="order-item"
             >
               <Thumbnail thumbnail={i.thumbnail} images={[]} size="full" />
-              <div className="flex items-center text-small-regular text-ui-fg-base">
+              <div className="flex items-center text-sm text-ink-muted">
                 <span
-                  className="text-ui-fg-base font-semibold"
+                  className="truncate font-semibold text-ink"
                   data-testid="item-title"
                 >
                   {i.title}
@@ -66,17 +69,21 @@ const OrderCard = ({ order }: OrderCardProps) => {
           )
         })}
         {numberOfProducts > 4 && (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <span className="text-small-regular text-ui-fg-base">
+          <div className="flex h-full w-full flex-col items-center justify-center">
+            <span className="text-sm text-ink-muted">
               + {numberOfLines - 4}
             </span>
-            <span className="text-small-regular text-ui-fg-base">more</span>
+            <span className="text-sm text-ink-muted">more</span>
           </div>
         )}
       </div>
       <div className="flex justify-end">
         <LocalizedClientLink href={`/account/orders/details/${order.id}`}>
-          <Button data-testid="order-details-link" variant="secondary">
+          <Button
+            data-testid="order-details-link"
+            variant="secondary"
+            className="!rounded-pill !border-line-strong !bg-white !text-ink hover:!bg-sand-50"
+          >
             See details
           </Button>
         </LocalizedClientLink>
