@@ -6,7 +6,6 @@ import { Logo } from "@components/ui/logo"
 import { IconCart } from "@components/ui/icons"
 import { MobileMenu } from "@components/ui/mobile-menu"
 import { LanguageSwitcher } from "@components/ui/language-switcher"
-import { telemedicineUrl } from "@lib/config/site"
 import type { Dictionary } from "@lib/i18n"
 import type { Locale } from "@lib/i18n/config"
 
@@ -59,13 +58,15 @@ export default async function Nav({
 
           <div className="flex items-center gap-3 md:gap-5">
             <LanguageSwitcher className="hidden sm:inline-flex" />
-            <a
-              href={telemedicineUrl("nav")}
-              rel="noopener noreferrer"
+            {/* Primary CTA now leads into the telehealth intake on Saludlink
+                (/start-visit), which hands off to the licensed telehealth
+                platform. Was a direct external link (telemedicineUrl). */}
+            <LocalizedClientLink
+              href="/start-visit"
               className="hidden rounded-pill bg-clay-500 px-4 py-2 text-sm font-medium text-cream transition-colors hover:bg-clay-600 sm:inline-flex"
             >
               {dict.common.startVisit}
-            </a>
+            </LocalizedClientLink>
             <LocalizedClientLink
               href="/account"
               className="hidden text-sm text-ink-muted transition-colors hover:text-evergreen-700 sm:block"
