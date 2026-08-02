@@ -19,13 +19,12 @@ export const siteConfig = {
   domain: "saludlinkusa.com",
   url: "https://www.saludlinkusa.com",
   tagline: "Metabolic health, thoughtfully delivered.",
-  // TODO: replace with the real registered contact details for LegitScript
   contact: {
-    addressLine: "[123 Example St, Suite 100]",
-    city: "[City]",
-    state: "[ST]",
-    zip: "[00000]",
-    phone: "[1-800-000-0000]",
+    addressLine: "27230 US-290, Suite 700",
+    city: "Cypress",
+    state: "TX",
+    zip: "77433",
+    phone: "(713) 907-0133",
     email: "support@saludlinkusa.com",
     hours: "Mon–Fri, 9am–6pm ET",
   },

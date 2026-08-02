@@ -40,11 +40,12 @@ Accessibility · Editorial Policy · Nondiscrimination.
    entity** or **business associate** for the telehealth services. The NPP is
    drafted assuming covered-entity obligations and flags this inline. This also
    drives the AWS/vendor **BAAs** (roadmap task 39).
-2. **Real business facts.** Replace the placeholder legal entity address and
-   phone (currently `[123 Example St]`, `[City, ST 00000]`, `[1-800-000-0000]`)
-   with the real registered details. **LegitScript Standard 8 requires accurate,
-   verifiable business contact information** — placeholders will block
-   certification and should not go live.
+2. ~~**Real business facts.**~~ **Resolved 2026-08-02.** Real registered
+   address/phone (27230 US-290, Suite 700, Cypress, TX 77433 —
+   (713) 907-0133) are now in `apps/storefront/src/lib/config/site.ts` and the
+   `apps/medusa/src/scripts/seed-content.ts` contact seed. Confirm the seed has
+   been re-run (or content re-seeded) in any environment where the placeholder
+   values were already persisted to the CMS.
 3. **Counsel sign-off on `[bracketed]` items** (see below).
 
 ## `[bracketed]` items awaiting counsel
