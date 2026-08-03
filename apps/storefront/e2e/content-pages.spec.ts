@@ -53,14 +53,15 @@ test.describe("Content pages", () => {
     ).toBeVisible()
   })
 
-  test("telemedicine 'Start a visit' points at the external care app", async ({
+  test("telemedicine page CTA links out to the external care app", async ({
     page,
   }) => {
     await gotoOk(page, path("/telemedicine"))
-    const cta = page.getByRole("link", { name: /start a visit/i }).first()
-    await expect(cta).toHaveAttribute(
-      "href",
-      /care\.saludlinkusa\.com|utm_source=storefront/
-    )
+    // The header "Start a visit" now leads to the internal /start-visit intake
+    // wizard; the telemedicine page-body CTA is the one that links out to the
+    // licensed external care platform (UTM-tagged for attribution).
+    const cta = page.locator('a[href*="care.saludlinkusa.com"]').first()
+    await expect(cta).toBeVisible()
+    await expect(cta).toHaveAttribute("href", /utm_source=storefront/)
   })
 })
