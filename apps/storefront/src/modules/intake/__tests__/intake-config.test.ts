@@ -7,7 +7,12 @@ import {
   SECTIONS,
 } from "../intake-config"
 
-const jane = { height_ft: "5", height_in: "4", current_weight: "200", sex_at_birth: "Female" }
+const jane = {
+  height_ft: "5",
+  height_in: "4",
+  current_weight: "200",
+  sex_at_birth: "Female",
+}
 
 describe("intake calculators", () => {
   it("computes BMI from US units", () => {
