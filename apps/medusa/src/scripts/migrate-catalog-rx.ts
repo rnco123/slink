@@ -59,13 +59,37 @@ export default async function migrateCatalogRx({ container }: ExecArgs) {
   const stockLocationModuleService = container.resolve(Modules.STOCK_LOCATION)
   const fulfillmentModuleService = container.resolve(Modules.FULFILLMENT)
 
-  // 1. Delete the old OTC products.
+  // 1. Delete the old OTC products. First clear any inventory RESERVATIONS on
+  //    their variants: Medusa refuses to delete an inventory item that still has
+  //    reservations (e.g. an abandoned cart left over from preview testing),
+  //    which would otherwise abort the whole migration.
   const { data: oldProducts } = await query.graph({
     entity: "product",
-    fields: ["id", "handle"],
+    fields: ["id", "handle", "variants.inventory.id"],
     filters: { handle: OLD_PRODUCT_HANDLES },
   })
   if (oldProducts.length) {
+    const inventoryItemIds = oldProducts
+      .flatMap((p) => p.variants ?? [])
+      .flatMap((v) => v?.inventory ?? [])
+      .map((i) => i?.id)
+      .filter((id): id is string => Boolean(id))
+
+    if (inventoryItemIds.length) {
+      const inventoryModuleService = container.resolve(Modules.INVENTORY)
+      const reservations = await inventoryModuleService.listReservationItems({
+        inventory_item_id: inventoryItemIds,
+      })
+      if (reservations.length) {
+        await inventoryModuleService.deleteReservationItems(
+          reservations.map((r) => r.id)
+        )
+        logger.info(
+          `Cleared ${reservations.length} stale reservation(s) before delete.`
+        )
+      }
+    }
+
     await deleteProductsWorkflow(container).run({
       input: { ids: oldProducts.map((p) => p.id) },
     })
