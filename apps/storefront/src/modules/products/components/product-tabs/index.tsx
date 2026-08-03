@@ -11,24 +11,65 @@ type ProductTabsProps = {
   product: HttpTypes.StoreProduct
 }
 
+/** Read a string metadata field (Medusa metadata is loosely typed). */
+const metaStr = (
+  metadata: HttpTypes.StoreProduct["metadata"],
+  key: string
+): string | undefined => {
+  const value = (metadata ?? {})[key as keyof typeof metadata]
+  return typeof value === "string" && value.trim() ? value.trim() : undefined
+}
+
+/** Read a boolean-ish metadata field — Medusa can return a real boolean or a string. */
+const metaBool = (
+  metadata: HttpTypes.StoreProduct["metadata"],
+  key: string
+): boolean => {
+  const value = (metadata ?? {})[key as keyof typeof metadata]
+  return value === true || value === "true"
+}
+
 const ProductTabs = ({ product }: ProductTabsProps) => {
-  const tabs = [
-    {
-      label: "Product Information",
-      component: <ProductInfoTab product={product} />,
-    },
-    {
-      label: "Shipping & Returns",
-      component: <ShippingInfoTab />,
-    },
-  ]
+  const ingredients = metaStr(product.metadata, "active_ingredients")
+  const warnings = metaStr(product.metadata, "usage_warnings")
+  const fdaStatus = metaStr(product.metadata, "fda_status")
+
+  const tabs: { label: string; component: React.ReactNode }[] = []
+
+  if (ingredients) {
+    tabs.push({
+      label: "Ingredients & allergens",
+      component: <PlainTextTab text={ingredients} />,
+    })
+  }
+
+  if (warnings) {
+    tabs.push({
+      label: "Directions & safety",
+      component: <PlainTextTab text={warnings} />,
+    })
+  }
+
+  // Fall back to physical attributes only when there's no supplement content,
+  // so device/equipment SKUs still show something useful.
+  if (!ingredients && !warnings) {
+    tabs.push({
+      label: "Product details",
+      component: <ProductDetailsTab product={product} />,
+    })
+  }
+
+  tabs.push({
+    label: "Shipping & returns",
+    component: <ShippingInfoTab product={product} />,
+  })
 
   return (
     <div className="w-full">
-      <Accordion type="multiple">
-        {tabs.map((tab, i) => (
+      <Accordion type="multiple" defaultValue={[tabs[0]?.label]}>
+        {tabs.map((tab) => (
           <Accordion.Item
-            key={i}
+            key={tab.label}
             title={tab.label}
             headingSize="medium"
             value={tab.label}
@@ -37,83 +78,105 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
           </Accordion.Item>
         ))}
       </Accordion>
+
+      {/* Regulatory fine print — kept visible, not hidden in an accordion */}
+      {fdaStatus && (
+        <p className="mt-4 rounded-lg bg-sand-50 p-4 text-xs leading-relaxed text-ink-subtle">
+          {fdaStatus}
+        </p>
+      )}
     </div>
   )
 }
 
-const ProductInfoTab = ({ product }: ProductTabsProps) => {
+const PlainTextTab = ({ text }: { text: string }) => (
+  <p className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
+    {text}
+  </p>
+)
+
+const ProductDetailsTab = ({ product }: ProductTabsProps) => {
+  const rows: { label: string; value: string }[] = [
+    { label: "Weight", value: product.weight ? `${product.weight} g` : "—" },
+    {
+      label: "Dimensions",
+      value:
+        product.length && product.width && product.height
+          ? `${product.length}L × ${product.width}W × ${product.height}H`
+          : "—",
+    },
+    { label: "Type", value: product.type?.value || "—" },
+    {
+      label: "Country of origin",
+      value: product.origin_country || "—",
+    },
+  ]
+
   return (
-    <div className="text-small-regular py-8">
-      <div className="grid grid-cols-2 gap-x-8">
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <span className="font-semibold">Material</span>
-            <p>{product.material ? product.material : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Country of origin</span>
-            <p>{product.origin_country ? product.origin_country : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Type</span>
-            <p>{product.type ? product.type.value : "-"}</p>
-          </div>
+    <dl className="grid grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="flex items-center justify-between gap-4 border-b border-line/60 py-1.5"
+        >
+          <dt className="text-ink-subtle">{row.label}</dt>
+          <dd className="font-medium text-ink">{row.value}</dd>
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <span className="font-semibold">Weight</span>
-            <p>{product.weight ? `${product.weight} g` : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Dimensions</span>
-            <p>
-              {product.length && product.width && product.height
-                ? `${product.length}L x ${product.width}W x ${product.height}H`
-                : "-"}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+      ))}
+    </dl>
   )
 }
 
-const ShippingInfoTab = () => {
+const ShippingInfoTab = ({ product }: ProductTabsProps) => {
+  const isPrescription = metaBool(product.metadata, "prescription_required")
+
+  const items = isPrescription
+    ? [
+        {
+          icon: <FastDelivery />,
+          title: "Physician review, then delivery",
+          body: "A licensed physician reviews your order before it ships. Once approved, it's shipped to your door.",
+        },
+        {
+          icon: <Refresh />,
+          title: "Refunded if not approved",
+          body: "If the physician does not approve treatment, you're refunded in full before anything ships.",
+        },
+        {
+          icon: <Back />,
+          title: "Non-returnable once shipped",
+          body: "As a compounded, patient-specific prescription, this item can't be returned or exchanged once it has shipped — see our Refund Policy.",
+        },
+      ]
+    : [
+        {
+          icon: <FastDelivery />,
+          title: "Fast delivery",
+          body: "Your order arrives in 3–5 business days, shipped discreetly to your door.",
+        },
+        {
+          icon: <Refresh />,
+          title: "Simple exchanges",
+          body: "Not quite right? We'll help you exchange it for something that fits your plan.",
+        },
+        {
+          icon: <Back />,
+          title: "Easy returns",
+          body: "Return unopened items within 30 days for a refund — no hassle, no questions asked.",
+        },
+      ]
+
   return (
-    <div className="text-small-regular py-8">
-      <div className="grid grid-cols-1 gap-y-8">
-        <div className="flex items-start gap-x-2">
-          <FastDelivery />
+    <div className="flex flex-col gap-y-5 pt-1 text-sm">
+      {items.map((item) => (
+        <div key={item.title} className="flex items-start gap-x-3">
+          <span className="mt-0.5 text-evergreen-600">{item.icon}</span>
           <div>
-            <span className="font-semibold">Fast delivery</span>
-            <p className="max-w-sm">
-              Your package will arrive in 3-5 business days at your pick up
-              location or in the comfort of your home.
-            </p>
+            <span className="font-medium text-ink">{item.title}</span>
+            <p className="mt-0.5 max-w-sm text-ink-muted">{item.body}</p>
           </div>
         </div>
-        <div className="flex items-start gap-x-2">
-          <Refresh />
-          <div>
-            <span className="font-semibold">Simple exchanges</span>
-            <p className="max-w-sm">
-              Is the fit not quite right? No worries - we&apos;ll exchange your
-              product for a new one.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-start gap-x-2">
-          <Back />
-          <div>
-            <span className="font-semibold">Easy returns</span>
-            <p className="max-w-sm">
-              Just return your product and we&apos;ll refund your money. No
-              questions asked – we&apos;ll do our best to make sure your return
-              is hassle-free.
-            </p>
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
   )
 }

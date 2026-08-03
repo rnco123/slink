@@ -33,31 +33,15 @@ test.describe("Home page", () => {
     await expect(desc).toHaveAttribute("content", /saludlink/i)
   })
 
-  test("renders each marketing section (trust, conditions, how-it-works, care)", async ({
+  test("renders each marketing section (how-it-works, care)", async ({
     page,
   }) => {
-    await expect(
-      page.getByRole("heading", { name: /find what fits your health goals/i })
-    ).toBeVisible()
     await expect(
       page.getByRole("heading", { name: /a simpler path to metabolic health/i })
     ).toBeVisible()
     await expect(
       page.getByRole("heading", { name: /talk to a licensed provider/i })
     ).toBeVisible()
-  })
-
-  test("condition grid links to each vertical hub", async ({ page }) => {
-    for (const slug of [
-      "weight-management",
-      "metabolic-health",
-      "nutrition",
-      "monitoring",
-    ]) {
-      await expect(
-        page.locator(`a[href$="/conditions/${slug}"]`).first()
-      ).toBeVisible()
-    }
   })
 
   test("emits Organization + WebSite JSON-LD structured data", async ({

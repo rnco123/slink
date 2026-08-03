@@ -14,12 +14,14 @@ const LoginTemplate = () => {
   const [currentView, setCurrentView] = useState("sign-in")
 
   return (
-    <div className="w-full flex justify-start px-8 py-8">
-      {currentView === "sign-in" ? (
-        <Login setCurrentView={setCurrentView} />
-      ) : (
-        <Register setCurrentView={setCurrentView} />
-      )}
+    <div className="flex w-full justify-center px-4 py-10 sm:py-16">
+      <div className="w-full max-w-md rounded-xl border border-line bg-white p-6 shadow-sm sm:p-8">
+        {currentView === "sign-in" ? (
+          <Login setCurrentView={setCurrentView} />
+        ) : (
+          <Register setCurrentView={setCurrentView} />
+        )}
+      </div>
     </div>
   )
 }

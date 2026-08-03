@@ -17,14 +17,6 @@ export function path(p: string, locale: Locale = DEFAULT_LOCALE): string {
   return `/${locale}${clean}`
 }
 
-/** Condition verticals — hub cards + /conditions/[slug] pages. */
-export const CONDITION_SLUGS = [
-  "weight-management",
-  "metabolic-health",
-  "nutrition",
-  "monitoring",
-] as const
-
 /** LegitScript trust-stack legal pages under /legal/[slug]. */
 export const LEGAL_SLUGS = [
   "privacy-policy",
@@ -53,14 +45,11 @@ export const CONTENT_ROUTES: string[] = [
   "/contact",
   "/licensing",
   "/telemedicine",
-  "/conditions",
-  ...CONDITION_SLUGS.map((s) => `/conditions/${s}`),
 ]
 
 /** Header primary navigation (matches nav/index.tsx). */
 export const PRIMARY_NAV = [
   { label: "Shop", href: "/store" },
-  { label: "Conditions", href: "/conditions" },
   { label: "Telehealth", href: "/telemedicine" },
   { label: "Learn", href: "/learn" },
   { label: "About", href: "/about" },

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { siteConfig } from "@lib/config/site"
 import { formatCalendarDate } from "@lib/util/dates"
 
 interface LegalLayoutProps {
@@ -52,7 +53,7 @@ export default function LegalLayout({
         {/* Draft-review notice — remove once counsel has approved this document. */}
         <div
           role="note"
-          className="mb-12 rounded-rounded border border-line bg-sand-50 px-5 py-4 text-sm text-ink-muted"
+          className="mb-12 rounded-lg border border-line bg-sand-50 px-5 py-4 text-sm text-ink-muted"
         >
           <strong className="text-evergreen-800">Draft for review.</strong> This
           document is draft content prepared for the Saludlink launch and is
@@ -65,10 +66,12 @@ export default function LegalLayout({
         <footer className="mt-16 border-t border-line pt-8 text-sm text-ink-muted">
           <p>
             Questions about this document? Contact us at{" "}
-            <a href="mailto:[support@saludlinkusa.com]">
-              [support@saludlinkusa.com]
+            <a href={`mailto:${siteConfig.contact.email}`}>
+              {siteConfig.contact.email}
             </a>{" "}
-            or by mail at Saludlink, Inc., [PHYSICAL MAILING ADDRESS].
+            or by mail at {siteConfig.legalEntity},{" "}
+            {siteConfig.contact.addressLine}, {siteConfig.contact.city},{" "}
+            {siteConfig.contact.state} {siteConfig.contact.zip}.
           </p>
         </footer>
       </div>

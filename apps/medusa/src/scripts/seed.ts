@@ -12,7 +12,6 @@ import {
 import {
   createApiKeysWorkflow,
   createInventoryLevelsWorkflow,
-  createProductCategoriesWorkflow,
   createProductsWorkflow,
   createRegionsWorkflow,
   createSalesChannelsWorkflow,
@@ -26,20 +25,26 @@ import {
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows"
 import { ApiKey } from "../../.medusa/types/query-entry-points"
+import { buildRxProducts } from "./data/rx-products"
 
 /**
- * Saludlink seed — Weight & Metabolic Health catalog (T18)
+ * Saludlink seed — Compounded Weight & Metabolic Health injectables
  * -------------------------------------------------------------------------
  * US-only region, USD pricing, US shipping options.
  *
- * COMPLIANCE (LegitScript / FDA-FTC — see docs/legitweb-rules.md):
- *   - v1 catalog is OTC / devices / wellness ONLY. NO prescription (Rx) items.
- *   - Product copy is structure/function style only ("supports", "helps
- *     maintain"). NO disease treatment/cure claims.
+ * COMPLIANCE (compounded Rx model — see docs/legitweb-rules.md):
+ *   - v2 catalog is compounded, prescription-only injectables (503A),
+ *     dispensed solely against a valid, patient-specific prescription after
+ *     review by a licensed physician on our care team. Every SKU is
+ *     age-restricted (18+) and carries a "physician may decline / full
+ *     refund before shipment" guarantee — see each product's usage_warnings.
+ *   - Product copy avoids unsupported/absolute efficacy claims and disease
+ *     cure/treatment language; compounded products are explicitly disclosed
+ *     as not FDA-approved and not affiliated with the branded manufacturer.
  *   - Every product carries compliance metadata: fda_status, usage_warnings,
- *     active_ingredients (where relevant), requires_age_verification,
- *     shipping_states (default "all" — tighten per product when a state
- *     restriction applies).
+ *     active_ingredients, requires_age_verification, min_age,
+ *     prescription_required, shipping_states (licensed states only — see
+ *     Licensing & State Availability, not a blanket "all").
  * -------------------------------------------------------------------------
  */
 
@@ -361,376 +366,14 @@ export default async function seedDemoData({ container }: ExecArgs) {
   })
   logger.info("Finished seeding publishable API key data.")
 
-  logger.info("Seeding product categories...")
-
-  // Top-level category tree for the weight & metabolic health vertical.
-  const { result: categoryResult } = await createProductCategoriesWorkflow(
-    container
-  ).run({
-    input: {
-      product_categories: [
-        {
-          name: "Weight Management",
-          description:
-            "OTC products and tools that support healthy weight management routines.",
-          is_active: true,
-        },
-        {
-          name: "Metabolic Support",
-          description:
-            "Supplements formulated to support healthy metabolism as part of a balanced diet.",
-          is_active: true,
-        },
-        {
-          name: "Nutrition & Meal Support",
-          description:
-            "Shakes, fiber blends and hydration to support balanced daily nutrition.",
-          is_active: true,
-        },
-        {
-          name: "Monitoring Devices",
-          description:
-            "At-home devices and kits for tracking body metrics and wellness data.",
-          is_active: true,
-        },
-        {
-          name: "Vitamins & Supplements",
-          description:
-            "Daily vitamins and supplements to help fill common nutritional gaps.",
-          is_active: true,
-        },
-      ],
-    },
-  })
-
-  const categoryByName = (name: string) =>
-    categoryResult.find((cat) => cat.name === name)!
-
-  // Second pass: sub-categories to demonstrate a nested tree under
-  // "Monitoring Devices".
-  const { result: subCategoryResult } = await createProductCategoriesWorkflow(
-    container
-  ).run({
-    input: {
-      product_categories: [
-        {
-          name: "Body Composition",
-          parent_category_id: categoryByName("Monitoring Devices").id,
-          is_active: true,
-        },
-        {
-          name: "Ketone & Glucose",
-          parent_category_id: categoryByName("Monitoring Devices").id,
-          is_active: true,
-        },
-      ],
-    },
-  })
-  const subCategoryByName = (name: string) =>
-    subCategoryResult.find((cat) => cat.name === name)!
-
-  logger.info("Finished seeding product categories.")
-
   logger.info("Seeding product data...")
 
   await createProductsWorkflow(container).run({
     input: {
-      products: [
-        {
-          title: "Digital Body Composition Scale",
-          category_ids: [
-            categoryByName("Monitoring Devices").id,
-            subCategoryByName("Body Composition").id,
-          ],
-          description:
-            "A Bluetooth smart scale that tracks weight, body fat percentage, muscle mass, and water weight, syncing readings to the companion app so you can follow your progress over time. A supportive tool for anyone building consistent healthy-weight habits.",
-          handle: "digital-body-composition-scale",
-          weight: 1800,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status: "Not a medical device; general wellness product.",
-            usage_warnings:
-              "Not for use by individuals with an implanted pacemaker or other internal electronic medical device.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [
-            {
-              title: "Color",
-              values: ["Black", "White"],
-            },
-          ],
-          variants: [
-            {
-              title: "Black",
-              sku: "DEVICE-SCALE-BLACK",
-              manage_inventory: true,
-              options: { Color: "Black" },
-              prices: [{ amount: 49, currency_code: "usd" }],
-            },
-            {
-              title: "White",
-              sku: "DEVICE-SCALE-WHITE",
-              manage_inventory: true,
-              options: { Color: "White" },
-              prices: [{ amount: 49, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Blood Ketone Monitoring Kit",
-          category_ids: [
-            categoryByName("Monitoring Devices").id,
-            subCategoryByName("Ketone & Glucose").id,
-          ],
-          description:
-            "An at-home starter kit with a handheld meter, lancing device, and 10 test strips for tracking your blood ketone readings while following a lower-carbohydrate eating plan. Helps you monitor how your body is responding to your nutrition routine.",
-          handle: "blood-ketone-monitoring-kit",
-          weight: 350,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status:
-              "Meter and strips are FDA-cleared for self-testing; sold over-the-counter.",
-            usage_warnings:
-              "For self-monitoring only. Not a substitute for medical advice. Consult your clinician before making dietary changes.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Kit", values: ["Starter Kit"] }],
-          variants: [
-            {
-              title: "Starter Kit",
-              sku: "DEVICE-KETONE-KIT",
-              manage_inventory: true,
-              options: { Kit: "Starter Kit" },
-              prices: [{ amount: 39, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Metabolic Multivitamin — 30 Day",
-          category_ids: [categoryByName("Vitamins & Supplements").id],
-          description:
-            "A once-daily multivitamin with B-complex, chromium, and vitamin D to help fill common nutritional gaps and support your everyday energy metabolism as part of a balanced diet. One bottle is a 30-day supply.",
-          handle: "metabolic-multivitamin-30-day",
-          weight: 180,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status:
-              "Dietary supplement. This statement has not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.",
-            active_ingredients:
-              "Vitamin D3, B-complex (B1, B2, B3, B6, B12), Folate, Chromium picolinate, Biotin",
-            usage_warnings:
-              "Do not exceed the recommended daily dose. Consult your healthcare provider before use if pregnant, nursing, or taking medication. Keep out of reach of children.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Supply", values: ["30 Day", "90 Day"] }],
-          variants: [
-            {
-              title: "30 Day",
-              sku: "SUP-MULTI-30",
-              manage_inventory: true,
-              options: { Supply: "30 Day" },
-              prices: [{ amount: 24, currency_code: "usd" }],
-            },
-            {
-              title: "90 Day",
-              sku: "SUP-MULTI-90",
-              manage_inventory: true,
-              options: { Supply: "90 Day" },
-              prices: [{ amount: 60, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Metabolic Support Berberine Capsules",
-          category_ids: [categoryByName("Metabolic Support").id],
-          description:
-            "Standardized berberine HCl capsules that support healthy metabolism and help maintain glucose levels already within the normal range, as part of a balanced diet and active lifestyle. 60 vegetarian capsules.",
-          handle: "metabolic-support-berberine-capsules",
-          weight: 150,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status:
-              "Dietary supplement. This statement has not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.",
-            active_ingredients: "Berberine HCl 500mg (from Berberis aristata)",
-            usage_warnings:
-              "Not for use by individuals who are pregnant or nursing. Consult your healthcare provider before use, especially if taking medication that affects blood sugar.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Count", values: ["60 Capsules"] }],
-          variants: [
-            {
-              title: "60 Capsules",
-              sku: "SUP-BERBERINE-60",
-              manage_inventory: true,
-              options: { Count: "60 Capsules" },
-              prices: [{ amount: 29, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Fiber + Prebiotic Daily Blend",
-          category_ids: [categoryByName("Nutrition & Meal Support").id],
-          description:
-            "An unflavored soluble fiber and prebiotic powder that mixes clear into any drink. Supports digestive regularity and helps you feel full between meals as part of a balanced diet. 30 daily servings.",
-          handle: "fiber-prebiotic-daily-blend",
-          weight: 300,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status:
-              "Dietary supplement. This statement has not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.",
-            active_ingredients:
-              "Soluble prebiotic fiber (partially hydrolyzed guar fiber), Inulin (chicory root)",
-            usage_warnings:
-              "Introduce gradually and drink with plenty of water. Discontinue use if you experience persistent digestive discomfort.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Size", values: ["30 Servings"] }],
-          variants: [
-            {
-              title: "30 Servings",
-              sku: "NUT-FIBER-30",
-              manage_inventory: true,
-              options: { Size: "30 Servings" },
-              prices: [{ amount: 27, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Bariatric Protein Shake — Vanilla",
-          category_ids: [categoryByName("Nutrition & Meal Support").id],
-          description:
-            "A high-protein, low-sugar ready-to-mix shake with 27g of whey protein isolate per serving to support daily protein goals and help you feel satisfied. Formulated to be gentle for those following a portion-controlled eating plan. 14 single-serve packets, vanilla.",
-          handle: "bariatric-protein-shake-vanilla",
-          weight: 700,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status:
-              "Food / dietary supplement. This statement has not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.",
-            active_ingredients:
-              "Whey protein isolate, Vitamin/mineral blend. Contains milk. Made in a facility that also processes soy and tree nuts.",
-            usage_warnings:
-              "Contains milk allergen. Not a sole source of nutrition. Consult your healthcare provider before use if you have had bariatric surgery or a diagnosed medical condition.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Pack", values: ["14 Packets"] }],
-          variants: [
-            {
-              title: "14 Packets",
-              sku: "NUT-PROTEIN-VAN-14",
-              manage_inventory: true,
-              options: { Pack: "14 Packets" },
-              prices: [{ amount: 34, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Electrolyte Hydration Sticks",
-          category_ids: [categoryByName("Nutrition & Meal Support").id],
-          description:
-            "Sugar-free electrolyte drink mix with sodium, potassium, and magnesium in convenient single-serve sticks. Supports daily hydration when you are active or following a lower-carbohydrate eating plan. 30 sticks, mixed berry.",
-          handle: "electrolyte-hydration-sticks",
-          weight: 220,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status:
-              "Food / dietary supplement. This statement has not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.",
-            active_ingredients:
-              "Sodium citrate, Potassium chloride, Magnesium malate, Natural flavors",
-            usage_warnings:
-              "Contains electrolytes. Consult your healthcare provider before use if you are on a sodium- or potassium-restricted diet.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Count", values: ["30 Sticks"] }],
-          variants: [
-            {
-              title: "30 Sticks",
-              sku: "NUT-ELECTROLYTE-30",
-              manage_inventory: true,
-              options: { Count: "30 Sticks" },
-              prices: [{ amount: 22, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Appetite Support Konjac Fiber Gummies",
-          category_ids: [categoryByName("Weight Management").id],
-          description:
-            "Chewable glucomannan (konjac root) fiber gummies taken before meals with water. The soluble fiber expands in the stomach to help you feel full so it is easier to stick to sensible portions as part of a balanced diet. 60 gummies.",
-          handle: "appetite-support-konjac-fiber-gummies",
-          weight: 260,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status:
-              "Dietary supplement. This statement has not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.",
-            active_ingredients: "Glucomannan (Amorphophallus konjac root) 1g",
-            usage_warnings:
-              "Take with a full glass of water 30 minutes before meals. Do not take immediately before lying down. Not suitable for individuals with difficulty swallowing.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Count", values: ["60 Gummies"] }],
-          variants: [
-            {
-              title: "60 Gummies",
-              sku: "WM-KONJAC-60",
-              manage_inventory: true,
-              options: { Count: "60 Gummies" },
-              prices: [{ amount: 26, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-        {
-          title: "Portion Control Meal Prep Container Set",
-          category_ids: [categoryByName("Weight Management").id],
-          description:
-            "A 14-piece set of portion-marked, BPA-free meal prep containers with a companion guide to help you plan balanced, portion-controlled meals throughout the week. A practical tool for building consistent healthy-eating habits.",
-          handle: "portion-control-meal-prep-container-set",
-          weight: 900,
-          status: ProductStatus.PUBLISHED,
-          shipping_profile_id: shippingProfile.id,
-          metadata: {
-            fda_status: "General merchandise; not a medical device.",
-            usage_warnings:
-              "Dishwasher safe (top rack). Not intended for stovetop or oven use.",
-            requires_age_verification: false,
-            shipping_states: "all",
-          },
-          options: [{ title: "Set", values: ["14-Piece Set"] }],
-          variants: [
-            {
-              title: "14-Piece Set",
-              sku: "WM-MEALPREP-14",
-              manage_inventory: true,
-              options: { Set: "14-Piece Set" },
-              prices: [{ amount: 32, currency_code: "usd" }],
-            },
-          ],
-          sales_channels: [{ id: defaultSalesChannel[0].id }],
-        },
-      ],
+      products: buildRxProducts({
+        shippingProfileId: shippingProfile.id,
+        salesChannelId: defaultSalesChannel[0].id,
+      }),
     },
   })
   logger.info("Finished seeding product data.")

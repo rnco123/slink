@@ -32,12 +32,12 @@ const ReviewStars = ({ value, size = "medium", showValue, count }: Props) => {
         className="tracking-tight text-amber-500"
       >
         {"★".repeat(rounded)}
-        <span className="text-ui-fg-muted" aria-hidden="true">
+        <span className="text-sand-300" aria-hidden="true">
           {"★".repeat(5 - rounded)}
         </span>
       </span>
       {showValue && (
-        <span className="text-ui-fg-subtle" aria-hidden="true">
+        <span className="text-ink-muted" aria-hidden="true">
           {value.toFixed(1)}
           {count != null ? ` (${count})` : ""}
         </span>

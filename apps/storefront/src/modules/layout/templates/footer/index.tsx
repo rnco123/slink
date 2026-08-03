@@ -1,12 +1,7 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { Logo } from "@components/ui/logo"
 import { LanguageSwitcher } from "@components/ui/language-switcher"
-import {
-  siteConfig,
-  legalLinks,
-  companyLinks,
-  conditionVerticals,
-} from "@lib/config/site"
+import { siteConfig, legalLinks, companyLinks } from "@lib/config/site"
 import type { Dictionary } from "@lib/i18n"
 import type { Locale } from "@lib/i18n/config"
 
@@ -44,28 +39,34 @@ export default function Footer({
             </div>
           </div>
 
-          {/* Shop / conditions */}
+          {/* Shop */}
           <nav aria-label={dict.footer.shop}>
             <h2 className="font-display text-base text-evergreen-800">
               {dict.footer.shop}
             </h2>
             <ul className="mt-4 space-y-2 text-sm text-ink-muted">
-              {conditionVerticals.map((c) => (
-                <li key={c.slug}>
-                  <LocalizedClientLink
-                    href={`/conditions/${c.slug}`}
-                    className="hover:text-evergreen-700"
-                  >
-                    {dict.conditions.verticals[c.slug].label}
-                  </LocalizedClientLink>
-                </li>
-              ))}
               <li>
                 <LocalizedClientLink
                   href="/store"
                   className="hover:text-evergreen-700"
                 >
                   {dict.common.allProducts}
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/telemedicine"
+                  className="hover:text-evergreen-700"
+                >
+                  {dict.nav.telehealth}
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/learn"
+                  className="hover:text-evergreen-700"
+                >
+                  {dict.nav.learn}
                 </LocalizedClientLink>
               </li>
             </ul>

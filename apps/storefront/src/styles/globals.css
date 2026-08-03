@@ -41,6 +41,17 @@
 }
 
 @layer components {
+  /*
+   * Page gutter + max-width for the Medusa-starter pages (PDP, cart, checkout,
+   * categories, collections, order, reviews). The starter shipped this class but
+   * the Saludlink globals redesign never re-defined it, so those pages rendered
+   * full-bleed with no side padding. Mirrors the <Container> primitive
+   * (layout-primitives.tsx) so starter pages and marketing pages share one gutter.
+   */
+  .content-container {
+    @apply mx-auto w-full max-w-container px-6 md:px-8;
+  }
+
   /* Editorial prose defaults for CMS/legal/article content */
   .sl-prose {
     max-width: var(--sl-container-narrow);

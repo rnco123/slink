@@ -10,14 +10,7 @@ import { path } from "./support/routes"
  */
 // Backend-FREE routes only (this spec runs in the default, no-backend lane).
 // Legal pages are Medusa-content-driven → covered by the @commerce legal.spec.
-const ROUTES = [
-  "/",
-  "/about",
-  "/contact",
-  "/conditions",
-  "/telemedicine",
-  "/licensing",
-]
+const ROUTES = ["/", "/about", "/contact", "/telemedicine", "/licensing"]
 
 // Known-benign error substrings to ignore (network noise from optional
 // integrations that are intentionally unconfigured in test, e.g. analytics).

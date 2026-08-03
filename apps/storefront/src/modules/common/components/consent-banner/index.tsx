@@ -54,10 +54,10 @@ const ConsentBanner = () => {
       role="dialog"
       aria-label="Cookie consent"
       data-testid="consent-banner"
-      className="fixed inset-x-0 bottom-0 z-[90] border-t border-ui-border-base bg-white/95 p-4 shadow-lg backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-[90] border-t border-line bg-cream/95 p-4 shadow-lg backdrop-blur"
     >
       <div className="content-container flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
-        <p className="text-sm text-ui-fg-subtle">
+        <p className="text-sm text-ink-muted">
           We use essential cookies to run the site and, with your consent,
           privacy-safe analytics to improve it. We never use analytics for
           health decisions. See our{" "}
@@ -74,7 +74,7 @@ const ConsentBanner = () => {
             type="button"
             onClick={() => choose(false)}
             data-testid="consent-decline"
-            className="rounded-md border border-ui-border-base px-4 py-2 text-sm font-medium"
+            className="rounded-pill border border-line-strong bg-white px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-sand-50"
           >
             Decline
           </button>
@@ -82,7 +82,7 @@ const ConsentBanner = () => {
             type="button"
             onClick={() => choose(true)}
             data-testid="consent-accept"
-            className="rounded-md bg-ui-button-inverted px-4 py-2 text-sm font-medium text-ui-fg-on-inverted"
+            className="rounded-pill bg-evergreen-700 px-4 py-2 text-sm font-semibold text-cream transition-colors hover:bg-evergreen-800"
           >
             Accept analytics
           </button>

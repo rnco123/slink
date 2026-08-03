@@ -37,9 +37,7 @@ const StarPicker = ({
         aria-label={`${n} star${n === 1 ? "" : "s"}`}
         onClick={() => onChange(n)}
         className={`text-2xl leading-none transition-colors ${
-          n <= value
-            ? "text-amber-500"
-            : "text-ui-fg-muted hover:text-amber-300"
+          n <= value ? "text-amber-500" : "text-ink-subtle hover:text-amber-300"
         }`}
       >
         ★
@@ -96,11 +94,11 @@ const ReviewForm = ({ productId }: Props) => {
   // Not signed in → prompt to sign in instead of showing the form.
   if (result && !result.ok && result.status === 401) {
     return (
-      <div className="rounded-lg border border-ui-border-base p-4 text-sm">
+      <div className="rounded-lg border border-line p-4 text-sm text-ink-muted">
         <p className="mb-2">Please sign in to write a review.</p>
         <LocalizedClientLink
           href="/account"
-          className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover font-medium"
+          className="font-medium text-evergreen-700 hover:underline"
         >
           Sign in to your account
         </LocalizedClientLink>
@@ -112,7 +110,7 @@ const ReviewForm = ({ productId }: Props) => {
     return (
       <div
         role="status"
-        className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800"
+        className="rounded-lg border border-evergreen-200 bg-evergreen-50 p-4 text-sm text-evergreen-800"
         data-testid="review-submitted"
       >
         {result.message}
@@ -123,18 +121,20 @@ const ReviewForm = ({ productId }: Props) => {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex flex-col gap-3 rounded-lg border border-ui-border-base p-4"
+      className="flex flex-col gap-3 rounded-xl border border-line bg-white p-4"
       data-testid="review-form"
     >
-      <h3 className="text-base font-medium">Write a review</h3>
+      <h3 className="font-display text-lg text-evergreen-800">
+        Write a review
+      </h3>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm text-ui-fg-subtle">Your rating</label>
+        <label className="text-sm text-ink-muted">Your rating</label>
         <StarPicker value={rating} onChange={setRating} />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="review-name" className="text-sm text-ui-fg-subtle">
+        <label htmlFor="review-name" className="text-sm text-ink-muted">
           Display name (optional)
         </label>
         <input
@@ -144,12 +144,12 @@ const ReviewForm = ({ productId }: Props) => {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="Verified Customer"
-          className="rounded-md border border-ui-border-base px-3 py-2 text-sm"
+          className="rounded border border-line bg-white px-3 py-2 text-sm text-ink transition-colors focus:border-evergreen-600 focus:outline-none focus:ring-1 focus:ring-evergreen-600"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="review-title" className="text-sm text-ui-fg-subtle">
+        <label htmlFor="review-title" className="text-sm text-ink-muted">
           Title (optional)
         </label>
         <input
@@ -158,12 +158,12 @@ const ReviewForm = ({ productId }: Props) => {
           maxLength={120}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="rounded-md border border-ui-border-base px-3 py-2 text-sm"
+          className="rounded border border-line bg-white px-3 py-2 text-sm text-ink transition-colors focus:border-evergreen-600 focus:outline-none focus:ring-1 focus:ring-evergreen-600"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="review-content" className="text-sm text-ui-fg-subtle">
+        <label htmlFor="review-content" className="text-sm text-ink-muted">
           Your review
         </label>
         <textarea
@@ -174,12 +174,12 @@ const ReviewForm = ({ productId }: Props) => {
           rows={4}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="rounded-md border border-ui-border-base px-3 py-2 text-sm"
+          className="rounded border border-line bg-white px-3 py-2 text-sm text-ink transition-colors focus:border-evergreen-600 focus:outline-none focus:ring-1 focus:ring-evergreen-600"
         />
       </div>
 
       {result && !result.ok && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-error">
           {result.message}
         </p>
       )}
@@ -187,12 +187,12 @@ const ReviewForm = ({ productId }: Props) => {
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-ui-button-inverted px-4 py-2 text-sm font-medium text-ui-fg-on-inverted disabled:opacity-60"
+        className="self-start rounded-pill bg-evergreen-700 px-5 py-2.5 text-sm font-semibold text-cream transition-colors hover:bg-evergreen-800 disabled:opacity-60"
       >
         {pending ? "Submitting…" : "Submit review"}
       </button>
 
-      <p className="text-xs text-ui-fg-muted">
+      <p className="text-xs text-ink-subtle">
         Reviews are moderated before they appear. Please describe your
         experience with the product — do not include medical or personal health
         details.

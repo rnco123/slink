@@ -3,9 +3,9 @@ import { Suspense } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import { Logo } from "@components/ui/logo"
+import { IconCart } from "@components/ui/icons"
 import { MobileMenu } from "@components/ui/mobile-menu"
 import { LanguageSwitcher } from "@components/ui/language-switcher"
-import { telemedicineUrl } from "@lib/config/site"
 import type { Dictionary } from "@lib/i18n"
 import type { Locale } from "@lib/i18n/config"
 
@@ -22,7 +22,6 @@ export default async function Nav({
 }) {
   const nav = [
     { label: dict.nav.shop, href: "/store" },
-    { label: dict.nav.conditions, href: "/conditions" },
     { label: dict.nav.telehealth, href: "/telemedicine" },
     { label: dict.nav.learn, href: "/learn" },
     { label: dict.nav.about, href: "/about" },
@@ -58,13 +57,15 @@ export default async function Nav({
 
           <div className="flex items-center gap-3 md:gap-5">
             <LanguageSwitcher className="hidden sm:inline-flex" />
-            <a
-              href={telemedicineUrl("nav")}
-              rel="noopener noreferrer"
+            {/* Primary CTA now leads into the telehealth intake on Saludlink
+                (/start-visit), which hands off to the licensed telehealth
+                platform. Was a direct external link (telemedicineUrl). */}
+            <LocalizedClientLink
+              href="/start-visit"
               className="hidden rounded-pill bg-clay-500 px-4 py-2 text-sm font-medium text-cream transition-colors hover:bg-clay-600 sm:inline-flex"
             >
               {dict.common.startVisit}
-            </a>
+            </LocalizedClientLink>
             <LocalizedClientLink
               href="/account"
               className="hidden text-sm text-ink-muted transition-colors hover:text-evergreen-700 sm:block"
@@ -76,10 +77,12 @@ export default async function Nav({
               fallback={
                 <LocalizedClientLink
                   href="/cart"
-                  className="text-sm text-ink-muted hover:text-evergreen-700"
+                  className="flex items-center gap-1.5 text-sm text-ink-muted hover:text-evergreen-700"
                   data-testid="nav-cart-link"
+                  aria-label={dict.common.cart}
                 >
-                  {dict.common.cart} (0)
+                  <IconCart width={20} height={20} />
+                  <span className="hidden sm:inline">{dict.common.cart}</span>
                 </LocalizedClientLink>
               }
             >

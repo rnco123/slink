@@ -24,8 +24,10 @@ export default function LocaleError({
       className="content-container flex min-h-[50vh] flex-col items-center justify-center gap-4 py-16 text-center"
       data-testid="error-boundary"
     >
-      <h1 className="text-2xl font-medium">Something went wrong</h1>
-      <p className="max-w-md text-ui-fg-subtle">
+      <h1 className="font-display text-2xl text-evergreen-800">
+        Something went wrong
+      </h1>
+      <p className="max-w-md text-ink-muted">
         We hit an unexpected error loading this page. Please try again — if it
         keeps happening, contact support.
       </p>
@@ -33,14 +35,14 @@ export default function LocaleError({
         <button
           type="button"
           onClick={reset}
-          className="rounded-md bg-ui-button-inverted px-4 py-2 text-sm font-medium text-ui-fg-on-inverted"
+          className="rounded-pill bg-evergreen-700 px-5 py-2.5 text-sm font-semibold text-cream transition-colors hover:bg-evergreen-800"
         >
           Try again
         </button>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a hard full-page reload is the intended recovery from an error boundary (resets client state / escapes the errored subtree); a client-nav Link would keep the broken state. */}
         <a
           href="/"
-          className="rounded-md border border-ui-border-base px-4 py-2 text-sm font-medium"
+          className="rounded-pill border border-line-strong bg-white px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-sand-50"
         >
           Go home
         </a>

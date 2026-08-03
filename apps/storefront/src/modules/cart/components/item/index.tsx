@@ -62,9 +62,9 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         </LocalizedClientLink>
       </Table.Cell>
 
-      <Table.Cell className="text-left">
+      <Table.Cell className="text-left min-w-0">
         <Text
-          className="txt-medium-plus text-ui-fg-base"
+          className="text-sm font-medium text-ink"
           data-testid="product-title"
         >
           {item.product_title}
@@ -114,7 +114,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         </Table.Cell>
       )}
 
-      <Table.Cell className="!pr-0">
+      <Table.Cell className="!pr-0 text-right">
         <span
           className={clx("!pr-0", {
             "flex flex-col items-end h-full justify-center": type === "preview",
@@ -122,7 +122,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         >
           {type === "preview" && (
             <span className="flex gap-x-1 ">
-              <Text className="text-ui-fg-muted">{item.quantity}x </Text>
+              <Text className="text-ink-subtle">{item.quantity}x </Text>
               <LineItemUnitPrice
                 item={item}
                 style="tight"

@@ -1,6 +1,7 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ChevronDown from "@modules/common/icons/chevron-down"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
+import { Logo } from "@components/ui/logo"
 
 export default function CheckoutLayout({
   children,
@@ -8,28 +9,26 @@ export default function CheckoutLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="w-full bg-white relative small:min-h-screen">
-      <div className="h-16 bg-white border-b ">
-        <nav className="flex h-full items-center content-container justify-between">
+    <div className="relative w-full bg-cream small:min-h-screen">
+      <div className="h-16 border-b border-line bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/80">
+        <nav className="content-container flex h-full items-center justify-between">
           <LocalizedClientLink
             href="/cart"
-            className="text-small-semi text-ui-fg-base flex items-center gap-x-2 uppercase flex-1 basis-0"
+            className="flex flex-1 basis-0 items-center gap-x-2 text-sm text-ink-muted transition-colors hover:text-evergreen-700"
             data-testid="back-to-cart-link"
           >
             <ChevronDown className="rotate-90" size={16} />
-            <span className="mt-px hidden small:block txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base ">
+            <span className="mt-px hidden small:block">
               Back to shopping cart
             </span>
-            <span className="mt-px block small:hidden txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base">
-              Back
-            </span>
+            <span className="mt-px block small:hidden">Back</span>
           </LocalizedClientLink>
           <LocalizedClientLink
             href="/"
-            className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
+            aria-label="Saludlink home"
             data-testid="store-link"
           >
-            Medusa Store
+            <Logo />
           </LocalizedClientLink>
           <div className="flex-1 basis-0" />
         </nav>

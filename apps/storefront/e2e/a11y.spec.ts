@@ -13,7 +13,7 @@ import { gotoOk } from "./support/helpers"
  */
 // Backend-FREE routes only (default lane). Legal pages are Medusa-content-driven
 // (covered by the @commerce legal.spec), so they're excluded here.
-const ROUTES = ["/", "/about", "/contact", "/conditions", "/telemedicine"]
+const ROUTES = ["/", "/about", "/contact", "/telemedicine"]
 
 const BLOCKING = new Set(["serious", "critical"])
 

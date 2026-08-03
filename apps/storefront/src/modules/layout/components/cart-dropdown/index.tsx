@@ -13,6 +13,7 @@ import DeleteButton from "@modules/common/components/delete-button"
 import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { IconCart } from "@components/ui/icons"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
@@ -87,9 +88,20 @@ const CartDropdown = ({
         <PopoverButton
           as={LocalizedClientLink}
           href="/cart"
-          className="h-full hover:text-ui-fg-base"
+          className="relative flex h-full items-center gap-1.5 hover:text-evergreen-700"
           data-testid="nav-cart-link"
-        >{`Cart (${totalItems})`}</PopoverButton>
+          aria-label={`Cart, ${totalItems} item${totalItems === 1 ? "" : "s"}`}
+        >
+          <span className="relative inline-flex">
+            <IconCart width={20} height={20} />
+            {totalItems > 0 ? (
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay-500 px-1 text-[10px] font-semibold leading-none text-cream">
+                {totalItems}
+              </span>
+            ) : null}
+          </span>
+          <span className="hidden sm:inline">Cart</span>
+        </PopoverButton>
         <Transition
           show={cartDropdownOpen}
           as={Fragment}
@@ -102,11 +114,11 @@ const CartDropdown = ({
         >
           <PopoverPanel
             static
-            className="hidden small:block absolute top-[calc(100%+1px)] right-0 bg-white border-x border-b border-gray-200 w-[420px] text-ui-fg-base"
+            className="hidden small:block absolute top-[calc(100%+1px)] right-0 w-[420px] rounded-b-xl border-x border-b border-line bg-white text-ink shadow-lg"
             data-testid="nav-cart-dropdown"
           >
-            <div className="p-4 flex items-center justify-center">
-              <h3 className="text-large-semi">Cart</h3>
+            <div className="flex items-center justify-center border-b border-line p-4">
+              <h3 className="font-display text-lg text-evergreen-800">Cart</h3>
             </div>
             {cartState && cartState.items?.length ? (
               <>
@@ -137,7 +149,7 @@ const CartDropdown = ({
                           <div className="flex flex-col flex-1">
                             <div className="flex items-start justify-between">
                               <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
-                                <h3 className="text-base-regular overflow-hidden text-ellipsis">
+                                <h3 className="overflow-hidden text-ellipsis text-sm font-medium text-ink">
                                   <LocalizedClientLink
                                     href={`/products/${item.product_handle}`}
                                     data-testid="product-link"
@@ -177,14 +189,16 @@ const CartDropdown = ({
                       </div>
                     ))}
                 </div>
-                <div className="p-4 flex flex-col gap-y-4 text-small-regular">
-                  <div className="flex items-center justify-between">
-                    <span className="text-ui-fg-base font-semibold">
+                <div className="flex flex-col gap-y-4 border-t border-line p-4 text-sm">
+                  <div className="flex items-center justify-between text-ink">
+                    <span className="font-semibold">
                       Subtotal{" "}
-                      <span className="font-normal">(excl. taxes)</span>
+                      <span className="font-normal text-ink-muted">
+                        (excl. taxes)
+                      </span>
                     </span>
                     <span
-                      className="text-large-semi"
+                      className="font-display text-lg text-evergreen-800"
                       data-testid="cart-subtotal"
                       data-value={subtotal}
                     >
@@ -196,7 +210,7 @@ const CartDropdown = ({
                   </div>
                   <LocalizedClientLink href="/cart" passHref>
                     <Button
-                      className="w-full"
+                      className="!h-11 w-full !rounded-pill !bg-evergreen-700 !text-cream !shadow-none hover:!bg-evergreen-800"
                       size="large"
                       data-testid="go-to-cart-button"
                     >
@@ -208,15 +222,22 @@ const CartDropdown = ({
             ) : (
               <div>
                 <div className="flex py-16 flex-col gap-y-4 items-center justify-center">
-                  <div className="bg-gray-900 text-small-regular flex items-center justify-center w-6 h-6 rounded-full text-white">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-evergreen-700 text-xs text-cream">
                     <span>0</span>
                   </div>
-                  <span>Your shopping bag is empty.</span>
+                  <span className="text-ink-muted">
+                    Your shopping bag is empty.
+                  </span>
                   <div>
                     <LocalizedClientLink href="/store">
                       <>
                         <span className="sr-only">Go to all products page</span>
-                        <Button onClick={close}>Explore products</Button>
+                        <Button
+                          onClick={close}
+                          className="!rounded-pill !bg-evergreen-700 !text-cream !shadow-none hover:!bg-evergreen-800"
+                        >
+                          Explore products
+                        </Button>
                       </>
                     </LocalizedClientLink>
                   </div>
