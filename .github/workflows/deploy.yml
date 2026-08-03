@@ -169,6 +169,19 @@ jobs:
           docker compose exec -T -e SEED_CONTENT_FORCE=1 medusa \
             npx medusa exec ./src/scripts/seed-content.js
 
+      # Ensure the compounded-Rx catalog (the 3 injection SKUs) exists in the DB.
+      # Idempotent by design (see migrate-catalog-rx.ts): it removes the legacy OTC
+      # catalog if present and CREATES only the Rx products that are missing — so it
+      # is safe on every deploy and just no-ops once the 3 products exist. This is
+      # the DB-side counterpart to shipping the product code, and mirrors how
+      # "Sync content from code" guarantees the legal/policy pages.
+      - name: Ensure Rx catalog
+        run: |
+          set -euo pipefail
+          cd /opt/slink
+          docker compose exec -T medusa \
+            npx medusa exec ./src/scripts/migrate-catalog-rx.js
+
       # Give products their artwork. The illustrations live in the repo at
       # apps/storefront/public/products/<handle>.svg, so they ship with the
       # storefront image and are served statically — no S3 and no ephemeral
