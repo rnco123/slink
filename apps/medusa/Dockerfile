@@ -50,9 +50,21 @@ WORKDIR /app/server
 
 # The built server is self-contained; install ONLY its production deps.
 COPY --from=build --chown=medusa:medusa /app/apps/medusa/.medusa/server ./
+# Install ONLY production deps. npmjs.org intermittently rate-limits mid-build
+# (HTTP 429), which used to fail the whole deploy — so give npm aggressive
+# per-request retry/backoff AND wrap the install in an outer retry loop.
 RUN --mount=type=cache,id=npm,target=/root/.npm \
-    npm install --omit=dev \
-    && chown -R medusa:medusa /app/server
+    ok=0; \
+    for i in 1 2 3; do \
+      if npm install --omit=dev \
+           --fetch-retries=5 \
+           --fetch-retry-mintimeout=20000 \
+           --fetch-retry-maxtimeout=180000; then ok=1; break; fi; \
+      echo "npm install failed (attempt $i/3) — sleeping $((i * 45))s"; \
+      sleep $((i * 45)); \
+    done; \
+    [ "$ok" = "1" ] || { echo "npm install failed after 3 attempts"; exit 1; }; \
+    chown -R medusa:medusa /app/server
 
 USER medusa
 EXPOSE 9000
