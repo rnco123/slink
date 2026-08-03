@@ -64,33 +64,8 @@ export function telemedicineUrl(placement: TelemedicinePlacement): string {
   }
 }
 
-/** Lead vertical: weight & metabolic health. Drives condition-hub nav + SEO structure. */
-export const conditionVerticals = [
-  {
-    slug: "weight-management",
-    label: "Weight Management",
-    blurb: "Evidence-informed support for sustainable weight change.",
-  },
-  {
-    slug: "metabolic-health",
-    label: "Metabolic Health",
-    blurb: "Blood sugar, energy, and metabolic markers.",
-  },
-  {
-    slug: "nutrition",
-    label: "Nutrition & Meal Support",
-    blurb: "Protein, fiber, and daily nutritional foundations.",
-  },
-  {
-    slug: "monitoring",
-    label: "Monitoring & Devices",
-    blurb: "Scales, monitors, and at-home tracking tools.",
-  },
-] as const
-
 export const primaryNav = [
   { label: "Shop", href: "/store" },
-  { label: "Conditions", href: "/conditions" },
   { label: "Telehealth", href: "/telemedicine" },
   { label: "Learn", href: "/learn" },
   { label: "About", href: "/about" },

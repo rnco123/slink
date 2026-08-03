@@ -29,8 +29,16 @@ export const viewport = {
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const lang = (await headers()).get("x-locale") === "es" ? "es" : "en"
+  // suppressHydrationWarning on <html>: browser extensions (ruler/grid overlays,
+  // dark-mode tools) inject inline styles/attributes onto <html> before React
+  // hydrates, which would otherwise log a hydration mismatch. Scoped to <html> only.
   return (
-    <html lang={lang} data-mode="light" className={fontVariables}>
+    <html
+      lang={lang}
+      data-mode="light"
+      className={fontVariables}
+      suppressHydrationWarning
+    >
       <body className="bg-cream font-body text-ink antialiased">
         <PostHogProvider>
           <main className="relative">{props.children}</main>

@@ -3,7 +3,6 @@ import { Metadata } from "next"
 import { Hero } from "@components/marketing/hero"
 import {
   TrustBand,
-  ConditionGrid,
   FeaturedProducts,
   HowItWorks,
   CareBand,
@@ -45,7 +44,6 @@ export default async function Home(props: { params: Promise<Params> }) {
       <JsonLd data={websiteJsonLd()} />
       <Hero dict={dict} />
       <TrustBand dict={dict} />
-      <ConditionGrid dict={dict} />
       <FeaturedProducts dict={dict} countryCode={countryCode} />
       <HowItWorks dict={dict} />
       <CareBand dict={dict} />

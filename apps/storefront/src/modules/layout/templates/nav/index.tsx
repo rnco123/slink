@@ -22,7 +22,6 @@ export default async function Nav({
 }) {
   const nav = [
     { label: dict.nav.shop, href: "/store" },
-    { label: dict.nav.conditions, href: "/conditions" },
     { label: dict.nav.telehealth, href: "/telemedicine" },
     { label: dict.nav.learn, href: "/learn" },
     { label: dict.nav.about, href: "/about" },

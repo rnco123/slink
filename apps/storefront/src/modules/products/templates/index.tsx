@@ -5,11 +5,14 @@ import ProductActions from "@modules/products/components/product-actions"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
+import ProductAbout from "@modules/products/components/product-about"
+import OrderSteps from "@modules/products/components/order-steps"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import type { ReviewSummary } from "@lib/data/reviews"
+import { toParagraphs } from "@lib/util/paragraphs"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -33,6 +36,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   }
 
   const category = product.categories?.[0]
+  const paragraphs = toParagraphs(product.description)
+  const lead = paragraphs[0]
+  const aboutParagraphs = paragraphs.slice(1)
 
   return (
     <>
@@ -78,14 +84,26 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           </ol>
         </nav>
 
-        {/* Two-column PDP: gallery + sticky buy box (the e-commerce standard) */}
-        <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)]">
-          <div className="w-full min-w-0">
+        {/*
+         * PDP grid. Desktop: gallery (col 1, row 1) with the detailed "About" +
+         * "How it works" beneath it (col 1, row 2), and a sticky buy panel
+         * spanning both rows on the right (col 2). Mobile: single column, so the
+         * DOM order — gallery → buy panel → about/steps — gives the ideal flow of
+         * image → title/price/add-to-cart → detail.
+         */}
+        <div className="grid grid-cols-1 gap-x-10 gap-y-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)]">
+          {/* Gallery — left column, top */}
+          <div className="w-full min-w-0 lg:col-start-1 lg:row-start-1">
             <ImageGallery images={images} title={product.title} />
           </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-y-7 lg:sticky lg:top-24 lg:self-start">
-            <ProductInfo product={product} reviewSummary={reviewSummary} />
+          {/* Buy panel — right column, sticky, spans both rows */}
+          <div className="flex w-full min-w-0 flex-col gap-y-7 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24 lg:self-start">
+            <ProductInfo
+              product={product}
+              reviewSummary={reviewSummary}
+              lead={lead}
+            />
 
             <Suspense
               fallback={
@@ -101,6 +119,15 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
             <ProductTabs product={product} />
           </div>
+
+          {/* Detail — left column beneath the gallery on desktop; after the buy
+              panel on mobile */}
+          {(aboutParagraphs.length > 0 || product.metadata) && (
+            <div className="flex w-full min-w-0 flex-col gap-10 lg:col-start-1 lg:row-start-2">
+              <ProductAbout paragraphs={aboutParagraphs} />
+              <OrderSteps product={product} />
+            </div>
+          )}
         </div>
       </div>
 

@@ -57,12 +57,15 @@ export default function IntakeWizard() {
     const errs: Record<string, string> = {}
     for (const f of visibleFields()) {
       if (f.optional || f.type === "computed") continue
-      const v = answers[f.id]
       const empty =
-        v == null ||
-        v === "" ||
-        (Array.isArray(v) && v.length === 0) ||
-        (f.type === "heightUS" && !answers.height_ft)
+        f.type === "heightUS"
+          ? !answers.height_ft
+          : (() => {
+              const v = answers[f.id]
+              return (
+                v == null || v === "" || (Array.isArray(v) && v.length === 0)
+              )
+            })()
       if (empty) errs[f.id] = "Required"
     }
     setErrors(errs)

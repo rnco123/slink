@@ -20,6 +20,15 @@ const metaStr = (
   return typeof value === "string" && value.trim() ? value.trim() : undefined
 }
 
+/** Read a boolean-ish metadata field — Medusa can return a real boolean or a string. */
+const metaBool = (
+  metadata: HttpTypes.StoreProduct["metadata"],
+  key: string
+): boolean => {
+  const value = (metadata ?? {})[key as keyof typeof metadata]
+  return value === true || value === "true"
+}
+
 const ProductTabs = ({ product }: ProductTabsProps) => {
   const ingredients = metaStr(product.metadata, "active_ingredients")
   const warnings = metaStr(product.metadata, "usage_warnings")
@@ -50,7 +59,10 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
     })
   }
 
-  tabs.push({ label: "Shipping & returns", component: <ShippingInfoTab /> })
+  tabs.push({
+    label: "Shipping & returns",
+    component: <ShippingInfoTab product={product} />,
+  })
 
   return (
     <div className="w-full">
@@ -115,24 +127,44 @@ const ProductDetailsTab = ({ product }: ProductTabsProps) => {
   )
 }
 
-const ShippingInfoTab = () => {
-  const items = [
-    {
-      icon: <FastDelivery />,
-      title: "Fast delivery",
-      body: "Your order arrives in 3–5 business days, shipped discreetly to your door.",
-    },
-    {
-      icon: <Refresh />,
-      title: "Simple exchanges",
-      body: "Not quite right? We'll help you exchange it for something that fits your plan.",
-    },
-    {
-      icon: <Back />,
-      title: "Easy returns",
-      body: "Return unopened items within 30 days for a refund — no hassle, no questions asked.",
-    },
-  ]
+const ShippingInfoTab = ({ product }: ProductTabsProps) => {
+  const isPrescription = metaBool(product.metadata, "prescription_required")
+
+  const items = isPrescription
+    ? [
+        {
+          icon: <FastDelivery />,
+          title: "Physician review, then delivery",
+          body: "A licensed physician reviews your order before it ships. Once approved, it's shipped to your door.",
+        },
+        {
+          icon: <Refresh />,
+          title: "Refunded if not approved",
+          body: "If the physician does not approve treatment, you're refunded in full before anything ships.",
+        },
+        {
+          icon: <Back />,
+          title: "Non-returnable once shipped",
+          body: "As a compounded, patient-specific prescription, this item can't be returned or exchanged once it has shipped — see our Refund Policy.",
+        },
+      ]
+    : [
+        {
+          icon: <FastDelivery />,
+          title: "Fast delivery",
+          body: "Your order arrives in 3–5 business days, shipped discreetly to your door.",
+        },
+        {
+          icon: <Refresh />,
+          title: "Simple exchanges",
+          body: "Not quite right? We'll help you exchange it for something that fits your plan.",
+        },
+        {
+          icon: <Back />,
+          title: "Easy returns",
+          body: "Return unopened items within 30 days for a refund — no hassle, no questions asked.",
+        },
+      ]
 
   return (
     <div className="flex flex-col gap-y-5 pt-1 text-sm">

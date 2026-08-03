@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { siteConfig } from "@lib/config/site"
 import { formatCalendarDate } from "@lib/util/dates"
 
 interface LegalLayoutProps {
@@ -65,10 +66,12 @@ export default function LegalLayout({
         <footer className="mt-16 border-t border-line pt-8 text-sm text-ink-muted">
           <p>
             Questions about this document? Contact us at{" "}
-            <a href="mailto:[support@saludlinkusa.com]">
-              [support@saludlinkusa.com]
+            <a href={`mailto:${siteConfig.contact.email}`}>
+              {siteConfig.contact.email}
             </a>{" "}
-            or by mail at Saludlink, Inc., [PHYSICAL MAILING ADDRESS].
+            or by mail at {siteConfig.legalEntity},{" "}
+            {siteConfig.contact.addressLine}, {siteConfig.contact.city},{" "}
+            {siteConfig.contact.state} {siteConfig.contact.zip}.
           </p>
         </footer>
       </div>

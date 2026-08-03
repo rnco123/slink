@@ -1,11 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
-import {
-  path,
-  PRIMARY_NAV,
-  COMPANY_LINKS,
-  CONDITION_SLUGS,
-  LEGAL_SLUGS,
-} from "./support/routes"
+import { path, PRIMARY_NAV, COMPANY_LINKS, LEGAL_SLUGS } from "./support/routes"
 import { gotoOk } from "./support/helpers"
 
 /** On mobile the primary nav lives behind the hamburger; open it if present. */
@@ -54,7 +48,7 @@ test.describe("Global navigation", () => {
     await expect(page.locator("h1")).toBeVisible()
   })
 
-  test("footer links to every legal / company / condition destination", async ({
+  test("footer links to every legal / company destination", async ({
     page,
   }) => {
     const footer = page.locator("footer")
@@ -64,12 +58,6 @@ test.describe("Global navigation", () => {
       await expect(
         footer.locator(`a[href$="/legal/${slug}"]`).first(),
         `footer legal link ${slug}`
-      ).toHaveCount(1)
-    }
-    for (const slug of CONDITION_SLUGS) {
-      await expect(
-        footer.locator(`a[href$="/conditions/${slug}"]`).first(),
-        `footer condition link ${slug}`
       ).toHaveCount(1)
     }
     for (const link of COMPANY_LINKS) {
@@ -104,7 +92,7 @@ test.describe("Mobile menu", () => {
       page.getByRole("button", { name: /close menu/i })
     ).toBeVisible()
     // Nav items become reachable in the open panel.
-    await expect(page.locator('a[href$="/conditions"]').first()).toBeVisible()
+    await expect(page.locator('a[href$="/store"]').first()).toBeVisible()
 
     await page.keyboard.press("Escape")
     await expect(page.getByRole("button", { name: /open menu/i })).toBeVisible()

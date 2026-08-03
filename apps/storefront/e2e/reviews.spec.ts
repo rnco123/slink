@@ -16,14 +16,25 @@ import { gotoOk, expectNoAppError } from "./support/helpers"
  * unmoderated can render here.
  */
 test.describe("Product reviews @commerce", () => {
-  // Navigate straight to a seeded product PDP (deterministic; this product also
-  // carries the seeded approved reviews). Avoids the store-grid client-nav flake.
-  const PDP = path("/products/bariatric-protein-shake-vanilla")
+  // Navigate straight to a seeded product PDP (deterministic; this is the first
+  // product seed.ts creates, so it also carries the seeded approved reviews —
+  // see seed-reviews.ts, which reviews whichever product lists first). Avoids
+  // the store-grid client-nav flake.
+  const PDP = path("/products/tirzepatide-injection-at-home")
 
   async function openFirstPdp(page: import("@playwright/test").Page) {
     await gotoOk(page, PDP)
     await expect(page).toHaveURL(/\/products\//)
     await expectNoAppError(page)
+
+    // The full catalog is age-restricted (task 21c) — dismiss the gate so the
+    // review form underneath is actually interactable, not just present in the
+    // DOM behind the overlay.
+    const gate = page.getByTestId("age-gate")
+    if (await gate.isVisible().catch(() => false)) {
+      await page.getByTestId("age-gate-confirm").click()
+      await expect(gate).toBeHidden()
+    }
   }
 
   test("PDP renders the reviews section and submit form", async ({ page }) => {

@@ -17,7 +17,7 @@ const CartTemplate = ({
       <div className="content-container" data-testid="cart-container">
         {cart?.items?.length ? (
           <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-[1fr_360px] lg:gap-x-10">
-            <div className="flex min-w-0 flex-col gap-y-6 bg-white py-6">
+            <div className="flex min-w-0 flex-col gap-y-6 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
               {!customer && (
                 <>
                   <SignInPrompt />
