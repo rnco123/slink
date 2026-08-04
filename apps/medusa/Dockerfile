@@ -49,7 +49,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
 WORKDIR /app/server
 
 # The built server is self-contained; install ONLY its production deps.
-COPY --from=build --chown=medusa:medusa /app/apps/medusa/.medusa/server ./
+#
+# Copy JUST the manifest before installing: the manifest only changes when
+# dependencies change, so the slow, 429-prone install layer below is a cache
+# hit on every code/text-only build. (Copying the whole server first — as this
+# stage used to — invalidated the install on EVERY commit.)
+COPY --from=build /app/apps/medusa/.medusa/server/package*.json ./
 # Install ONLY production deps. npmjs.org intermittently rate-limits mid-build
 # (HTTP 429), which used to fail the whole deploy — so give npm aggressive
 # per-request retry/backoff AND wrap the install in an outer retry loop.
@@ -65,6 +70,9 @@ RUN --mount=type=cache,id=npm,target=/root/.npm \
     done; \
     [ "$ok" = "1" ] || { echo "npm install failed after 3 attempts"; exit 1; }; \
     chown -R medusa:medusa /app/server
+# Now lay the built server on top of the installed node_modules. `medusa build`
+# emits no node_modules of its own, so nothing here clobbers the install.
+COPY --from=build --chown=medusa:medusa /app/apps/medusa/.medusa/server ./
 
 USER medusa
 EXPOSE 9000
