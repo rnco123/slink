@@ -65,7 +65,11 @@ MEDUSA_BACKEND_URL=https://manage.saludlinkusa.com
 NEXT_PUBLIC_BASE_URL=https://saludlinkusa.com
 NEXT_PUBLIC_DEFAULT_REGION=us
 REVALIDATE_SECRET=${REVAL}
-COMING_SOON=true
+# Coming-soon wall: OFF — the site is publicly launched. Set this back to true to
+# re-raise the wall (PREVIEW_CODE is kept so that stays a one-word change; it is
+# ignored while the wall is down). No backticks in this heredoc — it is unquoted,
+# so they would run as command substitution.
+COMING_SOON=false
 PREVIEW_CODE=900800
 
 # --- Edge ---

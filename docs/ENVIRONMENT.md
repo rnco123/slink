@@ -28,7 +28,7 @@ booting), **strict in production** (real secrets, https, no localhost).
 | `MEDUSA_BACKEND_URL`                   | no               | Server→Medusa base URL. Valid URL if set.                              |
 | `NEXT_PUBLIC_BASE_URL`                 | **prod**         | Public origin (canonicals/sitemap/robots). Must be `https://` in prod. |
 | `NEXT_PUBLIC_DEFAULT_REGION`           | no               | ISO-2 lowercase (e.g. `us`).                                           |
-| `COMING_SOON`                          | no               | `true`/`false`. Wall is ON in every env by decision (task 82).         |
+| `COMING_SOON`                          | no               | `true`/`false`. Wall is OFF in prod since launch; on elsewhere (t82).  |
 | `PREVIEW_CODE`                         | if `COMING_SOON` | 6 digits. Required when the wall is on, else no one can unlock it.     |
 | `REVALIDATE_SECRET`                    | **prod**         | On-demand ISR secret. Must not be the `supersecret` default in prod.   |
 | `NEXT_PUBLIC_STRIPE_KEY`               | no               | Stripe publishable key (`pk_...`) if set.                              |
