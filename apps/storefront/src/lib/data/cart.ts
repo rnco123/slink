@@ -10,6 +10,7 @@ import {
   getCacheOptions,
   getCacheTag,
   getCartId,
+  getRoutingLocale,
   removeCartId,
   setCartId,
 } from "./cookies"
@@ -381,9 +382,11 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     return e.message
   }
 
-  redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
-  )
+  // The URL prefix is the LOCALE, not the shipping country. Using the address
+  // country_code here built `/us/checkout`, which is not a route — the middleware
+  // then prefixed a locale onto it (`/en/us/checkout`) and checkout 404'd for
+  // every customer right after the address step.
+  redirect(`/${await getRoutingLocale()}/checkout?step=delivery`)
 }
 
 /**
@@ -412,14 +415,16 @@ export async function placeOrder(cartId?: string) {
     .catch(medusaError)
 
   if (cartRes?.type === "order") {
-    const countryCode =
-      cartRes.order.shipping_address?.country_code?.toLowerCase()
-
     const orderCacheTag = await getCacheTag("orders")
     revalidateTag(orderCacheTag)
 
     removeCartId()
-    redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
+    // Same bug as setAddresses, but worse: the order is already placed and paid
+    // at this point, so building the URL from the shipping country sent the
+    // customer to a 404 instead of their confirmation page.
+    redirect(
+      `/${await getRoutingLocale()}/order/${cartRes?.order.id}/confirmed`
+    )
   }
 
   return cartRes.cart
@@ -450,7 +455,9 @@ export async function updateRegion(countryCode: string, currentPath: string) {
   const productsCacheTag = await getCacheTag("products")
   revalidateTag(productsCacheTag)
 
-  redirect(`/${countryCode}${currentPath}`)
+  // `countryCode` selects the REGION above; it must not become the URL prefix,
+  // which is the locale.
+  redirect(`/${await getRoutingLocale()}${currentPath}`)
 }
 
 export async function listCartOptions() {

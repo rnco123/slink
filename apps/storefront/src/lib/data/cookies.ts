@@ -1,5 +1,42 @@
 import "server-only"
-import { cookies as nextCookies } from "next/headers"
+import { cookies as nextCookies, headers as nextHeaders } from "next/headers"
+import {
+  DEFAULT_LOCALE,
+  LOCALE_COOKIE,
+  LOCALE_HEADER,
+  isLocale,
+  type Locale,
+} from "@lib/locale"
+
+/**
+ * The locale to prefix onto a redirect target from a server action.
+ *
+ * Server actions have no route params, so they can't read `[countryCode]` the way
+ * a page can. They read the two signals the middleware maintains instead: the
+ * `x-locale` header it sets on every localized request, falling back to the
+ * `NEXT_LOCALE` cookie it persists, then to the default.
+ *
+ * Use this — never an address or region `country_code`. That segment is the
+ * language, not the country, so `/${cart.shipping_address.country_code}/checkout`
+ * builds `/us/checkout`, which is not a route (see `@lib/locale`).
+ */
+export const getRoutingLocale = async (): Promise<Locale> => {
+  try {
+    const fromHeader = (await nextHeaders()).get(LOCALE_HEADER)
+    if (isLocale(fromHeader)) {
+      return fromHeader
+    }
+
+    const fromCookie = (await nextCookies()).get(LOCALE_COOKIE)?.value
+    if (isLocale(fromCookie)) {
+      return fromCookie
+    }
+  } catch {
+    // Outside a request scope — fall through to the default.
+  }
+
+  return DEFAULT_LOCALE
+}
 
 export const getAuthHeaders = async (): Promise<
   { authorization: string } | {}
