@@ -4,6 +4,12 @@ import {
   PREVIEW_TOKEN,
   isComingSoonEnabled,
 } from "@lib/preview"
+import {
+  DEFAULT_LOCALE,
+  LOCALE_COOKIE,
+  LOCALE_HEADER,
+  isLocale,
+} from "@lib/locale"
 
 /**
  * Locale routing middleware. Saludlink is US-only but bilingual: the first path segment is
@@ -16,15 +22,13 @@ import {
  * Also hosts the coming-soon wall (task 82): while COMING_SOON is enabled, every
  * route is rewritten to /coming-soon unless the visitor holds the preview cookie.
  * This runs BEFORE locale routing so gated visitors never reach a localized page.
+ *
+ * The locale vocabulary (LOCALES/DEFAULT_LOCALE/cookie/header names) lives in
+ * `@lib/locale` so server actions resolve the same locale this file assigns —
+ * see `getRoutingLocale()`.
  */
-const LOCALES = ["en", "es"] as const
-const DEFAULT_LOCALE = "en"
-const LOCALE_COOKIE = "NEXT_LOCALE"
 
-function isLocale(v: string | undefined): v is (typeof LOCALES)[number] {
-  return !!v && (LOCALES as readonly string[]).includes(v)
-}
-
+/** Preferred locale for a request that arrived without a valid prefix. */
 function detectLocale(request: NextRequest): string {
   const cookie = request.cookies.get(LOCALE_COOKIE)?.value
   if (isLocale(cookie)) return cookie
@@ -71,7 +75,7 @@ export function middleware(request: NextRequest) {
   if (isLocale(segment)) {
     // Forward the active locale so the root layout can set <html lang>.
     const requestHeaders = new Headers(request.headers)
-    requestHeaders.set("x-locale", segment)
+    requestHeaders.set(LOCALE_HEADER, segment)
     const response = NextResponse.next({ request: { headers: requestHeaders } })
     // Remember the active language for next visit.
     if (request.cookies.get(LOCALE_COOKIE)?.value !== segment) {
