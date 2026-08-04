@@ -82,8 +82,13 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:${{ github.event.workflow_run.head_sha || github.sha }}
-          cache-from: type=gha,scope=medusa
-          cache-to: type=gha,mode=max,scope=medusa
+          # Cache lives in GHCR (a `:buildcache` tag), NOT GitHub's cache service:
+          # the GHA cache is capped at 10GB/repo, and two images at mode=max blew
+          # past it — layers were evicted between deploys, so builds ran cold and
+          # `npm install`/`pnpm install` reran every time. GHCR has no such cap.
+          # mode=max caches intermediate stages (deps/build), not just the final.
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/slink-medusa:buildcache,mode=max
 
       # --- Storefront image (NEXT_PUBLIC_* are build args, baked into bundle) -
       - name: Build + push storefront
@@ -99,8 +104,9 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:${{ github.event.workflow_run.head_sha || github.sha }}
-          cache-from: type=gha,scope=storefront
-          cache-to: type=gha,mode=max,scope=storefront
+          # Registry cache, same rationale as the medusa build above.
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:buildcache,mode=max
 
   # ---------------------------------------------------------------------------
   # Roll the box. Runs ON the box via a self-hosted runner labelled `slink-box`,
