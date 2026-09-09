@@ -72,7 +72,7 @@ jobs:
       # Dockerfile). It MUST be the public admin origin, or the deployed admin
       # calls http://localhost:9000 in the browser and login is refused.
       - name: Build + push medusa
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/medusa/Dockerfile
@@ -92,7 +92,7 @@ jobs:
 
       # --- Storefront image (NEXT_PUBLIC_* are build args, baked into bundle) -
       - name: Build + push storefront
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/storefront/Dockerfile
