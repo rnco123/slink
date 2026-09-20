@@ -6,6 +6,9 @@ itself. No manual steps, no SSH, nobody in the loop.
 This document describes the whole pipeline end-to-end, the **one-time setup** you
 run once, and how to roll back / troubleshoot.
 
+Platform: **Railway** for compute, **Supabase** for Postgres. There is no AWS
+account, no EC2 box, no Terraform footprint and no self-hosted runner.
+
 ---
 
 ## 1. The big picture
@@ -24,27 +27,30 @@ run once, and how to roll back / troubleshoot.
               └────────┬─────────┘
                        │
                        ▼
-              ┌──────────────────┐   SELF-HOSTED runner, ON the box
-              │ deploy: roll box │   docker compose pull && up -d
-              └────────┬─────────┘   + health check
+              ┌──────────────────┐   GitHub-hosted runner → Railway API
+              │ deploy: roll     │   railway redeploy (medusa → worker → store)
+              └────────┬─────────┘   + health checks
                        ▼
                   live site updated
 ```
 
-Nothing is re-hosted. Everything runs where it already runs:
+| Piece                             | Hosted on                           | Notes                       |
+| --------------------------------- | ----------------------------------- | --------------------------- |
+| storefront, medusa, worker, redis | **Railway** services in one project | TLS + domains are Railway's |
+| Postgres                          | **Supabase** (`DATABASE_URL`)       | PITR / backups are Supabase |
+| Object storage (uploads)          | **Supabase Storage** (S3 protocol)  | see `S3_*` in ENVIRONMENT   |
+| Transactional email               | **Resend**                          | BAA required before go-live |
+| Container images                  | GHCR (`ghcr.io/rnco123/slink-*`)    | free (public repo)          |
+| CI + image builds                 | GitHub-hosted runners               | free (public repo)          |
 
-| Piece                                                | Hosted on                                               | Cost               |
-| ---------------------------------------------------- | ------------------------------------------------------- | ------------------ |
-| Live site (storefront, medusa, worker, redis, caddy) | The one EC2 box `i-06ab3de34df6cbd8c` (`23.21.167.196`) | already paying     |
-| Container images                                     | GHCR (`ghcr.io/rnco123/slink-*`)                        | free (public repo) |
-| CI + image builds                                    | GitHub-hosted runners                                   | free (public repo) |
-| The "roll the box" step                              | A **self-hosted runner process on the same box**        | free (~50 MB RAM)  |
+**Why Railway pulls from GHCR rather than building from the repo:** the image
+builds are already tuned for layer caching against GHCR (`:buildcache`, `mode=max`),
+so a code-only change re-uses the dependency layers instead of reinstalling. The
+`deploy` job pushes `:latest`, then asks Railway to redeploy, which pulls it.
 
-**Why a self-hosted runner instead of SSH-from-GitHub:** GitHub's hosted runners
-have thousands of rotating IPs. To SSH in from them you'd have to open port 22 to
-almost the whole internet — unacceptable for a health box. A self-hosted runner
-reaches **out** from the box to GitHub (HTTPS, outbound only); nothing reaches in.
-No open SSH port, no private key stored in GitHub.
+**Why no self-hosted runner any more:** there is no box to install one on.
+The deploy job runs on a GitHub-hosted runner and authenticates to Railway with a
+project token, so nothing inbound is ever opened.
 
 ---
 
@@ -53,90 +59,118 @@ No open SSH port, no private key stored in GitHub.
 - **`.github/workflows/ci.yml`** — format, lint, typecheck, build, unit +
   integration tests. **`.github/workflows/e2e.yml`** — Playwright. These are the
   quality gate.
-- **`.github/workflows/deploy.yml`** — builds the images and rolls the box. Two
+- **`.github/workflows/deploy.yml`** — builds the images and rolls Railway. Two
   jobs:
   - `images` (GitHub-hosted): builds `slink-medusa` + `slink-storefront`, pushes
     `:latest` and `:<commit-sha>` to GHCR.
-  - `deploy` (self-hosted, label `slink-box`): on the box, runs
-    `docker compose pull && up -d --remove-orphans`, then health-checks
-    `https://manage.saludlinkusa.com/health` and **fails the run if it doesn't
-    return 200** — so a broken deploy shows up red, it doesn't fail silently.
+  - `deploy` (GitHub-hosted): `railway redeploy` for `medusa`, then `worker`,
+    then `storefront`, with a health check after each of the two public services.
 
-**What gates a deploy.** `deploy.yml` runs when the **`ci` workflow completes
-successfully on `main`** (`workflow_run`), plus the manual **Run workflow**
-button. It does _not_ run on a raw push, so a red build cannot reach production
-even if someone pushes straight to `main`.
-
-It is gated on **`ci` only** — the correctness gate (format, lint, typecheck,
-build, unit + integration tests). Deliberately **not** gated on
-`security` / `meta-lint` / `knip` / `lighthouse`: those fail for reasons outside
-your control (a new upstream CVE in a transitive dependency, a linter that
-doesn't know a custom runner label). They still run and still report; they just
-never block shipping a working site. Keep it that way — a gate you can't fix by
-changing your own code is a gate that will eventually stop a release you need.
-
-Because `workflow_run` starts from the default branch, the build explicitly
-checks out (and tags images with) `workflow_run.head_sha` — the exact commit CI
-validated — rather than whatever `main` happens to point at when it fires.
+`deploy` is gated on `ci` succeeding — **not** on security / meta-lint / knip /
+lighthouse. Those fail on upstream advisories and tooling config (a stranger
+publishing a CVE in a transitive dep, a linter not knowing a label) and must
+never block shipping a working site. They still run and still report.
 
 ---
 
 ## 3. ONE-TIME setup (you run this once)
 
-### 3a. Install the self-hosted runner on the box
+### 3a. Create the Railway project and services
 
-1. In GitHub: **repo → Settings → Actions → Runners → New self-hosted runner →
-   Linux / x64**. GitHub shows exact copy-paste commands _including a registration
-   token and the current runner version_. Use those, with **two tweaks**:
+In a Railway project (one environment per stage — `production`, optionally
+`staging`), create four services:
 
-   - add `--labels slink-box` (and `--name slink-box --unattended`) to the
-     `./config.sh` line, so the workflow's `runs-on: [self-hosted, slink-box]`
-     matches;
-   - install it into `/opt/actions-runner` and run it as the `ubuntu` user (which
-     already has Docker + `/opt/slink` access).
+| Service      | Source                                                 | Notes                                     |
+| ------------ | ------------------------------------------------------ | ----------------------------------------- |
+| `medusa`     | Docker image `ghcr.io/rnco123/slink-medusa:latest`     | public domain → `manage.saludlinkusa.com` |
+| `worker`     | Docker image `ghcr.io/rnco123/slink-medusa:latest`     | **no** public domain                      |
+| `storefront` | Docker image `ghcr.io/rnco123/slink-storefront:latest` | public domain → `saludlinkusa.com`        |
+| `redis`      | Railway's Redis template                               | private networking only                   |
 
-   Concretely, in your box SSH session (native Windows `ssh` — Git Bash can't load
-   the key):
+The repo is public, so GHCR pulls need no registry credentials. If the packages
+are ever made private, add a GHCR username + PAT to each service's source.
 
-   ```bash
-   sudo mkdir -p /opt/actions-runner && sudo chown "$USER" /opt/actions-runner
-   cd /opt/actions-runner
-   # use the URL+version+token GitHub shows you; example shape:
-   curl -o runner.tar.gz -L https://github.com/actions/runner/releases/download/vX.Y.Z/actions-runner-linux-x64-X.Y.Z.tar.gz
-   tar xzf runner.tar.gz
-   ./config.sh --url https://github.com/rnco123/slink --token <TOKEN_FROM_GITHUB_UI> \
-     --labels slink-box --name slink-box --unattended
-   ```
+Service-specific variables:
 
-2. Install it as a **service** so it survives reboots and runs in the background:
+- `medusa` — `MEDUSA_WORKER_MODE=server`, `HOME=/tmp`
+- `worker` — `MEDUSA_WORKER_MODE=worker`, `MEDUSA_ADMIN_DISABLE=true`, `HOME=/tmp`
 
-   ```bash
-   sudo ./svc.sh install ubuntu
-   sudo ./svc.sh start
-   sudo ./svc.sh status   # should say "active (running)"
-   ```
+`HOME=/tmp` is required: the image's `medusa` user has no home directory, so the
+Medusa CLI's `mkdir ~/.config/medusa` fails with `EACCES` without it.
 
-3. Back in GitHub → Settings → Actions → Runners, you should see **`slink-box`**
-   with a green "Idle" dot. Done — this box can now run deploy jobs.
+Point `REDIS_URL` at the Redis service over Railway's private network — reference
+it as `${{Redis.REDIS_URL}}` so it tracks the plugin rather than being pasted.
 
-### 3b. Protect `main` (so only green code ever deploys)
+### 3b. Set the Pre-Deploy Command on `medusa`
 
-repo → Settings → Branches → Add branch ruleset for `main`:
+This is the piece that replaces the old `medusa-migrate` one-shot container and
+the post-deploy `docker compose exec` steps. In the `medusa` service →
+**Settings → Deploy → Pre-Deploy Command**, set:
 
-- Require a pull request before merging.
-- Require status checks to pass: select **`ci`** and **`e2e`**.
+```sh
+npx medusa db:migrate && SEED_CONTENT_FORCE=1 npx medusa exec ./src/scripts/seed-content.js && npx medusa exec ./src/scripts/migrate-catalog-rx.js && PRODUCT_IMAGE_BASE=https://saludlinkusa.com/products npx medusa exec ./src/scripts/attach-images.js
+```
 
-Now anything on `main` has already passed CI, so `deploy.yml` can ship it without
-re-checking.
+Railway runs this **once per deploy, before the new version takes traffic**, in a
+container with the service's own variables. In order it:
 
-### 3c. First run
+1. applies DB migrations;
+2. syncs legal/policy content from code (see §4b);
+3. ensures the compounded-Rx catalog exists (idempotent — creates only what's
+   missing, and removes the legacy OTC catalog if present);
+4. attaches product artwork where a product has no image yet (non-destructive:
+   real photography uploaded through Admin is never reverted).
 
-Push anything to `main` (or click **Actions → deploy → Run workflow**). Watch:
-`images` builds → `deploy` runs on `slink-box` → health check goes green. That's
-the pipeline proven.
+The image ships the **built** server, so these are compiled `.js` paths, not `.ts`.
 
-**Order matters:** install the runner (3a) _before_ relying on a push, otherwise
-the `deploy` job sits "Queued", waiting for the `slink-box` runner to exist.
+Set no Pre-Deploy Command on `worker` or `storefront` — running migrations from
+more than one service races them.
+
+### 3c. Set the variables
+
+Copy each app's `.env.template` into the Railway service variables and fill in
+real values (see `docs/ENVIRONMENT.md` for the full contract, including which
+variables are required in production). The ones with no local default:
+
+`DATABASE_URL` (Supabase), `JWT_SECRET`, `COOKIE_SECRET`, `REVALIDATE_SECRET`,
+`RESEND_API_KEY`, and the `S3_*` set for Supabase Storage. Checkout is bank
+transfer only, so there are no payment-gateway credentials to set.
+
+The bank account customers pay into is **not** an env var: set it after deploy in
+**Admin → Site Settings → Bank transfer details**. Until bank name, account name
+and account number are all filled, checkout shows "payment details unavailable"
+and refuses to take an order, and the Admin page flags it. The `BANK_TRANSFER_*`
+env vars remain as a fallback for pre-Admin deploys.
+
+Use the Supabase **pooler** connection string for `medusa` and `worker` — Railway
+redeploys churn connections, and the direct endpoint's connection cap is low.
+
+### 3d. Add the GitHub secrets
+
+| Name                                   | Kind     | Value                                                   |
+| -------------------------------------- | -------- | ------------------------------------------------------- |
+| `RAILWAY_TOKEN`                        | secret   | Railway **project** token (Project → Settings → Tokens) |
+| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`   | variable | set once prod is seeded                                 |
+| `NEXT_PUBLIC_SUPABASE_URL`             | variable | Supabase project URL                                    |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | variable | Supabase publishable key (`sb_publishable_...`)         |
+
+The three `NEXT_PUBLIC_*` entries are repo **variables**, not secrets: they are
+baked into the browser bundle at image build time and are public by design.
+
+A _project_ token is scoped to one project and environment, which is what the
+workflow needs. An account token would give the CI job access to every project.
+
+### 3e. Protect `main` (so only green code ever deploys)
+
+Settings → Branches → Add rule for `main`: require a PR, and require the `ci`
+status check. `deploy` only fires on a successful `ci` run, so this is what keeps
+a red build from reaching production.
+
+### 3f. First run
+
+Actions → **deploy** → **Run workflow**. Watch `images` build, then `deploy` roll
+each service. The health checks fail the job if either public service does not
+return 200 within 300s.
 
 ---
 
@@ -144,25 +178,24 @@ the `deploy` job sits "Queued", waiting for the `slink-box` runner to exist.
 
 - **Ship:** merge a PR to `main`. That's the entire process.
 - **Manual redeploy:** Actions → **deploy** → **Run workflow**.
-- **Roll back to a previous build:** every build also pushes an image tagged with
-  its commit SHA. To pin the box to an older one, on the box:
-  ```bash
-  cd /opt/slink
-  # point the compose images at a specific SHA instead of :latest, then:
-  IMAGE_TAG=<old-sha> docker compose up -d
-  ```
-  (Requires the compose file to read `${IMAGE_TAG:-latest}` for the image tags —
-  a small one-line change per service; see `infra/deploy`. Until then, roll back
-  by reverting the commit on `main`, which triggers a fresh deploy of the prior
-  code.)
+- **Roll back:** Railway → the service → **Deployments** → pick the last good
+  one → **⋯ → Redeploy**. This is instant and needs no git operation. Roll back
+  `medusa` first if the bad deploy included a migration.
+  Reverting the commit on `main` also works and is the right move when the bad
+  change must not come back on the next deploy.
+
+**A caution on rollback and migrations:** Medusa migrations are forward-only.
+Redeploying an older image does **not** roll the schema back, so an older build
+runs against a newer schema. That is usually fine (additive migrations), but if a
+migration dropped or renamed a column, restore the Supabase PITR snapshot instead.
 
 ---
 
 ## 4b. Content is code (legal/policy pages)
 
-The `Sync content from code` step runs `seed-content.ts` with
-`SEED_CONTENT_FORCE=1` on **every deploy**, so **editing text in the repo is all
-it takes to update the live site** — no manual seeding.
+The Pre-Deploy Command runs `seed-content.js` with `SEED_CONTENT_FORCE=1` on
+**every deploy**, so **editing text in the repo is all it takes to update the
+live site** — no manual seeding.
 
 **Why this exists:** the seed is normally idempotent and _skips_ rows that
 already exist. That means an environment keeps whatever copy it was FIRST seeded
@@ -179,12 +212,11 @@ rewrites existing rows instead.
 - So: change legal copy in `seed-content.ts` and open a PR. You get a git audit
   trail of every wording change — useful when counsel reviews (task 40).
 
-To refresh content manually without a deploy, on the box:
+To refresh content manually without a deploy:
 
 ```bash
-cd /opt/slink
-docker compose exec -T -e SEED_CONTENT_FORCE=1 medusa \
-  npx medusa exec ./src/scripts/seed-content.js
+railway ssh --service medusa
+SEED_CONTENT_FORCE=1 npx medusa exec ./src/scripts/seed-content.js
 ```
 
 (The image ships the **built** server, so the path is the compiled `.js`, not `.ts`.)
@@ -193,87 +225,21 @@ docker compose exec -T -e SEED_CONTENT_FORCE=1 medusa \
 
 ## 5. Troubleshooting
 
-| Symptom                     | Cause                             | Fix                                                                                          |
-| --------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------- |
-| `deploy` job stuck "Queued" | The `slink-box` runner is offline | On the box: `cd /opt/actions-runner && sudo ./svc.sh status`; `start` it                     |
-| `images` job fails          | Docker build error                | Read the job log; it's a real build break — fix and re-push                                  |
-| Health check step red       | Containers didn't come up         | On the box: `cd /opt/slink && docker compose ps` and `docker compose logs medusa --tail=100` |
-| Deploy green but site stale | Browser/CDN cache                 | Hard refresh; check `docker compose ps` shows recent "Up" times                              |
+| Symptom                          | Cause                                               | Fix                                                                                 |
+| -------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `deploy` job fails on `redeploy` | `RAILWAY_TOKEN` missing/expired, or service renamed | Re-issue the project token; service names must match `medusa`/`worker`/`storefront` |
+| `images` job fails               | Docker build error                                  | Read the job log; it's a real build break — fix and re-push                         |
+| Health check step red            | Service didn't come up                              | Railway → the service → **Deploy Logs**                                             |
+| Deploy stuck in "Pre-Deploy"     | A migration is waiting on a lock                    | Check Supabase → Database → Roles/locks; a prior deploy may still hold it           |
+| `EACCES … .config/medusa`        | `HOME` not set on the service                       | Set `HOME=/tmp` (see §3a)                                                           |
+| DB auth/SSL errors               | Wrong `DATABASE_URL` or missing `sslmode`           | Use the Supabase pooler string; `medusa-config.ts` adds SSL for supabase hosts      |
+| Deploy green but site stale      | Browser cache                                       | Hard refresh; confirm the deployment timestamp in Railway                           |
 
 ---
 
-## 6. Alternative: AWS SSM + OIDC (no software on the box)
+## 6. Environments
 
-If you'd rather AWS own the execution (no runner process on the box), this is the
-AWS-native version. It's more up-front IAM wiring, which is why the self-hosted
-runner is the recommended default — but here it is for completeness.
-
-1. **Give the box an SSM role** (it currently has no instance profile):
-
-   ```bash
-   aws iam create-role --role-name slink-ec2-ssm-role \
-     --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"},"Action":"sts:AssumeRole"}]}'
-   aws iam attach-role-policy --role-name slink-ec2-ssm-role \
-     --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
-   aws iam create-instance-profile --instance-profile-name slink-ec2-ssm-profile
-   aws iam add-role-to-instance-profile --instance-profile-name slink-ec2-ssm-profile \
-     --role-name slink-ec2-ssm-role
-   aws ec2 associate-iam-instance-profile --instance-id i-06ab3de34df6cbd8c \
-     --iam-instance-profile Name=slink-ec2-ssm-profile --region us-east-1
-   ```
-
-   Confirm the box registers (Ubuntu ships the SSM agent):
-   `aws ssm describe-instance-information --region us-east-1` should list it within
-   a few minutes.
-
-2. **Trust GitHub via OIDC** (no stored AWS keys):
-
-   ```bash
-   aws iam create-open-id-connect-provider \
-     --url https://token.actions.githubusercontent.com \
-     --client-id-list sts.amazonaws.com \
-     --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
-   ```
-
-   Then create an IAM role `slink-github-deploy` whose trust policy allows
-   `token.actions.githubusercontent.com` for `repo:rnco123/slink:ref:refs/heads/main`,
-   with permission to `ssm:SendCommand` / `ssm:GetCommandInvocation` on the
-   instance and the `AWS-RunShellScript` document.
-
-3. **Deploy job** (replaces the self-hosted `deploy` job):
-   ```yaml
-   deploy:
-     needs: [images]
-     runs-on: ubuntu-latest
-     permissions: { id-token: write, contents: read }
-     steps:
-       - uses: aws-actions/configure-aws-credentials@v4
-         with:
-           role-to-assume: arn:aws:iam::537124932549:role/slink-github-deploy
-           aws-region: us-east-1
-       - name: Roll the box via SSM
-         run: |
-           id=$(aws ssm send-command \
-             --instance-ids i-06ab3de34df6cbd8c \
-             --document-name AWS-RunShellScript \
-             --parameters 'commands=["cd /opt/slink && docker compose pull && docker compose up -d --remove-orphans && docker image prune -f"]' \
-             --query Command.CommandId --output text)
-           aws ssm wait command-executed --command-id "$id" --instance-id i-06ab3de34df6cbd8c
-           aws ssm get-command-invocation --command-id "$id" --instance-id i-06ab3de34df6cbd8c
-   ```
-
-Both approaches give the same result: **merge to `main` → live**. Pick one.
-
----
-
-## 7. Why the AI assistant can't finish this for you
-
-The safety system blocks an AI agent from running commands on production
-infrastructure — SSH to the box, `aws iam` writes, `aws ssm send-command`,
-storing secrets. That's deliberate. The workflow files and this document are done;
-the one-time box/AWS setup (section 3 or 6) is the part that must be run by a
-human with the credentials. After that, no human — or AI — touches a deploy again.
-
-```
-
-```
+Railway environments are the staging/prod split: duplicate the `production`
+environment to `staging`, point it at a separate Supabase project, and issue a
+second project token if you want CI to deploy it. Keep `COMING_SOON=true` in
+staging so it never indexes.

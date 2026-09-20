@@ -15,11 +15,11 @@ prepare pnpm@9.15.9 --activate`.
 
 ```sh
 pnpm install
-docker compose up -d          # Postgres + Redis
-cp apps/medusa/.env.template apps/medusa/.env
-cp apps/storefront/.env.template apps/storefront/.env.local
+docker compose up -d          # Postgres + Redis (or use Supabase connection string in backend/.env)
+cp backend/.env.template backend/.env
+cp storefront/.env.template storefront/.env.local
 
-cd apps/medusa
+cd backend
 npx medusa db:migrate
 pnpm seed                      # catalog + regions
 npx medusa exec ./src/scripts/seed-content.ts   # legal pages EN+ES
@@ -51,12 +51,12 @@ These are the traps that waste time on Windows/PowerShell:
 3. **`pnpm` is a `.cmd` shim.** To background a dev server, launch through cmd:
    `cmd /c "pnpm dev > dev.log 2>&1"`. Calling the shim via `node` directly
    fails.
-4. **The Bash tool's node is broken** on this host — run node/pnpm/aws through
-   **PowerShell**. Prefix aws with `$env:AWS_PROFILE='slink'`.
+4. **The Bash tool's node is broken** on this host — run node/pnpm through
+   **PowerShell**.
 5. **`turbo` DLL crash (exit 3221225781 / 0xC0000135)** has been seen when the
    VC++ runtime PATH isn't loaded — refreshing PATH (quirk 2) resolves it.
 6. **Stale `.next/standalone` symlinks** can make recursive `Get-ChildItem`
-   throw `DirectoryNotFound`; ignore or `rm -rf apps/storefront/.next`.
+   throw `DirectoryNotFound`; ignore or `rm -rf storefront/.next`.
 
 ## Everyday commands
 
@@ -75,8 +75,8 @@ These are the traps that waste time on Windows/PowerShell:
 ## Repo layout
 
 ```
-apps/storefront   Next.js 15 App Router, [countryCode] i18n (en/es), standalone
-apps/medusa       Medusa v2 backend + admin; custom content + audit-log modules
+storefront   Next.js 15 App Router, [countryCode] i18n (en/es), standalone
+backend       Medusa v2 backend + admin; custom content + audit-log modules
 packages/privacy  PHI Boundary Firewall (captureSafeEvent, safe-logger, schemas)
 packages/ui       Design tokens / shared UI
 docs/             plan, tasks, env contract, migrations, this file

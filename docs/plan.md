@@ -22,20 +22,21 @@ The website integrates with **neither** existing system in v1 — it links out t
 
 ## 2. Decided Architecture
 
-| Layer     | Decision                                  | Why                                                                                   |
-| --------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
-| Frontend  | **Next.js 15 (App Router)**               | Best-in-class SSR/SSG for SEO + performance                                           |
-| Ecommerce | **Medusa.js v2, self-hosted**             | Full control; Shopify can't sign a BAA — dead end for HIPAA                           |
-| CMS       | **Payload CMS 3**, embedded in Next.js    | Self-hosted in our VPC — no third-party content vendor; E-E-A-T editorial workflow    |
-| Identity  | **AWS Cognito** user pool                 | Covered by AWS BAA; standard OIDC/JWKS so telemedicine + EMR validate our JWTs later  |
-| Payments  | **Stripe** (via Medusa plugin)            |                                                                                       |
-| Email     | **AWS SES**                               | BAA-eligible (order emails name health products)                                      |
-| Analytics | **Self-hosted Plausible** — no GA4        | No PHI-adjacent data to third parties; consent-gated                                  |
-| Hosting   | **AWS only, BAA-eligible services**       | ECS Fargate, RDS Postgres 16, ElastiCache Redis, CloudFront, WAF, S3, Secrets Manager |
-| IaC / CI  | **Terraform** + **GitHub Actions** (OIDC) | Auditable for compliance reviews                                                      |
-| Repo      | **Turborepo + pnpm** monorepo             | `apps/storefront`, `apps/medusa`, `packages/*`, `infra/terraform`                     |
+| Layer     | Decision                               | Why                                                                                              |
+| --------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Frontend  | **Next.js 15 (App Router)**            | Best-in-class SSR/SSG for SEO + performance                                                      |
+| Ecommerce | **Medusa.js v2, self-hosted**          | Full control; Shopify can't sign a BAA — dead end for HIPAA                                      |
+| Database  | **Supabase Postgres 16**               | Managed Postgres database cluster with high-performance connection pooling                       |
+| CMS       | **Payload CMS 3**, embedded in Next.js | Self-hosted alongside the storefront — no third-party content vendor; E-E-A-T editorial workflow |
+| Identity  | **Supabase Auth**                      | Standard OIDC/JWKS so telemedicine + EMR can validate our JWTs later                             |
+| Payments  | **Stripe** (via Medusa plugin)         |                                                                                                  |
+| Email     | **Resend**                             | Order emails name health products → BAA required before go-live                                  |
+| Analytics | **Self-hosted Plausible** — no GA4     | No PHI-adjacent data to third parties; consent-gated                                             |
+| Hosting   | **Railway + Supabase**                 | Railway services (storefront, medusa, worker, redis); Supabase Postgres + Storage                |
+| IaC / CI  | **GitHub Actions** → GHCR → Railway    | Auditable for compliance reviews; platform config lives in Railway                               |
+| Repo      | **Turborepo + pnpm** monorepo          | `storefront`, `backend`, `packages/*`, `infra/monitoring`                                        |
 
-**PHI boundary (the HIPAA strategy):** the website stores identity + orders only. Clinical data never leaves the EMR/telemedicine boundary. This keeps the website's HIPAA audit scope minimal. Sign the AWS BAA (via AWS Artifact) before any real customer data.
+**PHI boundary (the HIPAA strategy):** the website stores identity + orders only. Clinical data never leaves the EMR/telemedicine boundary. This keeps the website's HIPAA audit scope minimal. Sign the vendor BAAs (Supabase, Railway, Resend) before any real customer data.
 
 ---
 
@@ -111,10 +112,10 @@ Separate **Notice of Privacy Practices (HIPAA NPP)** distinct from the website P
 /cart /checkout /account   dynamic, noindex
 ```
 
-**Admin (staff-only): `manage.saludlinkusa.com`** — single management subdomain, noindex + WAF/IP-restricted:
+**Admin (staff-only): `manage.saludlinkusa.com`** — single management subdomain, noindex + access-restricted:
 
 - Medusa Admin → inventory, orders, deals/promotions, catalog
-- Payload admin (routed at `/content` via CloudFront) → main content, blog, legal pages
+- Payload admin (routed at `/content`) → main content, blog, legal pages
 
 Footer sitewide: legal entity + physical address, LegitScript seal slot, full legal link set.
 
@@ -126,13 +127,13 @@ Footer sitewide: legal entity + physical address, LegitScript seal slot, full le
 Monorepo init · Medusa v2 scaffold · storefront from Medusa Next.js Starter (keep cart/checkout plumbing, rebuild marketing) · Payload CMS (posts, authors, legalPages, faqs collections) · all trust/legal pages (draft copy) · JSON-LD library (`schema-dts`) · sitemap/robots/OG images · security headers · `/telemedicine` landing page with link-out · CI with Lighthouse budgets (Perf ≥95, SEO=100, LCP <2.0s, CLS <0.05).
 
 **Phase 2 — Ecommerce**
-Real catalog with compliance metadata · ISR product/category pages with full schema (Everlywell/PetSmart-grade) · restyled cart/checkout, guest checkout · signed revalidation webhooks · SES order emails · Playwright checkout e2e · groundwork for subscriptions/autoship.
+Real catalog with compliance metadata · ISR product/category pages with full schema (Everlywell/PetSmart-grade) · restyled cart/checkout, guest checkout · signed revalidation webhooks · Resend order emails · Playwright checkout e2e · groundwork for subscriptions/autoship.
 
 **Phase 3 — Auth + accounts + SSO prep**
-Cognito (Terraform) · custom auth UI, httpOnly sessions · Medusa Cognito auth provider · account area (orders, addresses) · "Start a visit" link-out → future SSO redirect · JWT claims contract in `packages/types` + `docs/sso-integration.md` for the telemedicine & EMR teams · audit-log module.
+Supabase Auth · custom auth UI, httpOnly sessions · Medusa auth provider (JWKS) · account area (orders, addresses) · "Start a visit" link-out → future SSO redirect · JWT claims contract in `packages/types` + `docs/sso-integration.md` for the telemedicine & EMR teams · audit-log module.
 
-**Phase 4 — AWS production hardening**
-Full Terraform footprint (staging → prod) · Dockerfiles + migration tasks · deploy pipelines with prod approval gate · WAF + rate limits + alarms · k6 load test · OWASP ZAP baseline · failover/restore drills · **sign AWS BAA** · go live.
+**Phase 4 — Production hardening**
+Railway environments (staging → prod) · Dockerfiles + pre-deploy migrations · deploy pipeline with prod approval gate · rate limits + alarms · k6 load test · OWASP ZAP baseline · failover/restore drills · **sign vendor BAAs** · go live.
 
 **Post-launch:** LegitScript application (needs live policies + real entity docs) · subscriptions/autoship · interactive tools buildout · per-condition/per-state landing-page expansion · telemedicine SSO.
 
@@ -143,4 +144,4 @@ Full Terraform footprint (staging → prod) · Dockerfiles + migration tasks · 
 - **Phase 1:** Lighthouse CI budgets in GitHub Actions; Google Rich Results Test on all JSON-LD; securityheaders.com grade A; sitemap/robots validation
 - **Phase 2:** Playwright e2e browse→cart→Stripe test checkout→confirmation (incl. 3DS); ISR revalidation test (admin edit → live page update)
 - **Phase 3:** auth e2e; standalone JWKS validation script proving the telemedicine/EMR SSO path; no tokens in localStorage
-- **Phase 4:** clean `terraform plan` in CI; ZAP baseline on staging; k6 checkout p95 <800ms @ 50 RPS; ECS/RDS failover + backup-restore drills; PageSpeed Insights on production URLs
+- **Phase 4:** staging environment green end-to-end; ZAP baseline on staging; k6 checkout p95 <800ms @ 50 RPS; Railway rollback + Supabase restore drills; PageSpeed Insights on production URLs

@@ -303,7 +303,7 @@ Trimmed response:
     "most_recent_instance": {
       "ref": "refs/heads/main",
       "location": {
-        "path": "apps/storefront/src/modules/x/Component.tsx",
+        "path": "storefront/src/modules/x/Component.tsx",
         "start_line": 88,
         "end_line": 88
       }
@@ -334,7 +334,7 @@ Trimmed response:
     "state": "open",
     "dependency": {
       "package": { "ecosystem": "npm", "name": "axios" },
-      "manifest_path": "apps/storefront/package.json",
+      "manifest_path": "storefront/package.json",
       "scope": "runtime"
     },
     "security_advisory": {

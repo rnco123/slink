@@ -5,8 +5,8 @@ CI, and how the future **Monitoring** module (NestJS API) will pull SEO signals 
 
 Brand domain: **saludlinkusa.com** (storefront), admin at **manage.saludlinkusa.com**. The storefront
 (Next.js 15) already ships SEO infrastructure under task **T15** — `generateMetadata`, canonicals,
-JSON-LD, and dynamic [`robots.ts`](../../../apps/storefront/src/app/robots.ts) +
-[`sitemap.ts`](../../../apps/storefront/src/app/sitemap.ts). Because these are Next.js route handlers,
+JSON-LD, and dynamic [`robots.ts`](../../../storefront/src/app/robots.ts) +
+[`sitemap.ts`](../../../storefront/src/app/sitemap.ts). Because these are Next.js route handlers,
 the app can also serve any HTML/file-based verification token from a route — so we are not limited to
 DNS verification.
 
@@ -214,7 +214,7 @@ pnpm dlx @lhci/cli@0.14.x autorun --config=./lighthouserc.json
 needed for the assertions themselves.
 
 **Where results upload.** `upload.target: temporary-public-storage` — each run prints a temporary
-public report URL (auto-expires). It runs on PRs touching `apps/storefront/**` and via
+public report URL (auto-expires). It runs on PRs touching `storefront/**` and via
 `workflow_dispatch`.
 
 **Fail vs advisory.** `error` assertions (performance, SEO, LCP, CLS) **fail the build**;

@@ -46,4 +46,4 @@ Warm, credible, plain-spoken. Confident without hype. **No unsupported health cl
 - Tokens: `packages/ui/src/styles/tokens.css` (CSS variables — one source of truth)
 - Tailwind mapping: `packages/ui/tailwind-preset.cjs`
 - Typed tokens (OG images, emails): `packages/ui/src/tokens/index.ts`
-- React components: `apps/storefront/src/components/ui/*` (kept in the app for React 19)
+- React components: `storefront/src/components/ui/*` (kept in the app for React 19)

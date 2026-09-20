@@ -2,7 +2,7 @@
   "name": "@saludlink/privacy",
   "version": "0.1.0",
   "private": true,
-  "description": "Saludlink PHI Boundary Firewall — keeps Protected Health Information out of the commerce website (Medusa, Cognito, Postgres, Stripe, PostHog, logs).",
+  "description": "Saludlink PHI Boundary Firewall — keeps Protected Health Information out of the commerce website (Medusa, Supabase Auth, Postgres, PostHog, logs).",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

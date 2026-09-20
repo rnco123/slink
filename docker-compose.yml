@@ -1,5 +1,9 @@
 name: saludlink
 
+# Note: In local dev, docker-compose provides a local Postgres 16 instance.
+# To connect to Supabase Cloud or a local Supabase CLI instance (port 54322),
+# set DATABASE_URL in backend/.env to your Supabase connection string.
+
 services:
   postgres:
     image: postgres:16-alpine

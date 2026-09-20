@@ -30,8 +30,8 @@ Thumbs.db
 coverage/
 
 # e2e / Playwright test output (regenerated each run)
-apps/storefront/e2e/.artifacts/
-apps/medusa/e2e/.artifacts/
+storefront/e2e/.artifacts/
+backend/e2e/.artifacts/
 test-results/
 playwright-report/
 

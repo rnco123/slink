@@ -3,7 +3,7 @@
  *
  * Every piece of data that flows through the website is classified into exactly
  * one tier. The PHI Boundary Firewall exists to guarantee that data in the
- * {@link DataClass.PROHIBITED_PHI} tier never reaches Medusa, Cognito, Postgres,
+ * {@link DataClass.PROHIBITED_PHI} tier never reaches Medusa, Supabase Auth, Postgres,
  * Stripe, PostHog, logs, APIs, or webhooks.
  *
  * The website is NOT an EMR and NOT the telemedicine application. Clinical data

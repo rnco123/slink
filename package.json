@@ -21,7 +21,7 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,yml,yaml}": "prettier --write"
   },
-  "comment-pg-god": "Declared at the workspace root (not just apps/medusa) because @medusajs/test-utils@2.16 does a bare `require('pg-god')` to create/drop the throwaway integration DB but fails to declare it — a packaging bug. A root devDependency lands in the top-level node_modules where test-utils resolves it, without needing a public-hoist-pattern (which would force a full node_modules purge). Tasks 23/24.",
+  "comment-pg-god": "Declared at the workspace root (not just backend) because @medusajs/test-utils@2.16 does a bare `require('pg-god')` to create/drop the throwaway integration DB but fails to declare it — a packaging bug. A root devDependency lands in the top-level node_modules where test-utils resolves it, without needing a public-hoist-pattern (which would force a full node_modules purge). Tasks 23/24.",
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.1.1",

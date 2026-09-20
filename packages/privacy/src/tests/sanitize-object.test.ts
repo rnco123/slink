@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   sanitizeObject,
   buildSafeMetadata,
-  buildSafeCognitoAttributes,
+  buildSafeIdentityAttributes,
 } from "../sanitize-object"
 import { PhiDetectedError } from "../validate-no-phi"
 
@@ -79,9 +79,9 @@ describe("buildSafeMetadata", () => {
   })
 })
 
-describe("buildSafeCognitoAttributes", () => {
+describe("buildSafeIdentityAttributes", () => {
   it("keeps identity attributes and drops clinical/custom ones", () => {
-    const attrs = buildSafeCognitoAttributes({
+    const attrs = buildSafeIdentityAttributes({
       email: "a@b.com",
       given_name: "Alex",
       "custom:patient_id": "p1",

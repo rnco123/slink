@@ -30,7 +30,7 @@ datastore, a third party, or a log:
                     │
         ┌───────────┼─────────────┬───────────────┐
         ▼           ▼             ▼               ▼
-    PostgreSQL   Medusa        Cognito         Stripe
+    PostgreSQL   Medusa      Supabase Auth     Stripe
     (metadata    (safe         (identity       (payment refs
      allowlist)   metadata)     attrs only)     only)
         │
@@ -86,8 +86,8 @@ The firewall inspects **nested** objects and arrays, so PHI cannot hide inside a
    tokens, cookies, emails, phones, addresses, request bodies, and PHI.
 5. **Never put PHI in a URL.** No `?patientId=`, `?diagnosis=`, etc. Use opaque
    one-time SSO tokens for cross-system links. Guard with `assertUrlSafe()`.
-6. **Cognito attributes are identity-only.** Build them with
-   `buildSafeCognitoAttributes()`. No `custom:patient_id`, `custom:diagnosis`, …
+6. **Auth-provider attributes are identity-only.** Build them with
+   `buildSafeIdentityAttributes()`. No `custom:patient_id`, `custom:diagnosis`, …
 7. **Do not block legitimate commerce search.** "Blood Pressure Monitor",
    "Glucose Monitor", and "Vitamin D" are products — never PHI. Search inputs are
    intentionally not scanned as clinical text.
@@ -166,7 +166,7 @@ not saved, logged, emailed, or sent to analytics:
   detection, allowed payloads, strict-schema rejection, analytics validation,
   logger redaction, metadata filtering, middleware, and URL validation.
 - **Type safety** — `pnpm --filter @saludlink/privacy typecheck`.
-- **E2E (Playwright)** — `apps/storefront/e2e/privacy.spec.ts` asserts no PHI in
+- **E2E (Playwright)** — `storefront/e2e/privacy.spec.ts` asserts no PHI in
   analytics egress, no PHI in URLs/links, and that session replay is off.
 - **Lint** — `next lint` fails a build that imports `posthog-js` outside the
   analytics wrapper.
@@ -183,21 +183,21 @@ not saved, logged, emailed, or sent to analytics:
 | `console.log(req.body)`                           | `createSafeLogger().info("event", ctx)`       |
 | Sending the raw search query to analytics         | send `query_length` + `results_count`         |
 | `redirect('/sso?patientId=' + id)`                | opaque one-time token; `assertUrlSafe(url)`   |
-| Adding `custom:diagnosis` to Cognito              | identity attributes only                      |
+| Adding `custom:diagnosis` to the auth provider    | identity attributes only                      |
 | Blocking "Blood Pressure Monitor" search          | search is commerce — never scanned            |
 
 ---
 
 ## Package surface (`@saludlink/privacy`)
 
-| Export                                                                | Purpose                          |
-| --------------------------------------------------------------------- | -------------------------------- |
-| `validateNoPhi` / `assertNoPhi` / `isPhiFree`                         | Recursive PHI detection          |
-| `strictObject` / `withNoPhi` / `phiSafeText` + field builders         | Strict Zod schemas               |
-| `RegistrationSchema`, `CheckoutSchema`, `ContactFormSchema`, …        | Canonical request schemas        |
-| `sanitizeObject` / `buildSafeMetadata` / `buildSafeCognitoAttributes` | Allowlist builders               |
-| `captureSafeEvent` / `registerAnalyticsTransport`                     | Safe analytics                   |
-| `createSafeLogger` / `redact`                                         | Redacting structured logging     |
-| `withPhiFirewall` / `phiFirewallMiddleware`                           | Request firewall (Next + Medusa) |
-| `inspectUrl` / `isUrlSafe` / `assertUrlSafe`                          | Keep PHI out of URLs             |
-| `DataClass`                                                           | Data-classification taxonomy     |
+| Export                                                                 | Purpose                          |
+| ---------------------------------------------------------------------- | -------------------------------- |
+| `validateNoPhi` / `assertNoPhi` / `isPhiFree`                          | Recursive PHI detection          |
+| `strictObject` / `withNoPhi` / `phiSafeText` + field builders          | Strict Zod schemas               |
+| `RegistrationSchema`, `CheckoutSchema`, `ContactFormSchema`, …         | Canonical request schemas        |
+| `sanitizeObject` / `buildSafeMetadata` / `buildSafeIdentityAttributes` | Allowlist builders               |
+| `captureSafeEvent` / `registerAnalyticsTransport`                      | Safe analytics                   |
+| `createSafeLogger` / `redact`                                          | Redacting structured logging     |
+| `withPhiFirewall` / `phiFirewallMiddleware`                            | Request firewall (Next + Medusa) |
+| `inspectUrl` / `isUrlSafe` / `assertUrlSafe`                           | Keep PHI out of URLs             |
+| `DataClass`                                                            | Data-classification taxonomy     |

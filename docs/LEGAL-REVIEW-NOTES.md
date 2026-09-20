@@ -3,7 +3,7 @@
 **Status: DRAFT — for counsel review before launch (before the coming-soon wall is removed).**
 
 This document accompanies the 10 policy pages that live in code at
-`apps/medusa/src/scripts/seed-content.ts` (the `LEGAL` array) and render at
+`backend/src/scripts/seed-content.ts` (the `LEGAL` array) and render at
 `saludlinkusa.com/legal/<slug>` in English and Spanish. They are working drafts
 prepared by the team as a diligence pass — **not legal advice** — and each page
 carries a visible "Draft — pending counsel" banner. This memo lists what was
@@ -39,11 +39,11 @@ Accessibility · Editorial Policy · Nondiscrimination.
 1. **HIPAA status label.** Confirm whether Saludlink is a HIPAA **covered
    entity** or **business associate** for the telehealth services. The NPP is
    drafted assuming covered-entity obligations and flags this inline. This also
-   drives the AWS/vendor **BAAs** (roadmap task 39).
+   drives the vendor **BAAs** (Supabase, Railway, Resend — roadmap task 39).
 2. ~~**Real business facts.**~~ **Resolved 2026-08-02.** Real registered
    address/phone (27230 US-290, Suite 700, Cypress, TX 77433 —
-   (713) 907-0133) are now in `apps/storefront/src/lib/config/site.ts` and the
-   `apps/medusa/src/scripts/seed-content.ts` contact seed. Confirm the seed has
+   (713) 907-0133) are now in `storefront/src/lib/config/site.ts` and the
+   `backend/src/scripts/seed-content.ts` contact seed. Confirm the seed has
    been re-run (or content re-seeded) in any environment where the placeholder
    values were already persisted to the CMS.
 3. **Counsel sign-off on `[bracketed]` items** (see below).

@@ -77,8 +77,8 @@ One container on the box, on the internal `monitoring` network, reached through
 `manage.saludlinkusa.com` behind the admin auth. Set `MONITORING_API_BIND=0.0.0.0`,
 point the `*_URL` vars at the internal service names (`http://prometheus:9090`,
 `http://loki:3100`, …), and inject `MONITORING_API_TOKEN` + upstream creds from
-SSM / Secrets Manager. Never publish this port to the public internet.
+Railway service variables. Never publish this port to the public internet.
 
 The dashboard can also be embedded as a Medusa admin route later (an iframe / link
-to `manage.` → this service). That wiring lives in `apps/medusa` and is owned by
+to `manage.` → this service). That wiring lives in `backend` and is owned by
 the Medusa session, so it is intentionally not added here.

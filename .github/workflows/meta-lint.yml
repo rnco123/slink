@@ -38,8 +38,8 @@ jobs:
     strategy:
       matrix:
         dockerfile:
-          - apps/storefront/Dockerfile
-          - apps/medusa/Dockerfile
+          - storefront/Dockerfile
+          - backend/Dockerfile
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Run hadolint on ${{ matrix.dockerfile }}

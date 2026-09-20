@@ -8,27 +8,25 @@ says "verify", actually run the check before moving on.
 > [ENVIRONMENT.md](../../../docs/ENVIRONMENT.md),
 > [MIGRATIONS.md](../../../docs/MIGRATIONS.md),
 > [secrets-rotation.md](secrets-rotation.md),
-> deploy stack [`infra/deploy/`](../../deploy/).
+> deploy pipeline [`docs/DEPLOYMENT.md`](../../../docs/DEPLOYMENT.md).
 > Alert definitions: [`config/prometheus/alerts/rules.yml`](../config/prometheus/alerts/rules.yml).
 
 ---
 
 ## 0. At a glance
 
-| Thing             | Value                                                                                                    |
-| ----------------- | -------------------------------------------------------------------------------------------------------- |
-| Public storefront | `https://saludlinkusa.com` (+ `www.`) — behind the coming-soon wall                                      |
-| Admin             | `https://manage.saludlinkusa.com` (Medusa login is the gate)                                             |
-| EC2 (single box)  | `i-06ab3de34df6cbd8c` · t3.small · x86 Ubuntu 24.04 · **EIP 23.21.167.196**                              |
-| SSH               | `ssh -i ~/.ssh/slink-key.pem ubuntu@23.21.167.196`                                                       |
-| RDS               | `slink-db` · PG16.14 db.t4g.micro · `slink-db.cw10w44cq99y.us-east-1.rds.amazonaws.com` · **7-day PITR** |
-| Route53 zone      | `Z06260013ISSB2PIIPCJS` (saludlinkusa.com)                                                               |
-| VPC / SGs         | `vpc-07d2508f1b4689d26` · web `sg-02dbf31924ab776fb` · db `sg-0e1b28356a574f11c`                         |
-| Media / key / AMI | S3 `slink-media-537124932549` · key `slink-key` · AMI `ami-052355af2a014bd2c`                            |
-| Secrets           | SSM `/slink/prod/*` (SecureString), region `us-east-1`                                                   |
-| AWS access        | PowerShell: `$env:AWS_PROFILE='slink'` (account 537124932549, us-east-1)                                 |
-| Compose services  | `caddy · storefront · medusa · worker · medusa-migrate · redis` (on the box)                             |
-| Compose file      | `~/slink/docker-compose.prod.yml` on the box (from `infra/deploy/`)                                      |
+| Thing             | Value                                                                                                 |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| Public storefront | `https://saludlinkusa.com` (+ `www.`)                                                                 |
+| Admin             | `https://manage.saludlinkusa.com` (Medusa login is the gate)                                          |
+| Compute           | **Railway** project → services `medusa` · `worker` · `storefront` · `redis`                           |
+| Database          | **Supabase** Postgres 16 (pooler for apps; PITR per plan — see §5)                                    |
+| Object storage    | **Supabase Storage** (S3 protocol) — product/content uploads                                          |
+| Email             | **Resend**                                                                                            |
+| Images            | GHCR `ghcr.io/rnco123/slink-medusa` · `…/slink-storefront`                                            |
+| Secrets           | Railway service **Variables**, per environment                                                        |
+| Access            | Railway dashboard, or `railway` CLI (`railway login`)                                                 |
+| Status pages      | [status.railway.com](https://status.railway.com) · [status.supabase.com](https://status.supabase.com) |
 
 **Health endpoints** (the truth about "is it up"):
 
@@ -37,14 +35,20 @@ says "verify", actually run the check before moving on.
 - Monitoring API: internal `:3009/healthz`
 
 **Where you'll see it first:** Alertmanager (`:9093`) / Grafana (`:3001`) /
-Uptime Kuma (`:3002`), reached through the admin subdomain or an SSH tunnel:
+Uptime Kuma (`:3002`).
 
-```bash
-ssh -i ~/.ssh/slink-key.pem -L 9093:localhost:9093 -L 3001:localhost:3001 -L 3002:localhost:3002 ubuntu@23.21.167.196
-```
+> ⚠ **Open decision — where the monitoring stack itself runs.** The Prometheus /
+> Grafana / Loki / Alertmanager / Uptime Kuma compose stack in `infra/monitoring/`
+> was previously co-located on the application box. With the move to Railway there
+> is no such box, and **its hosting has not been decided**: the options are a
+> Railway service group of its own, a separate small VM, or a managed vendor
+> (Grafana Cloud). Until that is settled, the `:9093` / `:3001` / `:3002`
+> addresses in this doc are wherever you are currently running the stack. The
+> triage steps below for the _application_ are correct regardless.
 
-⛔ **Safety Rule #0:** only ever touch resources tagged `Project=slink`. The AWS
-account is shared with **vonlinkage** — never stop/modify/delete anything else.
+There is no shared cloud account to be careful in any more, and no
+`Project=slink` tagging rule: the Railway project and the Supabase project
+contain only this system.
 
 ---
 
@@ -53,12 +57,14 @@ account is shared with **vonlinkage** — never stop/modify/delete anything else
 1. **Confirm scope.** Is it the storefront, the admin, or both? Hit both health
    URLs above from your laptop.
 2. **Check the alert.** Open Alertmanager → what's firing? Match it in §2.
-3. **Reach the box.** `ssh -i ~/.ssh/slink-key.pem ubuntu@23.21.167.196`. If SSH
-   times out → §3.1 (infra/network). If SSH works → §3.3 (app layer).
-4. **Snapshot state before changing anything:**
+3. **Check the platforms.** [Railway status](https://status.railway.com) and
+   [Supabase status](https://status.supabase.com). A platform incident changes
+   your job from "fix" to "communicate".
+4. **Snapshot state before changing anything.** Railway → each service →
+   **Deployments** (is it Active? when did it last deploy?) and **Deploy Logs**.
+   To keep a copy:
    ```bash
-   cd ~/slink && docker compose -f docker-compose.prod.yml ps
-   docker compose -f docker-compose.prod.yml logs --tail=100 --no-color > /tmp/incident-$(date +%s).log
+   railway logs --service medusa > /tmp/incident-$(date +%s).log
    ```
 5. **Communicate.** Note start time + symptom. You'll need it for §7.
 
@@ -74,7 +80,7 @@ Each alert in [`rules.yml`](../config/prometheus/alerts/rules.yml) maps to a pla
 | `TargetDown` (crit)          | A scrape target is unreachable       | §3.3 / §3.5 |
 | `PostgresDown` (crit)        | `pg_up==0`, DB unreachable           | §3.5        |
 | `RedisDown` (crit)           | `redis_up==0`, event bus/queues down | §3.6        |
-| `HostLowDisk` (crit)         | <10% disk on the box                 | §3.7        |
+| `HostLowDisk` (crit)         | <10% disk on the monitoring host     | §3.7        |
 | `SiteSlowResponse` (warn)    | processing >2s                       | §3.4        |
 | `TLSCertExpiringSoon` (warn) | cert <14 days                        | §3.4        |
 | `HostHighCpu/Memory` (warn)  | saturation                           | §3.7        |
@@ -87,132 +93,129 @@ Each alert in [`rules.yml`](../config/prometheus/alerts/rules.yml) maps to a pla
 
 Work top-down; each rung eliminates a layer.
 
-### 3.1 DNS + EIP (is the address even right?)
+### 3.1 DNS (is the address even right?)
 
 ```bash
-dig +short saludlinkusa.com          # expect 23.21.167.196
-# From your laptop (PowerShell):  $env:AWS_PROFILE='slink'
-aws ec2 describe-addresses --filters "Name=public-ip,Values=23.21.167.196" \
-  --query "Addresses[0].{ip:PublicIp,instance:InstanceId,assoc:AssociationId}"
+dig +short saludlinkusa.com
+dig +short manage.saludlinkusa.com
 ```
 
-- DNS wrong → fix the A records in Route53 zone `Z06260013ISSB2PIIPCJS`
-  (root/`www`/`manage` → `23.21.167.196`).
-- EIP not associated with `i-06ab3de34df6cbd8c` → re-associate:
-  ```bash
-  aws ec2 associate-address --instance-id i-06ab3de34df6cbd8c --allocation-id <eipalloc-...>
-  ```
+Both must resolve to the CNAME target Railway shows under the service's
+**Settings → Domains**. If a record is missing or points somewhere stale, fix it
+at the DNS provider — that is operator-managed and outside Railway.
 
-### 3.2 Is the instance running?
+Railway's generated `*.up.railway.app` domain bypasses your DNS entirely, so
+hitting it is the fastest way to tell a DNS problem from an app problem:
 
 ```bash
-aws ec2 describe-instance-status --instance-id i-06ab3de34df6cbd8c \
-  --query "InstanceStatuses[0].{state:InstanceState.Name,sys:SystemStatus.Status,inst:InstanceStatus.Status}"
+curl -sS -o /dev/null -w '%{http_code}\n' https://<service>.up.railway.app/api/health
 ```
 
-- `stopped` → `aws ec2 start-instances --instance-ids i-06ab3de34df6cbd8c` (EIP
-  re-attaches automatically; wait ~60s).
-- `running` but SSH refused → check SG `sg-02dbf31924ab776fb` allows your IP on
-  22 (SSH is IP-restricted). If the box is wedged (failed status checks) →
-  reboot: `aws ec2 reboot-instances --instance-ids i-06ab3de34df6cbd8c`. If it
-  won't recover → **§6 re-provision**.
+Railway domain healthy + custom domain failing → it's DNS/TLS (§3.4).
 
-### 3.3 Are the containers up? (SSH in)
+### 3.2 Is the service running?
+
+Railway → the project → the environment → the service → **Deployments**.
+
+- **Active** → the app is up as far as the platform knows; go to §3.3.
+- **Crashed / restarting** → read **Deploy Logs**; the app is failing at boot.
+  Env/secret problems fail fast and name the variable (`env.ts`, task 74).
+- **Building / Deploying** stuck → check the `deploy` workflow run in GitHub;
+  the image may never have been pushed.
+- **Removed / no deployments** → §6.
+
+### 3.3 Are the app containers healthy?
 
 ```bash
-cd ~/slink && docker compose -f docker-compose.prod.yml ps
+railway status
+railway logs --service medusa --tail 200
+railway logs --service storefront --tail 200
 ```
 
-- A service is `Exit`/`Restarting` → read its logs:
-  `docker compose -f docker-compose.prod.yml logs --tail=200 <service>`.
-- Bring the stack up: `docker compose -f docker-compose.prod.yml up -d`.
-- If an image is broken/new deploy is bad → **§4 rollback**.
+- Crash-looping → the logs name the cause. Railway restarts automatically, so a
+  service still down after a few minutes is failing at boot, not flapping.
+- Healthy logs but 5xx at the edge → §3.4.
+- To get a shell inside a running service: `railway ssh --service medusa`.
 
-### 3.4 Caddy / TLS (edge)
+### 3.4 Edge / TLS
 
-`caddy` terminates TLS and routes hostnames. Symptoms: cert errors, 502s.
+Railway terminates TLS and routes by domain; there is no Caddy to inspect.
+Symptoms: cert errors, 502s.
+
+- **502 / 503** → the service is down or not listening on the injected `$PORT` →
+  §3.2 / §3.3.
+- **Cert error or `TLSCertExpiringSoon`** → Railway → service → **Settings →
+  Domains**. A domain stuck "issuing" usually resolves by removing and re-adding
+  it, which restarts the ACME flow. The DNS record must be live for the challenge
+  to solve, so fix §3.1 first.
+- **Slow responses** → check the service's **Metrics** tab for CPU/memory
+  saturation, and §3.5 for DB latency.
+
+### 3.5 Postgres (Supabase)
 
 ```bash
-docker compose -f docker-compose.prod.yml logs --tail=100 caddy
-curl -sI https://saludlinkusa.com | head -5
+# From a machine with the app DB URL (or use the Supabase SQL editor):
+psql "$DATABASE_URL" -c 'select 1'
 ```
 
-- 502 from Caddy → the upstream (`storefront`/`medusa`) is down → §3.3.
-- Cert failing to issue → check the box can reach ports 80/443 inbound
-  (SG `sg-02dbf31924ab776fb`) and DNS points here; Caddy needs the A record live
-  to solve the ACME challenge. Force renew: `docker compose ... restart caddy`.
-
-### 3.5 Postgres (RDS)
-
-```bash
-aws rds describe-db-instances --db-instance-identifier slink-db \
-  --query "DBInstances[0].{status:DBInstanceStatus,az:AvailabilityZone,ep:Endpoint.Address}"
-# from the box, test connectivity (uses the app DB creds from SSM/.env):
-docker compose -f docker-compose.prod.yml exec medusa sh -lc 'pg_isready -h $DB_HOST -p 5432 || echo DOWN'
-```
-
-- RDS not `available` → wait out the maintenance/backup, or restore (**§5**).
-- Reachable but app can't connect → SG `sg-0e1b28356a574f11c` must allow 5432
-  **from `sg-02dbf31924ab776fb` only**; verify the `database_url` SSM param.
-- `PostgresTooManyConnections` → find leaks: connections are visible in Grafana
-  (Postgres panel); restart `worker`/`medusa` to drop stale pools if needed.
+- Check [status.supabase.com](https://status.supabase.com) first.
+- Supabase project **paused** (free tier pauses on inactivity) → resume it in the
+  dashboard. This is a common cause of a total outage in non-prod environments.
+- `PostgresTooManyConnections` → the apps must use the **pooler** connection
+  string, not the direct endpoint. Railway redeploys churn connections and the
+  direct endpoint's cap is low. Check Supabase → Database → Connection pooling.
+- Auth failures (`28000`) → the password in `DATABASE_URL` is wrong or contains
+  URL-reserved characters that were not encoded (see secrets-rotation §2).
+- Data problem / bad migration → **§5**.
 
 ### 3.6 Redis (queues / event bus)
 
+Redis is a Railway service on the project's private network.
+
 ```bash
-docker compose -f docker-compose.prod.yml exec redis redis-cli ping   # expect PONG
-docker compose -f docker-compose.prod.yml logs --tail=50 redis
+railway logs --service redis --tail 50
+railway ssh --service redis -- redis-cli ping    # expect PONG
 ```
 
-- Redis down → `docker compose ... up -d redis`. Medusa's event bus + BullMQ
-  workflow engine depend on it; the `worker` will recover once Redis is back.
+- Redis down → redeploy the service from Railway. Medusa's event bus + BullMQ
+  workflow engine depend on it; the `worker` recovers once Redis is back.
 - `RedisHighMemory` → check `redis-cli info memory`; queues may be backed up
   (see Bull Board `:3003` / `/monitoring/queues`).
+- `REDIS_URL` on `medusa`/`worker` should reference the Redis service
+  (`${{Redis.REDIS_URL}}`) so it survives a Redis redeploy.
 
-### 3.7 Host resources
+### 3.7 Resource saturation
 
-```bash
-df -h /                      # HostLowDisk
-free -m                      # HostHighMemory
-docker system df             # is Docker eating the disk?
-```
+Railway → the service → **Metrics** (CPU, memory, network). There is no shared
+host to run out of disk, and no swap to fall back on: a service that exceeds its
+memory limit is killed and restarted.
 
-- Low disk (common cause: logs/images) →
-  `docker system prune -af --volumes=false` (⚠ never `--volumes` — that wipes
-  `redis_data`/`caddy_data`). Rotate app logs. The box has a 2GB swap file.
-- Sustained CPU/mem pressure on t3.small → consider a temporary bump to
-  t3.medium (stop → change instance type → start; EIP persists).
+- Sustained CPU/memory pressure → raise the service's limits, or scale it
+  (Settings → Resources). This is a plan/config change, not a restart.
+- `HostLowDisk` / `HostHighCpu` now refer to **whatever host runs the monitoring
+  stack**, not the app — see the open decision in §0.
 
 ---
 
 ## 4. Rollback (bad deploy)
 
-The deploy pushes GHCR images `ghcr.io/rnco123/slink-medusa` and
-`…/slink-storefront`, referenced by `${MEDUSA_IMAGE}` / `${STOREFRONT_IMAGE}`
-(default `:latest`) in `docker-compose.prod.yml`.
+Railway keeps every deployment, so rollback is a UI action, not an image pin:
 
-```bash
-cd ~/slink
-# 1. Identify the last-good tag/digest. If per-commit tags exist (task 44), pick
-#    the previous SHA; otherwise list what's cached locally:
-docker images | grep slink
-# 2. Pin the images to the good version and restart JUST the app services:
-export MEDUSA_IMAGE=ghcr.io/rnco123/slink-medusa:<good-sha>
-export STOREFRONT_IMAGE=ghcr.io/rnco123/slink-storefront:<good-sha>
-docker compose -f docker-compose.prod.yml up -d medusa worker storefront
-# 3. Verify health (below) before declaring recovery.
-```
+> Railway → the service → **Deployments** → the last good one → **⋯ → Redeploy**
 
-> ⚠ **Migrations:** if the bad release ran a forward DB migration
-> (`medusa-migrate`), a code rollback alone may mismatch the schema. This is why
-> migrations MUST be expand→contract ([MIGRATIONS.md](../../../docs/MIGRATIONS.md)):
-> the previous image keeps working against the new schema. If a _destructive_
-> migration shipped, you need §5 (restore) — do not roll code back over a dropped
-> column.
->
-> **Gap (task 44):** per-commit image tags + "keep last 5" + a one-command
-> rollback script are not yet wired; until then, rollback is the manual pin
-> above. Persist the good SHA in the deploy notes after every release.
+Roll `medusa` back first if the bad release included a migration, then `worker`
+and `storefront`.
+
+Images are also tagged with the commit SHA as well as `latest`, so you can pin a
+service's image source to `ghcr.io/rnco123/slink-medusa:<good-sha>` instead if
+you want the rollback to survive the next `railway redeploy`.
+
+> ⚠ **Migrations:** if the bad release ran a forward DB migration (they run in the
+> `medusa` service's Pre-Deploy Command), a code rollback alone may mismatch the
+> schema. This is why migrations MUST be expand→contract
+> ([MIGRATIONS.md](../../../docs/MIGRATIONS.md)): the previous image keeps working
+> against the new schema. If a _destructive_ migration shipped, you need §5
+> (restore) — do not roll code back over a dropped column.
 
 **Verify recovery (after any fix):**
 
@@ -224,82 +227,49 @@ curl -s https://manage.saludlinkusa.com/health      # OK
 
 ---
 
-## 5. Database restore (RDS PITR / snapshot)
+## 5. Database restore (Supabase)
 
-RDS keeps **7 days** of automated backups + transaction logs (PITR).
+Supabase takes automated daily backups; **point-in-time recovery is plan-gated**.
+Confirm which you have under Supabase → Database → Backups **before** you need
+it — the play below assumes PITR.
 
-**Point-in-time restore (to just before the bad event):**
+1. **Stop writes first.** A restore against a live, writing application produces
+   an inconsistent result. In Railway, scale `medusa` and `worker` to zero
+   replicas (Settings → Resources) or stop the services.
+2. **Restore.** Supabase → Database → Backups → choose the timestamp (PITR) or a
+   daily backup → restore. This is **in place** for the project.
+   - For a side-by-side restore instead, create a new project from the backup and
+     repoint `DATABASE_URL` on `medusa`/`worker` at it. Prefer this when you need
+     to inspect the old data before committing to a cutover.
+3. **Bring the app back.** Restore the replica counts. The Pre-Deploy Command
+   re-runs migrations on the next deploy; against a restored older schema that is
+   the correct forward direction.
+4. **Verify:** both health endpoints, an order lookup in Admin, and
+   `/monitoring/health` DB component green.
 
-```bash
-$env:AWS_PROFILE='slink'   # PowerShell
-aws rds restore-db-instance-to-point-in-time `
-  --source-db-instance-identifier slink-db `
-  --target-db-instance-identifier slink-db-restore `
-  --restore-time 2026-07-23T14:05:00Z `
-  --db-subnet-group-name <slink-subnet-group> `
-  --vpc-security-group-ids sg-0e1b28356a574f11c `
-  --no-multi-az --db-instance-class db.t4g.micro
-```
-
-Then **cut over**:
-
-1. Wait until `slink-db-restore` is `available`
-   (`aws rds describe-db-instances --db-instance-identifier slink-db-restore`).
-2. Sanity-check the data on the restored instance (connect, spot-check orders).
-3. Repoint the app: update the `database_url` SSM param
-   (`/slink/prod/database_url`) to the restore endpoint, rebuild `.env` on the
-   box (`infra/deploy/build-env.sh`), `docker compose ... up -d medusa worker`.
-4. Once confirmed, rename/retire the old instance. Keep it a few days before
-   deleting.
-
-**Restore from a specific snapshot** (if PITR window insufficient):
-
-```bash
-aws rds describe-db-snapshots --db-instance-identifier slink-db \
-  --query "reverse(sort_by(DBSnapshots,&SnapshotCreateTime))[:5].[DBSnapshotIdentifier,SnapshotCreateTime]"
-aws rds restore-db-instance-from-db-snapshot \
-  --db-instance-identifier slink-db-restore \
-  --db-snapshot-identifier <snapshot-id> --db-instance-class db.t4g.micro
-```
-
-> **Untested until task 45.** This procedure has NOT been drilled yet (task 45 =
-> the restore drill). Do a rehearsal restore into `slink-db-restore` and throw it
-> away, so the first real run isn't the first run.
+> **Gap (task 45):** the restore drill is still open. Until it has been rehearsed
+> against a throwaway project, the recovery time above is an estimate, not a
+> measurement.
 
 ---
 
-## 6. Re-provision the box from scratch (<1 hour, worst case)
+## 6. Rebuild the environment from scratch (<1 hour, worst case)
 
-The box is **cattle**: RDS (data) + S3 (media) + SSM (secrets) survive
-independently, so a lost EC2 instance is recoverable by rebuilding the compute.
+Railway services are **cattle**: everything durable lives in Supabase (Postgres +
+Storage), so a lost Railway environment costs compute, not data.
 
-1. **Launch a replacement** (same AMI, SG, key, subnet — all `Project=slink`):
-   ```bash
-   aws ec2 run-instances --image-id ami-052355af2a014bd2c --instance-type t3.small \
-     --key-name slink-key --security-group-ids sg-02dbf31924ab776fb \
-     --subnet-id subnet-007e20282ed2479d2 \
-     --tag-specifications 'ResourceType=instance,Tags=[{Key=Project,Value=slink},{Key=Name,Value=slink-web}]' \
-     --user-data file://infra/deploy/bootstrap.sh    # installs Docker + swap
-   ```
-2. **Move the EIP** to the new instance (address stays `23.21.167.196`, DNS
-   unchanged):
-   ```bash
-   aws ec2 associate-address --instance-id <new-id> --allocation-id <eipalloc-...>
-   ```
-3. **Deploy the stack:** copy `infra/deploy/*` to `~/slink`, run
-   `build-env.sh` (pulls `/slink/prod/*` from SSM into `.env`), then
-   `docker compose -f docker-compose.prod.yml pull && up -d`. The
-   `medusa-migrate` one-shot runs migrations against the _existing_ RDS (no data
-   loss).
-4. **Verify** health endpoints + Alertmanager clears. Bring the monitoring stack
-   back up too (`infra/monitoring/`).
-
-Time budget: launch ~3m, EIP ~30s, image pull ~5–10m, boot+migrate ~3m → well
-under an hour. The long pole is image pull; keeping images small keeps this fast.
-
-> **Gaps:** EBS snapshot schedule (task 46) + backup restore drill (task 45) make
-> this faster/safer and are still open. A `bootstrap.sh` matching the original
-> user-data should live in `infra/deploy/` (deploy session owns it).
+1. **Recreate the services.** Duplicate the `production` environment, or create
+   the four services fresh from the GHCR images + the Redis template. The exact
+   layout is in [DEPLOYMENT.md](../../../docs/DEPLOYMENT.md) §3a.
+2. **Set the Pre-Deploy Command** on `medusa` (DEPLOYMENT.md §3b) — this is what
+   applies migrations and syncs content/catalog/artwork.
+3. **Set the variables** (DEPLOYMENT.md §3c). `DATABASE_URL` still points at the
+   surviving Supabase project, so there is no data restore step.
+4. **Attach the domains** and wait for TLS to issue; update DNS if the CNAME
+   target changed.
+5. **Verify** both health endpoints (§0) and that the `deploy` workflow can reach
+   the new services (service names must still be `medusa`/`worker`/`storefront`,
+   or the workflow's `--service` flags need updating).
 
 ---
 

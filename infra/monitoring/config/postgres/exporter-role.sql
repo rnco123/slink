@@ -22,7 +22,7 @@
 --        -v exporter_password=CHANGE_ME_STRONG \
 --        -f exporter-role.sql
 --
--- In staging/production the password is injected from SSM / Secrets Manager at
+-- In staging/production the password is injected from Railway variables at
 -- apply time and must match PG_EXPORTER_DSN — never stored in this file.
 -- =============================================================================
 

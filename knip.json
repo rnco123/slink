@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
-    "apps/storefront": {
+    "storefront": {
       "entry": [
         "src/middleware.ts",
         "src/instrumentation.ts",
@@ -17,7 +17,7 @@
       "ignore": ["next-env.d.ts"],
       "ignoreDependencies": ["webpack", "babel-loader", "@babel/core"]
     },
-    "apps/medusa": {
+    "backend": {
       "entry": [
         "medusa-config.ts",
         "src/api/**/route.ts",

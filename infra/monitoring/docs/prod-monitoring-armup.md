@@ -96,7 +96,7 @@ gh workflow run lighthouse --field psi_url=https://saludlinkusa.com
 
 Submit the sitemap + verify the domain **after the coming-soon wall comes down**
 (task 64) — a walled site with `Disallow: /` should not be submitted for indexing.
-Verification = a DNS TXT record in Route53 zone `Z06260013ISSB2PIIPCJS` or the
+Verification = a DNS TXT record in the `saludlinkusa.com` zone or the
 existing `/.well-known` route.
 
 ---

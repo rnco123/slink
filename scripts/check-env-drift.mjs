@@ -27,13 +27,13 @@ const RUNTIME_PROVIDED = new Set(["NODE_ENV"])
 const PAIRS = [
   {
     name: "storefront",
-    schema: "apps/storefront/src/lib/env.ts",
-    template: "apps/storefront/.env.template",
+    schema: "storefront/src/lib/env.ts",
+    template: "storefront/.env.template",
   },
   {
     name: "medusa",
-    schema: "apps/medusa/src/lib/env.ts",
-    template: "apps/medusa/.env.template",
+    schema: "backend/src/lib/env.ts",
+    template: "backend/.env.template",
   },
 ]
 

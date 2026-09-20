@@ -33,7 +33,7 @@ importers:
         specifier: ^2.5.0
         version: 2.10.5
 
-  apps/medusa:
+  backend:
     dependencies:
       '@medusajs/admin-sdk':
         specifier: 2.16.0
@@ -56,9 +56,6 @@ importers:
       '@medusajs/medusa':
         specifier: 2.16.0
         version: 2.16.0(@medusajs/admin-sdk@2.16.0)(@medusajs/cli@2.16.0(@types/node@20.19.43))(@medusajs/dashboard@2.16.0(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(typescript@5.9.3))(@medusajs/framework@2.16.0(@medusajs/cli@2.16.0(@types/node@20.19.43))(@types/node@20.19.43)(ioredis@5.11.1)(vite@5.4.21(@types/node@20.19.43)(terser@5.49.0))(zod@3.25.76))(@medusajs/icons@2.16.0(react@18.3.1))(@medusajs/test-utils@2.16.0)(@medusajs/ui@4.1.16(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(@swc/core@1.15.46(@swc/helpers@0.5.23))(@types/node@20.19.43)(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(awilix@8.0.1)(posthog-node@5.46.0(rxjs@7.8.2))(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(terser@5.49.0)(typescript@5.9.3)(yalc@1.0.0-pre.53)
-      '@medusajs/payment-stripe':
-        specifier: 2.16.0
-        version: 2.16.0(@medusajs/framework@2.16.0(@medusajs/cli@2.16.0(@types/node@20.19.43))(@types/node@20.19.43)(ioredis@5.11.1)(vite@5.4.21(@types/node@20.19.43)(terser@5.49.0))(zod@3.25.76))
       '@medusajs/ui':
         specifier: 4.1.16
         version: 4.1.16(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
@@ -118,35 +115,58 @@ importers:
         specifier: ^1.0.0-pre.53
         version: 1.0.0-pre.53
 
-  apps/storefront:
+  packages/privacy:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.11
+        version: 20.19.43
+      typescript:
+        specifier: ^5.6.2
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.7(@types/node@20.19.43)(terser@5.49.0)
+
+  packages/ui:
+    dependencies:
+      react:
+        specifier: '>=18'
+        version: 18.3.1
+      react-dom:
+        specifier: '>=18'
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      typescript:
+        specifier: ^5.6.2
+        version: 5.9.3
+
+  storefront:
     dependencies:
       '@headlessui/react':
         specifier: ^2.2.0
         version: 2.2.10(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
       '@medusajs/icons':
         specifier: latest
-        version: 2.17.2(react@19.0.5)
+        version: 2.20.1(react@19.0.5)
       '@medusajs/js-sdk':
         specifier: latest
-        version: 2.17.2
+        version: 2.20.1
       '@medusajs/ui':
         specifier: latest
-        version: 4.1.19(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)
+        version: 4.2.3(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)
       '@radix-ui/react-accordion':
         specifier: ^1.2.1
         version: 1.2.17(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
       '@saludlink/privacy':
         specifier: workspace:*
-        version: link:../../packages/privacy
+        version: link:../packages/privacy
       '@saludlink/ui':
         specifier: workspace:*
-        version: link:../../packages/ui
-      '@stripe/react-stripe-js':
-        specifier: ^5.3.0
-        version: 5.6.1(@stripe/stripe-js@8.11.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
-      '@stripe/stripe-js':
-        specifier: ^8.2.0
-        version: 8.11.0
+        version: link:../packages/ui
       lodash:
         specifier: 4.18.1
         version: 4.18.1
@@ -195,7 +215,7 @@ importers:
         version: 2.16.0(ioredis@5.11.1)(vite@5.4.21(@types/node@17.0.21)(terser@5.49.0))
       '@medusajs/ui-preset':
         specifier: latest
-        version: 2.17.2(tailwindcss@3.4.19(yaml@2.9.0))
+        version: 2.20.1(tailwindcss@3.4.19(yaml@2.9.0))
       '@playwright/test':
         specifier: ^1.49.1
         version: 1.61.1
@@ -250,35 +270,6 @@ importers:
       vitest:
         specifier: ^3.2.6
         version: 3.2.7(@types/node@17.0.21)(terser@5.49.0)
-
-  packages/privacy:
-    dependencies:
-      zod:
-        specifier: ^3.23.8
-        version: 3.25.76
-    devDependencies:
-      '@types/node':
-        specifier: ^20.12.11
-        version: 20.19.43
-      typescript:
-        specifier: ^5.6.2
-        version: 5.9.3
-      vitest:
-        specifier: ^3.2.6
-        version: 3.2.7(@types/node@20.19.43)(terser@5.49.0)
-
-  packages/ui:
-    dependencies:
-      react:
-        specifier: '>=18'
-        version: 18.3.1
-      react-dom:
-        specifier: '>=18'
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      typescript:
-        specifier: ^5.6.2
-        version: 5.9.3
 
 packages:
 
@@ -1548,8 +1539,8 @@ packages:
     peerDependencies:
       react: ^18.3.1 || ^19.0.0
 
-  '@medusajs/icons@2.17.2':
-    resolution: {integrity: sha512-5K+mcipc3zhgSeF/jHG1mWpuK8JJAXhVXUfuBCF9cKoNalCvbPS19rPZv3speWp+Is7EEnGb3qOBDycM5menCQ==}
+  '@medusajs/icons@2.20.1':
+    resolution: {integrity: sha512-Z9fFsgZgDkt3K753sLXZZtO9Npa0tGzV5lE8c27Dgp4oegPuHivVvTJhhiLRsDiYdNFHokTkLNpN/pT/LVgRGw==}
     peerDependencies:
       react: ^18.3.1 || ^19.0.0
 
@@ -1569,8 +1560,8 @@ packages:
     resolution: {integrity: sha512-GpifXzgKUo7/n+6Kz3B/tSgKVjlErZGGntdk0zuuR7eARha4fuYR+iGKKEYa/LHV790loLa9LY+VIjfspbXOzg==}
     engines: {node: '>=20'}
 
-  '@medusajs/js-sdk@2.17.2':
-    resolution: {integrity: sha512-7NeHXfgCfC2m1Wyuvjh+oTVC/U1iJRKhgsvEFJj43jXXHWl2Yno+1d86SH3M18WlKlswv11EqE1gB7q7rSPsmg==}
+  '@medusajs/js-sdk@2.20.1':
+    resolution: {integrity: sha512-l1JMpOv3svmZkz6HBwAJjYA+XjcCzyrsyoASlsZa8zuSg1sNKY/hccyBGq2ol1BUlvNsgmrCJJJOrnGiAGXPFw==}
     engines: {node: '>=20'}
 
   '@medusajs/link-modules@2.16.0':
@@ -1754,8 +1745,8 @@ packages:
       vite:
         optional: true
 
-  '@medusajs/ui-preset@2.17.2':
-    resolution: {integrity: sha512-6ScPPkBfK2pU3JhBujXaQt6R6ShAiKwgV44o1bxda6E1879LYbeW0+nlEmPymND/7fRlx6piF7GxbAW01vy9+g==}
+  '@medusajs/ui-preset@2.20.1':
+    resolution: {integrity: sha512-HquNOsKgGxjp/usgZnSBRkvmsAgnJZhbRFNSzpjM52atAi7gdjyEWtKRGOpUn+O8VxEVdwVZDIa7DFwbVIzEeg==}
     peerDependencies:
       tailwindcss: ^3.4.3
 
@@ -1765,8 +1756,8 @@ packages:
       react: ^18.3.1
       react-dom: ^18.3.1
 
-  '@medusajs/ui@4.1.19':
-    resolution: {integrity: sha512-SBUN9SLd5CVlJpWA0AzhCkUx6yIHZaukPBzk5Q471qsSLTpspqvc8pnUaZ4Y3eTIFI/KPeV52bawnNOdKg4Pfw==}
+  '@medusajs/ui@4.2.3':
+    resolution: {integrity: sha512-CFeaA9vwPQHEpJuIAl/0oiZurd5RLjzlq+OvZNvKKqyPALPlcxkc8lWFRBkoZjmYyRepzQqq8785APo1jxigJQ==}
     peerDependencies:
       react: ^18.3.1
       react-dom: ^18.3.1
@@ -3399,17 +3390,6 @@ packages:
   '@so-ric/colorspace@1.1.6':
     resolution: {integrity: sha512-/KiKkpHNOBgkFJwu9sh48LkHSMYGyuTcSFK/qMBdnOAlrRJzRSXAOFB5qwzaVQuDl8wAvHVMkaASQDReTahxuw==}
 
-  '@stripe/react-stripe-js@5.6.1':
-    resolution: {integrity: sha512-5xBrjkGmFvKvpMod6VvpOaFaa67eRbmieKeFTePZyOr/sUXzm7A3YY91l330pS0usUst5PxTZDUZHWfOc0v1GA==}
-    peerDependencies:
-      '@stripe/stripe-js': '>=8.0.0 <9.0.0'
-      react: '>=16.8.0 <20.0.0'
-      react-dom: '>=16.8.0 <20.0.0'
-
-  '@stripe/stripe-js@8.11.0':
-    resolution: {integrity: sha512-3fVF4z3efsgwgyj64nFK+6F4/vMw0mUXD2TBbOfftJtKVNx4JNv3CSfe1fY4DCtCk0JFp8/YPNcRkzgV0HJ8cg==}
-    engines: {node: '>=12.16'}
-
   '@swc/core-darwin-arm64@1.15.46':
     resolution: {integrity: sha512-IsISIT22EfktVJrlvIpnAxG2u/A9aob9l99HMlx80x72WlFmFPk1V3UhkEzx86eJP8hw049KTFv/RISho2cq2Q==}
     engines: {node: '>=10'}
@@ -4654,6 +4634,7 @@ packages:
   cron-parser@4.9.0:
     resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
     engines: {node: '>=12.0.0'}
+    deprecated: v4 is no longer maintained, upgrade to v5
 
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
@@ -8551,7 +8532,7 @@ snapshots:
 
   '@babel/parser@7.25.6':
     dependencies:
-      '@babel/types': 7.25.6
+      '@babel/types': 7.29.7
 
   '@babel/parser@7.29.7':
     dependencies:
@@ -8666,9 +8647,9 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.29.7
       '@babel/generator': 7.29.7
-      '@babel/parser': 7.25.6
+      '@babel/parser': 7.29.7
       '@babel/template': 7.29.7
-      '@babel/types': 7.25.6
+      '@babel/types': 7.29.7
       debug: 4.4.3(supports-color@8.1.1)
       globals: 11.12.0
     transitivePeerDependencies:
@@ -9842,7 +9823,7 @@ snapshots:
     dependencies:
       react: 18.3.1
 
-  '@medusajs/icons@2.17.2(react@19.0.5)':
+  '@medusajs/icons@2.20.1(react@19.0.5)':
     dependencies:
       react: 19.0.5
 
@@ -9859,7 +9840,7 @@ snapshots:
       fetch-event-stream: 0.1.6
       qs: 6.15.3
 
-  '@medusajs/js-sdk@2.17.2':
+  '@medusajs/js-sdk@2.20.1':
     dependencies:
       fetch-event-stream: 0.1.6
       qs: 6.15.3
@@ -10146,7 +10127,7 @@ snapshots:
       ioredis: 5.11.1
       vite: 5.4.21(@types/node@20.19.43)(terser@5.49.0)
 
-  '@medusajs/ui-preset@2.17.2(tailwindcss@3.4.19(yaml@2.9.0))':
+  '@medusajs/ui-preset@2.20.1(tailwindcss@3.4.19(yaml@2.9.0))':
     dependencies:
       '@tailwindcss/forms': 0.5.11(tailwindcss@3.4.19(yaml@2.9.0))
       tailwindcss: 3.4.19(yaml@2.9.0)
@@ -10180,12 +10161,12 @@ snapshots:
       - '@types/react-dom'
       - typescript
 
-  '@medusajs/ui@4.1.19(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)':
+  '@medusajs/ui@4.2.3(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)':
     dependencies:
       '@dnd-kit/core': 6.3.1(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
       '@dnd-kit/sortable': 8.0.0(@dnd-kit/core@6.3.1(react-dom@19.0.5(react@19.0.5))(react@19.0.5))(react@19.0.5)
       '@dnd-kit/utilities': 3.2.2(react@19.0.5)
-      '@medusajs/icons': 2.17.2(react@19.0.5)
+      '@medusajs/icons': 2.20.1(react@19.0.5)
       '@radix-ui/react-dialog': 1.1.4(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
       '@radix-ui/react-dismissable-layer': 1.1.4(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
       '@tanstack/react-table': 8.20.5(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
@@ -12830,15 +12811,6 @@ snapshots:
     dependencies:
       color: 5.0.3
       text-hex: 1.0.0
-
-  '@stripe/react-stripe-js@5.6.1(@stripe/stripe-js@8.11.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)':
-    dependencies:
-      '@stripe/stripe-js': 8.11.0
-      prop-types: 15.8.1
-      react: 19.0.5
-      react-dom: 19.0.5(react@19.0.5)
-
-  '@stripe/stripe-js@8.11.0': {}
 
   '@swc/core-darwin-arm64@1.15.46':
     optional: true

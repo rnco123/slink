@@ -2,7 +2,7 @@
 
 Brand **Saludlink** · domain **saludlinkusa.com** · admin **manage.saludlinkusa.com**
 Design direction: **editorial / premium wellness** (serif display, warm neutrals + deep green, photography-led)
-Single repo · monorepo (`apps/storefront`, `apps/medusa`, `packages/*`)
+Single repo · monorepo (`storefront`, `backend`, `packages/*`)
 **Design-first**: nothing gets built until its design is locked.
 
 Legend: ☐ not started · ◐ in progress · ☑ done
@@ -26,7 +26,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 
 ## PHASE 1 — FOUNDATION (scaffold, already begun)
 
-- ◐ **T5. Monorepo skeleton.** pnpm workspaces + Turborepo + gitignore + docker-compose (Postgres 16 + Redis 7). _(done)_
+- ◐ **T5. Monorepo skeleton.** pnpm workspaces + Turborepo + gitignore + docker-compose (Supabase Postgres 16 / local Postgres + Redis 7). _(done)_
 - ☐ **T6. Install & boot both apps.** Storefront (Next.js 15) + Medusa v2 backend install cleanly under pnpm; both dev servers run; admin loads at `/app`.
 - ☐ **T7. Shared packages.** `packages/config-typescript`, `packages/types` (incl. future SSO JWT claims contract), `packages/ui` (design tokens from T1).
 - ☐ **T8. Apply design system to storefront.** Wire T1/T2 tokens + components into the storefront; strip the starter's demo styling.
@@ -52,27 +52,27 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 - ☐ **T22. Stripe** (test mode) wired through Medusa; 3DS handled.
 - ☐ **T23. Subscriptions/autoship** — tiered first-order discount merchandising.
 - ☐ **T24. Deals/promotions** — configure in Medusa admin (this is the "deals" management you asked for).
-- ☐ **T25. Order emails via SES** + on-demand ISR revalidation webhook (Medusa → storefront, signed).
+- ☐ **T25. Order emails via Resend** + on-demand ISR revalidation webhook (Medusa → storefront, signed).
 - ☐ **T26. Checkout e2e test** (Playwright): browse → cart → Stripe test card → confirmation.
 
 ## PHASE 4 — AUTH, ACCOUNTS & ADMIN CONSOLIDATION
 
-- ☐ **T27. AWS Cognito** user pool (Terraform) — app clients `storefront` + reserved `telemedicine`/`emr` for future SSO.
+- ☐ **T27. Supabase Auth** — app clients `storefront` + reserved `telemedicine`/`emr` for future SSO.
 - ☐ **T28. Auth UI** — register/login/verify/reset, httpOnly cookie sessions, middleware refresh (design per T2).
-- ☐ **T29. Medusa Cognito auth provider** — JWKS validation, `sub` → customer mapping.
+- ☐ **T29. Medusa Auth provider** — JWKS validation, `sub` → customer mapping.
 - ☐ **T30. Account area** — orders, addresses, subscriptions, profile; "Start a visit" link-out (future SSO redirect).
 - ☐ **T31. `manage.saludlinkusa.com`** — unified admin surface: Medusa admin (inventory, orders, deals) + Payload (content), noindex + access-restricted.
 - ☐ **T32. SSO contract** — JWT claims in `packages/types` + `docs/sso-integration.md` for the telemedicine & EMR teams.
 - ☐ **T33. Audit-log module** in Medusa (append-only actor/action/entity/timestamp — HIPAA hook).
 
-## PHASE 5 — AWS PRODUCTION & COMPLIANCE
+## PHASE 5 — PRODUCTION & COMPLIANCE
 
-- ☐ **T34. Terraform footprint** (staging → prod): VPC, RDS Postgres 16 Multi-AZ (medusa + payload DBs), ElastiCache Redis, ECS Fargate (storefront + medusa server + worker), ALB, CloudFront, WAF, Route53, ACM, Secrets Manager, SES, CloudTrail/Config/GuardDuty. All BAA-eligible.
+- ☐ **T34. Infrastructure footprint** (staging → prod): Railway environments + services (storefront, medusa server, worker, redis), Supabase Postgres 16 (medusa + payload DBs) + Storage, Railway domains/TLS, Railway variables, Resend. All BAA-eligible.
 - ☐ **T35. Dockerfiles** (Next standalone; Medusa server + worker) + DB migration tasks.
-- ☐ **T36. CI/CD** — GitHub Actions with AWS OIDC; Lighthouse budgets (Perf ≥95, SEO 100), gitleaks + Trivy; staging auto-deploy, prod approval gate.
+- ☐ **T36. CI/CD** — GitHub Actions → GHCR → Railway; Lighthouse budgets (Perf ≥95, SEO 100), gitleaks + Trivy; staging auto-deploy, prod approval gate.
 - ☐ **T37. Hardening** — WAF rate rules, alarms → SNS, k6 checkout load test, OWASP ZAP baseline, failover + backup-restore drills.
 - ☐ **T38. Analytics** — self-hosted Plausible, consent-gated, no PHI.
-- ☐ **T39. Sign AWS BAA** (via Artifact) before real customer data.
+- ☐ **T39. Sign vendor BAAs** (Supabase, Railway, Resend) before real customer data.
 - ☐ **T40. LegitScript application** — submit with live policies, state-availability page, real legal-entity docs; add seal to footer on approval.
 
 ---
@@ -83,4 +83,4 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 - **Phase 2:** Lighthouse (Perf ≥95, SEO 100, LCP <2.0s, CLS <0.05); Google Rich Results passes; securityheaders.com grade A.
 - **Phase 3:** Playwright checkout e2e; ISR revalidation (admin edit → live update).
 - **Phase 4:** auth e2e; standalone JWKS script proving the telemedicine/EMR SSO path.
-- **Phase 5:** clean `terraform plan`; ZAP baseline; k6 p95 <800ms @ 50 RPS; failover/restore drills.
+- **Phase 5:** staging environment green end-to-end; ZAP baseline; k6 p95 <800ms @ 50 RPS; rollback/restore drills.

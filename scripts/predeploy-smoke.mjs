@@ -25,7 +25,7 @@
  *   - storefront: NEXT_PUBLIC_BASE_URL (https), REVALIDATE_SECRET (strong),
  *     PREVIEW_CODE, NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY.
  *   - medusa: JWT_SECRET/COOKIE_SECRET (strong), https *_CORS, and a NON-local
- *     DATABASE_URL — `apps/medusa/src/lib/env.ts` rejects a localhost DB in
+ *     DATABASE_URL — `backend/src/lib/env.ts` rejects a localhost DB in
  *     production by design. To smoke fully on a local DB, either point
  *     DATABASE_URL at a non-local endpoint or add a narrow `PREDEPLOY_SMOKE`
  *     escape to env.ts (see the handoff note). In CI/staging the DB is already
@@ -140,7 +140,7 @@ async function main() {
     log("build", "SMOKE_SKIP_BUILD set — reusing existing builds")
   } else {
     log("build", "prod build: medusa")
-    await run("pnpm", ["--filter", "@saludlink/medusa", "build"])
+    await run("pnpm", ["--filter", "@saludlink/backend", "build"])
     log("build", "prod build: storefront")
     await run("pnpm", ["--filter", "@saludlink/storefront", "build"])
   }
@@ -151,17 +151,17 @@ async function main() {
 
   // ---- 78: start (production runtime) -----------------------------------
   log("start", "medusa start")
-  startServer("medusa", "pnpm", ["--filter", "@saludlink/medusa", "start"])
+  startServer("medusa", "pnpm", ["--filter", "@saludlink/backend", "start"])
   await waitForHealth(`${MEDUSA_URL}/health`, "medusa")
 
-  // Storefront prod = the STANDALONE server (matches apps/storefront/Dockerfile),
+  // Storefront prod = the STANDALONE server (matches storefront/Dockerfile),
   // NOT `next start` — which warns and isn't the real entrypoint for
   // `output: "standalone"`. `next build` doesn't copy static/public into the
   // standalone tree (the Dockerfile does), so we stage them the same way here.
   log("start", "staging standalone assets")
-  const sfDir = join(ROOT, "apps", "storefront")
+  const sfDir = join(ROOT, "storefront")
   const standaloneRoot = join(sfDir, ".next", "standalone")
-  const serverEntry = join(standaloneRoot, "apps", "storefront", "server.js")
+  const serverEntry = join(standaloneRoot, "storefront", "server.js")
   if (!existsSync(serverEntry)) {
     throw new Error(
       `Standalone server not found at ${serverEntry} — did \`next build\` (output: standalone) run?`
@@ -169,25 +169,25 @@ async function main() {
   }
   cpSync(
     join(sfDir, ".next", "static"),
-    join(standaloneRoot, "apps", "storefront", ".next", "static"),
+    join(standaloneRoot, "storefront", ".next", "static"),
     { recursive: true }
   )
   if (existsSync(join(sfDir, "public"))) {
     cpSync(
       join(sfDir, "public"),
-      join(standaloneRoot, "apps", "storefront", "public"),
+      join(standaloneRoot, "storefront", "public"),
       { recursive: true }
     )
   }
 
   log("start", "storefront standalone server")
-  // Entry is `apps/storefront/server.js` RELATIVE to the standalone root (the
+  // Entry is `storefront/server.js` RELATIVE to the standalone root (the
   // standalone bundle preserves the monorepo layout), so run it from there —
   // exactly as the Dockerfile does after copying the tree to /app.
   startServer(
     "storefront",
     "node",
-    ["apps/storefront/server.js"],
+    ["storefront/server.js"],
     { NODE_ENV: "production", PORT: "8000", HOSTNAME: "0.0.0.0" },
     standaloneRoot
   )

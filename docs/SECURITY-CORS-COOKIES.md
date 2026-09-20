@@ -9,7 +9,7 @@ Next.js storefront.
 
 ## 1. CORS contract
 
-### Backend (Medusa) — `apps/medusa/medusa-config.ts` → `projectConfig.http`
+### Backend (Medusa) — `backend/medusa-config.ts` → `projectConfig.http`
 
 Three separate allow-lists, each a comma-separated origin list from env:
 
@@ -22,7 +22,7 @@ Three separate allow-lists, each a comma-separated origin list from env:
 - **Local dev defaults** (used only when the env var is unset): `http://localhost:8000`
   (store), `http://localhost:9000,http://localhost:5173` (admin), and the union
   for auth.
-- **Production is env-driven and https-only.** `apps/medusa/src/lib/env.ts`
+- **Production is env-driven and https-only.** `backend/src/lib/env.ts`
   (`validateMedusaEnv`, task 74) runs at every boot and **hard-fails** if any
   origin in `STORE_CORS` / `ADMIN_CORS` / `AUTH_CORS` is not `https://…` when
   `NODE_ENV=production`. A misconfigured prod CORS therefore refuses to boot
@@ -38,8 +38,8 @@ ADMIN_CORS=https://manage.saludlinkusa.com
 AUTH_CORS=https://saludlinkusa.com,https://manage.saludlinkusa.com
 ```
 
-No wildcards. Add a new origin only by editing the env on the box (SSM) — never
-in code.
+No wildcards. Add a new origin only by editing the Railway service variable —
+never in code.
 
 ### Storefront (Next.js)
 
@@ -68,7 +68,7 @@ Set on the `connect.sid` session cookie Medusa issues for the admin dashboard:
 `cookieSecret` (signs the cookie) and `jwtSecret` come from env and are
 validated as real, ≥16-char, non-default secrets in production by `env.ts`.
 
-### Storefront customer auth cookie — `apps/storefront/src/lib/data/cookies.ts`
+### Storefront customer auth cookie — `storefront/src/lib/data/cookies.ts`
 
 Customer auth uses a **bearer JWT** the storefront stores in a cookie it sets
 itself (`_medusa_jwt`), plus `_medusa_cart_id`. Both already ship with:
@@ -83,7 +83,7 @@ gate) follow the same httpOnly + secure-in-prod pattern where they are set.
 
 ---
 
-## 3. Rate limiting — `apps/medusa/src/api/rate-limit.ts` + `middlewares.ts`
+## 3. Rate limiting — `backend/src/api/rate-limit.ts` + `middlewares.ts`
 
 Per-IP, Redis-backed **fixed-window** limiter attached to the abuse-prone
 surfaces. The counter lives in the Medusa **cache module**, which is
@@ -100,12 +100,15 @@ per-process and trivially multiplied by rotating replicas).
 Behaviour:
 
 - **Client IP** is taken from the **rightmost** hop of `x-forwarded-for` — the
-  address the single trusted proxy (Caddy) appended, which is the real connecting
-  peer. The leftmost entries are client-supplied and spoofable, so keying on them
-  would let an attacker rotate a fake value per request and evade the limit.
-  Falls back to `req.ip` / socket address when hit directly (dev / no proxy). If
-  a CDN or extra proxy is ever placed in front of Caddy, revisit the trusted-hop
-  count.
+  address the single trusted proxy (Railway's edge) appended, which is the real
+  connecting peer. The leftmost entries are client-supplied and spoofable, so
+  keying on them would let an attacker rotate a fake value per request and evade
+  the limit. Falls back to `req.ip` / socket address when hit directly (dev / no
+  proxy). If a CDN or extra proxy is ever placed in front, revisit the
+  trusted-hop count.
+  > ⚠ **Unverified on Railway.** This assumes Railway's edge appends exactly one
+  > hop. Confirm against a real request before go-live — see the note in
+  > `backend/src/api/rate-limit.ts`.
 - On limit, responds **429** with `Retry-After` and `RateLimit-Limit /
 -Remaining / -Reset` headers.
 - **Fail-open:** if the cache backend errors, the request is allowed through —

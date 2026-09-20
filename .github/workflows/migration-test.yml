@@ -70,4 +70,4 @@ jobs:
       # Runs core + every custom-module migration onto the empty DB. A non-zero
       # exit (failed/duplicate/broken migration) fails the job.
       - name: Migrate from zero
-        run: pnpm --filter @saludlink/medusa exec medusa db:migrate
+        run: pnpm --filter @saludlink/backend exec medusa db:migrate

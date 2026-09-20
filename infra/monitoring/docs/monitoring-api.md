@@ -33,7 +33,7 @@ tool, exactly how to read its data programmatically.
 **Golden rules for the Monitoring API implementation**
 
 - The API talks to these services **over the internal `monitoring` network**, never
-  the public internet. Credentials live in the API's server env (Secrets Manager),
+  the public internet. Credentials live in the API's server env (Railway variables),
   never in the browser.
 - All upstream calls are **read-only**. The API exposes only aggregated,
   PHI-free summaries to the admin UI.
@@ -104,7 +104,7 @@ curl -s 'http://127.0.0.1:9090/api/v1/query?query=up' | jq '.data.result[] | {jo
 ### Setup (one-time, server-side)
 
 Admin → Administration → Service accounts → _monitoring-api_ (Viewer) → **Add token**.
-Store the token in the Monitoring API env (Secrets Manager).
+Store the token in the Monitoring API env (Railway variables).
 
 ### Key endpoints
 

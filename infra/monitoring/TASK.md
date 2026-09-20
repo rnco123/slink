@@ -108,7 +108,7 @@ network fix below._
   — `slink_exporter` (pg_monitor only, denied on app tables) via
   [config/postgres/exporter-role.sql](config/postgres/exporter-role.sql); the
   exporter DSN in `.env`/template no longer uses the app superuser. Inject the
-  password from SSM/Secrets Manager in staging/prod.
+  password from Railway service variables in staging/prod.
 - **PostHog self-hosting** deliberately excluded from the compose stack (heavy);
   existing privacy-safe Cloud config documented and kept.
 
@@ -137,7 +137,7 @@ exporter now runs as the least-privilege `slink_exporter` role
 
 ## Ops & runbook docs (Session 3, 2026-07-23)
 
-- [docs/runbook.md](docs/runbook.md) — **site-down triage, rollback, RDS restore,
+- [docs/runbook.md](docs/runbook.md) — **site-down triage, rollback, Supabase restore,
   <1h re-provision** (task 47). Every alert's `runbook_url` points here.
 - [docs/secrets-rotation.md](docs/secrets-rotation.md) — **rotation procedure** for
   every secret (task 53).

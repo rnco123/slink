@@ -8,7 +8,7 @@ out
 coverage
 pnpm-lock.yaml
 *.log
-apps/storefront/e2e/.artifacts
+storefront/e2e/.artifacts
 test-results
 playwright-report
 .terraform

@@ -1,16 +1,27 @@
-# Deploy — build the storefront + medusa images, push to GHCR, then roll the box.
+# Deploy — build the storefront + medusa images, push to GHCR, then roll Railway.
 #
 # FULLY AUTOMATIC. Every push to `main` (i.e. every merged PR) rebuilds the two
-# images and rolls the live box. No manual step, no SSH keys stored in GitHub, no
-# firewall holes:
+# images and redeploys the Railway services:
 #
-#   • `images`  runs on a GitHub-hosted runner — builds + pushes to GHCR.
-#   • `deploy`  runs on a SELF-HOSTED runner installed ON the box, so it just runs
-#     `docker compose pull && up` locally. The box reaches OUT to GitHub; nothing
-#     reaches in. That is why we don't need to open SSH to GitHub's IP ranges.
+#   • `images`  builds + pushes to GHCR on a GitHub-hosted runner.
+#   • `deploy`  calls the Railway API with a project token. No self-hosted
+#     runner, no SSH, no box to keep alive — Railway pulls the new image.
+#
+# Railway service sources point at the GHCR `:latest` tags, so `railway redeploy`
+# pulls the image this workflow just pushed. Rollback is Railway's deployment
+# history (Deployments → ⋯ → Redeploy), not a tag change.
+#
+# DB migrations and the content/catalog/artwork sync are NOT run from here. They
+# are the medusa service's **Pre-Deploy Command** in Railway, so they run inside
+# the container with the service's own variables, once per deploy, before the new
+# version takes traffic. See docs/DEPLOYMENT.md § Pre-deploy for the exact string.
 #
 # `main` is protected (CI required before merge), so whatever lands here is already
 # green. Use the "Run workflow" button for a manual redeploy.
+#
+# Required repo secrets/variables:
+#   secrets.RAILWAY_TOKEN                     Railway **project** token
+#   vars.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY   set once prod is seeded
 name: deploy
 
 on:
@@ -34,7 +45,7 @@ permissions:
   contents: read
   packages: write
 
-# Never roll the box with two deploys at once; let an in-flight one finish.
+# Never roll two deploys at once; let an in-flight one finish.
 concurrency:
   group: deploy-main
   cancel-in-progress: false
@@ -75,7 +86,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/medusa/Dockerfile
+          file: backend/Dockerfile
           push: true
           build-args: |
             MEDUSA_BACKEND_URL=https://manage.saludlinkusa.com
@@ -95,12 +106,14 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/storefront/Dockerfile
+          file: storefront/Dockerfile
           push: true
           build-args: |
             NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${{ vars.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 'pk_replace_after_seed' }}
             NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://manage.saludlinkusa.com
             NEXT_PUBLIC_BASE_URL=https://saludlinkusa.com
+            NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:${{ github.event.workflow_run.head_sha || github.sha }}
@@ -109,97 +122,60 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/slink-storefront:buildcache,mode=max
 
   # ---------------------------------------------------------------------------
-  # Roll the box. Runs ON the box via a self-hosted runner labelled `slink-box`,
-  # so it needs no SSH/keys — it operates on the local /opt/slink compose project.
-  # The `medusa-migrate` one-shot applies migrations before server/worker start.
+  # Roll Railway. Runs on a GitHub-hosted runner and talks to the Railway API
+  # with a project token — nothing is installed on, or reachable in, our infra.
+  #
+  # Order matters: medusa first (its Pre-Deploy Command applies DB migrations and
+  # syncs content/catalog/artwork), then worker and storefront against the
+  # already-migrated schema.
   # ---------------------------------------------------------------------------
   deploy:
-    name: roll the box
+    name: roll railway
     needs: [images]
-    runs-on: [self-hosted, slink-box]
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
-      # Authenticate to GHCR from inside the workflow rather than relying on a
-      # `docker login` someone ran by hand on the box: the runner service runs in
-      # its own environment and does not see the operator's ~/.docker/config.json,
-      # and the packages may be private. GITHUB_TOKEN can always read this repo's
-      # own packages, so the deploy is self-contained.
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
 
-      - name: Pull latest images + roll
-        run: |
-          set -euo pipefail
-          cd /opt/slink
-          docker compose pull
-          docker compose up -d --remove-orphans
-          docker image prune -f
+      # Redeploy pulls the `:latest` GHCR image the `images` job just pushed.
+      # `--yes` skips the interactive confirmation; without it the CLI hangs.
+      - name: Redeploy medusa (runs migrations via Pre-Deploy Command)
+        run: railway redeploy --service medusa --yes
 
       - name: Health check (fail the deploy if the API doesn't come up)
         run: |
           set -euo pipefail
-          for i in $(seq 1 30); do
+          for i in $(seq 1 60); do
             code=$(curl -s -o /dev/null -w "%{http_code}" https://manage.saludlinkusa.com/health || true)
             if [ "$code" = "200" ]; then
               echo "✅ medusa healthy (HTTP 200)"
               exit 0
             fi
-            echo "waiting for medusa to come up… ($i/30, last=$code)"
+            echo "waiting for medusa to come up… ($i/60, last=$code)"
             sleep 5
           done
-          echo "❌ medusa did not return 200 within 150s"
+          echo "❌ medusa did not return 200 within 300s"
           exit 1
 
-      # Copy that lives in code (legal/policy pages, the sample article, site
-      # settings) is pushed into the DB on every deploy, so editing text in the
-      # repo is all it takes to update the live site — no manual seeding step.
-      # SEED_CONTENT_FORCE=1 makes the seed REWRITE existing rows instead of
-      # skipping them; without it an environment keeps whatever copy it was FIRST
-      # seeded with, which is how prod ended up serving one-paragraph policies
-      # while the full versions sat in the repo.
-      #
-      # CONTRACT: for the slugs defined in seed-content.ts the REPO is the source
-      # of truth — edits made to those pages in Admin are overwritten on the next
-      # deploy. Pages created in Admin that aren't in that file are left alone.
-      #
-      # Runs after the health check so medusa is known-up before we exec into it.
-      # The image ships the BUILT server (.medusa/server), so the path is the
-      # compiled ./src/scripts/seed-content.js — not the .ts source.
-      - name: Sync content from code
-        run: |
-          set -euo pipefail
-          cd /opt/slink
-          docker compose exec -T -e SEED_CONTENT_FORCE=1 medusa \
-            npx medusa exec ./src/scripts/seed-content.js
+      - name: Redeploy worker
+        run: railway redeploy --service worker --yes
 
-      # Ensure the compounded-Rx catalog (the 3 injection SKUs) exists in the DB.
-      # Idempotent by design (see migrate-catalog-rx.ts): it removes the legacy OTC
-      # catalog if present and CREATES only the Rx products that are missing — so it
-      # is safe on every deploy and just no-ops once the 3 products exist. This is
-      # the DB-side counterpart to shipping the product code, and mirrors how
-      # "Sync content from code" guarantees the legal/policy pages.
-      - name: Ensure Rx catalog
-        run: |
-          set -euo pipefail
-          cd /opt/slink
-          docker compose exec -T medusa \
-            npx medusa exec ./src/scripts/migrate-catalog-rx.js
+      - name: Redeploy storefront
+        run: railway redeploy --service storefront --yes
 
-      # Give products their artwork. The illustrations live in the repo at
-      # apps/storefront/public/products/<handle>.svg, so they ship with the
-      # storefront image and are served statically — no S3 and no ephemeral
-      # upload directory involved.
-      #
-      # Non-destructive: the script only fills products that have NO image yet
-      # (see ATTACH_IMAGES_FORCE), so real product photography uploaded through
-      # Admin is never reverted by a deploy.
-      - name: Attach product artwork (only where missing)
+      - name: Health check storefront
         run: |
           set -euo pipefail
-          cd /opt/slink
-          docker compose exec -T \
-            -e PRODUCT_IMAGE_BASE=https://saludlinkusa.com/products medusa \
-            npx medusa exec ./src/scripts/attach-images.js
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" https://saludlinkusa.com/api/health || true)
+            if [ "$code" = "200" ]; then
+              echo "✅ storefront healthy (HTTP 200)"
+              exit 0
+            fi
+            echo "waiting for storefront to come up… ($i/60, last=$code)"
+            sleep 5
+          done
+          echo "❌ storefront did not return 200 within 300s"
+          exit 1

@@ -1,7 +1,7 @@
 # Database Migrations — Zero-Downtime Rule
 
 _Roadmap task 49. Applies to every Medusa module migration
-(`apps/medusa/src/modules/**/migrations`) and any raw SQL._
+(`backend/src/modules/**/migrations`) and any raw SQL._
 
 Production deploys are **rolling**: the migration one-shot runs, then new app
 containers start while old ones may still be serving for a few seconds. A
@@ -45,7 +45,7 @@ Split any breaking change across **two** deploys:
 
 ```sh
 # generate a migration after changing a module's data models
-cd apps/medusa
+cd backend
 npx medusa db:generate <ModuleName>
 
 # apply locally

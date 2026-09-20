@@ -24,11 +24,12 @@ import { join, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const NEXT_DIR = join(__dirname, "..", "apps", "storefront", ".next")
+const NEXT_DIR = join(__dirname, "..", "storefront", ".next")
 const MANIFEST = join(NEXT_DIR, "app-build-manifest.json")
 
-// Default budget = current heaviest route (~412 KB gzipped, the Stripe-laden
-// checkout page as of the calibration build) + ~12% headroom. This is a
+// Default budget = heaviest route + ~13% headroom. That route is the checkout
+// page, 405 KB gzipped as of the bank-transfer build (dropping the unused Stripe
+// SDK moved it only ~7 KB — the components were already off Stripe). This is a
 // REGRESSION gate: it passes today's build and fails a meaningful bundle bloat.
 // Tighten it as routes are optimized. Override with BUNDLE_BUDGET_KB.
 const BUDGET_KB = Number.parseInt(process.env.BUNDLE_BUDGET_KB ?? "460", 10)

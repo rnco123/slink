@@ -3,7 +3,7 @@
  *
  * Where {@link validateNoPhi} *rejects* PHI, this module *constructs* safe
  * objects by copying only explicitly-approved keys. It is the tool used to build
- * Medusa `metadata`, Cognito attributes, and analytics payloads server-side,
+ * Medusa `metadata`, auth-provider attributes, and analytics payloads server-side,
  * instead of trusting a browser-supplied blob.
  *
  * Rule of thumb: schemas reject unknown input (fail closed with HTTP 400);
@@ -53,7 +53,7 @@ function isPlainObject(v: unknown): v is PlainObject {
  * Build a new object containing only the allowlisted keys of `input`.
  *
  * Unknown keys are silently dropped — the returned object is safe to hand to
- * Medusa/Cognito/analytics. Prohibited (PHI) keys are always dropped even if a
+ * Medusa/auth-provider/analytics. Prohibited (PHI) keys are always dropped even if a
  * caller mistakenly lists them, and (by default) trigger an assertion so the
  * mistake surfaces in development.
  *
@@ -146,10 +146,11 @@ export function buildSafeMetadata(
 }
 
 /**
- * The identity attributes Cognito is permitted to store. No clinical or
+ * The identity attributes the auth provider (Supabase Auth) is permitted to
+ * store. No clinical or
  * cross-system reference attributes may ever be added.
  */
-export const SAFE_COGNITO_ATTRIBUTES: readonly string[] = [
+export const SAFE_IDENTITY_ATTRIBUTES: readonly string[] = [
   "email",
   "email_verified",
   "phone_number",
@@ -165,11 +166,11 @@ export const SAFE_COGNITO_ATTRIBUTES: readonly string[] = [
 ]
 
 /**
- * Construct a safe Cognito attribute set from untrusted input.
+ * Construct a safe auth-provider attribute set from untrusted input.
  *
  * @param input - Untrusted source (e.g. registration payload).
- * @returns A PHI-free attribute object limited to {@link SAFE_COGNITO_ATTRIBUTES}.
+ * @returns A PHI-free attribute object limited to {@link SAFE_IDENTITY_ATTRIBUTES}.
  */
-export function buildSafeCognitoAttributes(input: unknown): PlainObject {
-  return sanitizeObject(input, SAFE_COGNITO_ATTRIBUTES)
+export function buildSafeIdentityAttributes(input: unknown): PlainObject {
+  return sanitizeObject(input, SAFE_IDENTITY_ATTRIBUTES)
 }

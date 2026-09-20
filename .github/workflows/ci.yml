@@ -72,7 +72,7 @@ jobs:
         run: pnpm turbo run build
 
       # Bundle-size regression budget (roadmap task 57). Reuses the storefront
-      # build above (reads apps/storefront/.next/app-build-manifest.json) and
+      # build above (reads storefront/.next/app-build-manifest.json) and
       # fails if the heaviest route's gzipped First Load JS exceeds the budget.
       - name: Bundle-size budget
         run: pnpm check:bundle
@@ -139,4 +139,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run HTTP integration tests
-        run: pnpm --filter @saludlink/medusa test:integration:http
+        run: pnpm --filter @saludlink/backend test:integration:http

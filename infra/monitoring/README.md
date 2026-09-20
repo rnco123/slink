@@ -108,18 +108,18 @@ auth + WAF/IP allow-list. Exporters, Prometheus, Alertmanager and Loki are
 
 All in [.env.monitoring.template](.env.monitoring.template). Highlights:
 
-| Var                                             | Purpose                          | Prod guidance                                            |
-| ----------------------------------------------- | -------------------------------- | -------------------------------------------------------- |
-| `MONITORING_ENV`                                | dev / staging / production label | set per env                                              |
-| `BIND_ADDR`                                     | host bind for published ports    | keep `127.0.0.1`; drop published ports entirely in prod  |
-| `APP_NETWORK`                                   | app's docker network name        | match compose project                                    |
-| `PG_EXPORTER_DSN`                               | Postgres exporter connection     | **read-only monitoring role**, TLS, from Secrets Manager |
-| `REDIS_EXPORTER_ADDR`                           | Redis exporter target            | + `REDIS_EXPORTER_PASSWORD`                              |
-| `GRAFANA_ADMIN_PASSWORD`                        | Grafana admin                    | Secrets Manager; rotate                                  |
-| `BULL_BOARD_USER/PASSWORD`                      | Bull Board basic auth            | Secrets Manager                                          |
-| `PROMETHEUS_RETENTION` / `LOKI_RETENTION_HOURS` | data retention                   | size to disk + compliance                                |
-| `ALERT_SLACK_WEBHOOK_URL` / `ALERT_EMAIL_TO`    | alert delivery                   | Secrets Manager                                          |
-| `BLACKBOX_TARGETS`                              | probed URLs                      | staging/prod public URLs                                 |
+| Var                                             | Purpose                          | Prod guidance                                           |
+| ----------------------------------------------- | -------------------------------- | ------------------------------------------------------- |
+| `MONITORING_ENV`                                | dev / staging / production label | set per env                                             |
+| `BIND_ADDR`                                     | host bind for published ports    | keep `127.0.0.1`; drop published ports entirely in prod |
+| `APP_NETWORK`                                   | app's docker network name        | match compose project                                   |
+| `PG_EXPORTER_DSN`                               | Postgres exporter connection     | **read-only monitoring role**, TLS, from Railway vars   |
+| `REDIS_EXPORTER_ADDR`                           | Redis exporter target            | + `REDIS_EXPORTER_PASSWORD`                             |
+| `GRAFANA_ADMIN_PASSWORD`                        | Grafana admin                    | Railway variables; rotate                               |
+| `BULL_BOARD_USER/PASSWORD`                      | Bull Board basic auth            | Railway variables                                       |
+| `PROMETHEUS_RETENTION` / `LOKI_RETENTION_HOURS` | data retention                   | size to disk + compliance                               |
+| `ALERT_SLACK_WEBHOOK_URL` / `ALERT_EMAIL_TO`    | alert delivery                   | Railway variables                                       |
+| `BLACKBOX_TARGETS`                              | probed URLs                      | staging/prod public URLs                                |
 
 **Secrets never live in git.** Templates carry safe local placeholders only
 (`change_me_*`), which are allow-listed in [.gitleaks.toml](../../.gitleaks.toml).
@@ -132,11 +132,12 @@ All in [.env.monitoring.template](.env.monitoring.template). Highlights:
   filesystem storage.
 - **staging / production** — set `MONITORING_ENV`, **remove the `ports:` publish**
   for every service and route the three admin UIs through
-  `manage.saludlinkusa.com` (reverse proxy + auth + WAF). Point exporters at RDS
-  Postgres / ElastiCache Redis with **read-only** creds and TLS. For large log
+  `manage.saludlinkusa.com` (reverse proxy + auth). Point exporters at Supabase
+  Supabase Postgres / the Railway Redis service with **read-only** creds and TLS. For large log
   volume, switch Loki's storage to **S3** (edit [config/loki/loki-config.yml](config/loki/loki-config.yml)
-  `storage_config` → `aws`). Deliver alerts to the on-call Slack + SES email.
-  Back Prometheus with a bigger EBS volume sized to `PROMETHEUS_RETENTION`.
+  `storage_config` → an S3-compatible bucket). Deliver alerts to the on-call Slack
+  - Resend email.
+    Back Prometheus with a bigger EBS volume sized to `PROMETHEUS_RETENTION`.
 
 ---
 

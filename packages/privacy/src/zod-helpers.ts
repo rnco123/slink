@@ -129,7 +129,7 @@ export const countryCodeField = (): z.ZodString =>
 export const postalCodeField = (): z.ZodString =>
   z.string().trim().min(2).max(12)
 
-/** A short opaque identifier (Medusa/Cognito id, coupon code, etc.). */
+/** A short opaque identifier (Medusa/auth-provider id, coupon code, etc.). */
 export const idField = (max = 128): z.ZodString =>
   z.string().trim().min(1).max(max)
 

@@ -24,7 +24,7 @@
 **/.idea
 
 # tests / reports / infra not needed at image build
-apps/storefront/e2e
+storefront/e2e
 **/test-results
 **/playwright-report
 infra

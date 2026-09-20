@@ -1,5 +1,6 @@
 # Loki — single-binary, filesystem-backed config for self-hosted logging.
-# Suitable for dev/staging and small prod; scale out to object storage (S3) for
+# Suitable for dev/staging and small prod; scale out to object storage (Supabase
+# Storage, or any S3-compatible bucket) for
 # large prod (see README "Production exposure / scaling").
 auth_enabled: false
 

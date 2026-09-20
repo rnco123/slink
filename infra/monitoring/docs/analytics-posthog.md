@@ -6,12 +6,12 @@ API reads analytics aggregates. Self-hosting is covered as an option at the end.
 
 ## How it's wired today
 
-| Piece                  | File                                                                  | Notes                                                                                                                                   |
-| ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Client init + provider | [posthog.tsx](../../../apps/storefront/src/lib/analytics/posthog.tsx) | The **only** module allowed to import `posthog-js` (enforced by ESLint).                                                                |
-| Same-origin proxy      | [next.config.js](../../../apps/storefront/next.config.js) rewrites    | `/ingest/*` → PostHog Cloud ingest; `/ingest/static/*` → assets host.                                                                   |
-| PHI-safe event wrapper | `@saludlink/privacy` (`captureSafeEvent`)                             | Feature code never calls `posthog.capture` directly; the wrapper validates + strips PHI before events reach the transport.              |
-| Env                    | [.env.template](../../../apps/storefront/.env.template)               | `NEXT_PUBLIC_POSTHOG_KEY` (empty = analytics fully disabled), `NEXT_PUBLIC_POSTHOG_HOST`, `POSTHOG_INGEST_HOST`, `POSTHOG_ASSETS_HOST`. |
+| Piece                  | File                                                             | Notes                                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Client init + provider | [posthog.tsx](../../../storefront/src/lib/analytics/posthog.tsx) | The **only** module allowed to import `posthog-js` (enforced by ESLint).                                                                |
+| Same-origin proxy      | [next.config.js](../../../storefront/next.config.js) rewrites    | `/ingest/*` → PostHog Cloud ingest; `/ingest/static/*` → assets host.                                                                   |
+| PHI-safe event wrapper | `@saludlink/privacy` (`captureSafeEvent`)                        | Feature code never calls `posthog.capture` directly; the wrapper validates + strips PHI before events reach the transport.              |
+| Env                    | [.env.template](../../../storefront/.env.template)               | `NEXT_PUBLIC_POSTHOG_KEY` (empty = analytics fully disabled), `NEXT_PUBLIC_POSTHOG_HOST`, `POSTHOG_INGEST_HOST`, `POSTHOG_ASSETS_HOST`. |
 
 ### Privacy posture (do not weaken without a BAA + audit)
 

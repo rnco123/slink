@@ -10,7 +10,7 @@ This doc defines how we populate it.
 
 ## What counts as "content"
 
-Seeded by [`apps/medusa/src/scripts/seed-content.ts`](../apps/medusa/src/scripts/seed-content.ts):
+Seeded by [`backend/src/scripts/seed-content.ts`](../backend/src/scripts/seed-content.ts):
 
 - **10 legal/policy pages**, each in EN + ES (privacy policy, terms, telehealth
   consent, medical disclaimer, accessibility, etc.).
@@ -18,7 +18,7 @@ Seeded by [`apps/medusa/src/scripts/seed-content.ts`](../apps/medusa/src/scripts
 - **Site settings**: contact info, telemedicine link, state availability.
 
 Catalog (products, categories, regions) is a separate concern —
-[`seed.ts`](../apps/medusa/src/scripts/seed.ts) — and is **not** idempotent (it
+[`seed.ts`](../backend/src/scripts/seed.ts) — and is **not** idempotent (it
 will create duplicates on a second run). Content seeding _is_ idempotent (below),
 so the two are handled differently.
 

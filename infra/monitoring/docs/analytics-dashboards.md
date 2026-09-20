@@ -124,7 +124,7 @@ a `YYYYqN` suffix so campaigns stay sortable.
 
 The "Start a visit" CTA sends users **off** the storefront to the telehealth
 portal. It is configured centrally in
-[`apps/storefront/src/lib/config/site.ts`](../../../apps/storefront/src/lib/config/site.ts)
+[`storefront/src/lib/config/site.ts`](../../../storefront/src/lib/config/site.ts)
 as `siteConfig.telemedicineUrl` (env `NEXT_PUBLIC_TELEMEDICINE_URL`), and today
 defaults to:
 
@@ -155,7 +155,7 @@ storefront change (build the URL per placement) — **owned by the storefront/co
 session, not this monitoring session.** Suggested shape:
 
 ```ts
-// apps/storefront/src/lib/config/site.ts — code-session follow-up
+// storefront/src/lib/config/site.ts — code-session follow-up
 export function telemedicineUrl(placement: string): string {
   const base =
     process.env.NEXT_PUBLIC_TELEMEDICINE_URL || "https://care.saludlinkusa.com"
